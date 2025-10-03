@@ -5,7 +5,7 @@
 #include "Assert.h"
 #include "color.h"
 #include "commands.h"
-#include "scan_user_input.h"
+#include "read_commands.h"
 #include "logger.h"
 #include "stack.h"
 
@@ -169,18 +169,6 @@ CalculateStackDiv(stack_t*               calculator_stack,
         return;
     }
 
-    *input_command = CALCULATOR_COMMAND_START;
-}
-
-void
-PrintBufferOverflow(stack_t*               calculator_stack,
-                    calculator_commands_e* input_command)
-{
-    ASSERT(calculator_stack != NULL);
-    ASSERT(input_command != NULL);
-
-    ClearBuffer();
-    printf(RED "BufferOverflow.\n" STANDARD);
     *input_command = CALCULATOR_COMMAND_START;
 }
 

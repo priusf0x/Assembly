@@ -6,11 +6,9 @@
 #include "logger.h"
 #include "stack.h"
 #include "calculator.h"
-#include "scan_user_input.h"
+#include "read_commands.h"
 
 static const struct command_t commands_array[] = {
-    {.command_name = NULL,    .return_value = CALCULATOR_COMMAND_START,             .command_function = ReadUserInput},
-    {.command_name = NULL,    .return_value = CALCULATOR_COMMAND_BUFFER_OVERFLOW,   .command_function = PrintBufferOverflow},
     {.command_name = NULL,    .return_value = CALCULATOR_COMMAND_INCORRECT_COMMAND, .command_function = PrintIncorrectCommand},
     {.command_name = NULL,    .return_value = CALCULATOR_COMMAND_PROGRAM_ERROR,     .command_function = PrintError},
     {.command_name = NULL,    .return_value = CALCULATOR_COMMAND_INVALID_SYNTAX,    .command_function = PrintIncorrectSyntax},
