@@ -3,24 +3,42 @@
 
 #include <stdlib.h>
 
-#include "logger.h"
-#include "stack.h"
-#include "calculator.h"
-#include "read_commands.h"
+enum  commands_e
+{
+    COMMAND_EMPTY_COMMAND = 0,
+    COMMAND_INCORRECT_COMMAND = 1,
+    COMMAND_VALID_SYNTAX = 2,
+    COMMAND_INVALID_SYNTAX = 3,
+    COMMAND_HLT = 4,
+    COMMAND_PUSH = 5,
+    COMMAND_OUT = 6,
+    COMMAND_ADD = 7,
+    COMMAND_SUB = 8,
+    COMMAND_MUL = 9,
+    COMMAND_DIV = 10
+};
 
-static const struct command_t commands_array[] = {
-    {.command_name = NULL,    .return_value = CALCULATOR_COMMAND_INCORRECT_COMMAND, .command_function = PrintIncorrectCommand},
-    {.command_name = NULL,    .return_value = CALCULATOR_COMMAND_PROGRAM_ERROR,     .command_function = PrintError},
-    {.command_name = NULL,    .return_value = CALCULATOR_COMMAND_INVALID_SYNTAX,    .command_function = PrintIncorrectSyntax},
-    {.command_name = "HLT",   .return_value = CALCULATOR_COMMAND_HLT,               .command_function = NULL},
-    {.command_name = "PUSH",  .return_value = CALCULATOR_COMMAND_PUSH,              .command_function = ReadCoefficient},
-    {.command_name = "OUT",   .return_value = CALCULATOR_COMMAND_OUT,               .command_function = CalculateStackOut},
-    {.command_name = "PRINT", .return_value = CALCULATOR_COMMAND_PRINT,             .command_function = PrintStack},
-    {.command_name = "ADD",   .return_value = CALCULATOR_COMMAND_ADD,               .command_function = CalculateStackAdd},
-    {.command_name = "SUB",   .return_value = CALCULATOR_COMMAND_SUB,               .command_function = CalculateStackSub},
-    {.command_name = "MUL",   .return_value = CALCULATOR_COMMAND_MUL,               .command_function = CalculateStackMul},
-    {.command_name = "DIV",   .return_value = CALCULATOR_COMMAND_DIV,               .command_function = CalculateStackDiv}};
+struct command_t
+{
+    const char* command_name;
+    const size_t number_of_arguments;
+    const enum commands_e return_value;
+    const void (*command_function)(struct stack_t*, enum commands_e*);
+};
 
-const size_t commands_count = sizeof(commands_array) / sizeof(commands_array[0]);
+static const struct command_t COMMANDS_ARRAY[] = {
+    {.command_name = NULL,   .number_of_arguments = 0, .return_value = COMMAND_EMPTY_COMMAND,     .command_function = NULL},
+    {.command_name = NULL,   .number_of_arguments = 0, .return_value = COMMAND_INCORRECT_COMMAND, .command_function = NULL},
+    {.command_name = NULL,   .number_of_arguments = 0, .return_value = COMMAND_VALID_SYNTAX,      .command_function = NULL},
+    {.command_name = NULL,   .number_of_arguments = 0, .return_value = COMMAND_INVALID_SYNTAX,    .command_function = NULL},
+    {.command_name = "HLT",  .number_of_arguments = 0, .return_value = COMMAND_HLT,               .command_function = NULL},
+    {.command_name = "PUSH", .number_of_arguments = 1, .return_value = COMMAND_PUSH,              .command_function = NULL},
+    {.command_name = "OUT",  .number_of_arguments = 0, .return_value = COMMAND_OUT,               .command_function = NULL},
+    {.command_name = "ADD",  .number_of_arguments = 0, .return_value = COMMAND_ADD,               .command_function = NULL},
+    {.command_name = "SUB",  .number_of_arguments = 0, .return_value = COMMAND_SUB,               .command_function = NULL},
+    {.command_name = "MUL",  .number_of_arguments = 0, .return_value = COMMAND_MUL,               .command_function = NULL},
+    {.command_name = "DIV",  .number_of_arguments = 0, .return_value = COMMAND_DIV,               .command_function = NULL}};
+
+const size_t commands_count = sizeof(COMMANDS_ARRAY) / sizeof(COMMANDS_ARRAY[0]);
 
 #endif //COMMANDS_H

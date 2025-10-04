@@ -5,6 +5,7 @@
 #include "Assert.h"
 #include "stdlib.h"
 #include "string.h"
+#include "ctype.h"
 #include "color.h"
 
 void* recalloc(void*  pointer,
@@ -63,3 +64,50 @@ CountCharInStr(char        character,
 
     return count;
 }
+
+char*
+SkipSpaces(char* string)
+{
+    ASSERT(string != NULL);
+
+    char character = *string;
+
+    while (isspace(character) && (character != '\0'))
+    {
+        string++;
+        character = *string;
+    }
+
+    return string;
+}
+
+char*
+SkipNotSpaces(char* string)
+{
+    ASSERT(string != NULL);
+
+    char character = *string;
+
+    while (!isspace(character) && (character != '\0'))
+    {
+        string++;
+        character = *string;
+    }
+
+    return string;
+}
+
+bool
+IsStrNum(char* string)
+{
+    int count = int(SkipNotSpaces(string) - string);
+    for (int index = 0; index < count; index++)
+    {
+        if (!isdigit(string[index]))
+            return false;
+    }
+
+    return true;
+}
+
+

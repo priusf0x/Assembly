@@ -5,98 +5,78 @@
 #include <ctype.h>
 #include <sys/stat.h>
 
+#include "commands.h"
 #include "Assert.h"
 #include "color.h"
-#include "stack.h"
-#include "calculator.h"
-#include "commands.h"
+#include "tools.h"
 
-calculator_commands_e
-ReadCommand(string_t input_command)
+commands_e
+ReadCommand(char* input_command)
 {
-    size_t count = 0;
-    char character = 0;
-
-    calculator_commands_e read_command = CALCULATOR_COMMAND_INCORRECT_COMMAND;
-
-    while (!isspace(character = (input_command.string)[count]) && (character != ';' ))
+    printf("%s\n", input_command);
+    commands_e read_command = COMMAND_INCORRECT_COMMAND;
+    if (input_command[0] == '\0')
     {
-        count++;
+        return COMMAND_EMPTY_COMMAND;
     }
+
+    size_t command_size = size_t(SkipNotSpaces(input_command) - input_command);
 
     for (size_t index = 0; index < commands_count; index++)
     {
-        if ((commands_array[index]).command_name == NULL)
+        if ((COMMANDS_ARRAY[index]).command_name == NULL)
         {
             continue;
         }
-        if (strncmp(input_command.string, commands_array[index].command_name, count) == 0)
+        if (strncmp(input_command, COMMANDS_ARRAY[index].command_name, command_size) == 0)
         {
-            read_command = (commands_array[index]).return_value;
+            read_command = (COMMANDS_ARRAY[index]).return_value;
             break;
         }
+    }
+
+    printf("%d ", read_command);
+
+    input_command = SkipNotSpaces(input_command);
+
+    for (size_t count = 0; count < COMMANDS_ARRAY[read_command].number_of_arguments; count++)
+    {
+        input_command = SkipSpaces(input_command);
+
+        if (*input_command == '\0')
+        {
+            return COMMAND_INVALID_SYNTAX;
+        }
+
+        if (ReadIntValue(input_command) == COMMAND_INVALID_SYNTAX)
+        {
+            return COMMAND_INVALID_SYNTAX;
+        }
+
+        input_command = SkipNotSpaces(input_command);
+    }
+
+    printf("\n");
+
+    if (*SkipSpaces(input_command) != '\0')
+    {
+        return COMMAND_INVALID_SYNTAX;
     }
 
     return read_command;
 }
 
-void
-ReadCoefficient(stack_t*               swag,
-                calculator_commands_e* input_command)
+commands_e
+ReadIntValue(char* input_command)
 {
-    ASSERT(swag != NULL);
-    ASSERT(input_command != NULL);
-
-    value_type coefficient = 0;
-
-    if (scanf("%d", &coefficient) != 1)
+    if (!IsStrNum(input_command))
     {
-        ClearBuffer();
-        *input_command = CALCULATOR_COMMAND_INVALID_SYNTAX;
-        return;
+        return COMMAND_INVALID_SYNTAX;
     }
 
-    CheckIfSpaces(input_command);
-    if (*input_command == CALCULATOR_COMMAND_INVALID_SYNTAX)
-    {
-        return;
-    }
+    printf("%d", atoi(input_command));
 
-    stack_function_errors_e return_error = StackPush(swag, coefficient);
-    if (return_error != STACK_FUNCTION_SUCCESS)
-    {
-        ClearBuffer();
-        LOG_FUNCTION_ERROR(return_error);
-        *input_command = CALCULATOR_COMMAND_PROGRAM_ERROR;
-        return;
-    }
-
-    *input_command = CALCULATOR_COMMAND_START;
-}
-
-bool
-ClearBuffer()
-{
-    bool flag = false;
-    int character = 0;
-    while ((character = getchar()) != '\n' && character != EOF)
-    {
-        if (!isspace(character))
-        {
-            flag = true;
-        }
-    }
-
-    return flag;
-}
-
-void
-CheckIfSpaces(calculator_commands_e* expected_state)
-{
-    if (ClearBuffer())
-    {
-        *expected_state = CALCULATOR_COMMAND_INVALID_SYNTAX;
-    }
+    return COMMAND_VALID_SYNTAX;
 }
 
 ReadErrorTypes
@@ -172,7 +152,7 @@ ReadFile(char**      input_buffer,
         return READ_FILE_ERROR_TYPE_MEMORY_ERROR;
     }
 
-    printf("%d\n", EnterData(*array_of_strings, *str_count, *input_buffer));
+    EnterData(*array_of_strings, *str_count, *input_buffer);
 
     return READ_FILE_ERROR_TYPE_SUCCESS;
 }
@@ -190,16 +170,17 @@ EnterData(string_t* array_of_strings,
 
     while (counter < str_count)
     {
-        if ((strchr(current_pointer, ';') == NULL) || (strchr(current_pointer, ';') > strchr(current_pointer, '\n')))
+        if (strchr(current_pointer, ';') > strchr(current_pointer, '\n'))
         {
-            return COMPILER_ERROR_TYPES_SKIPPED_END_SYMBOL;
+            current_pointer = strchr(current_pointer, '\n') + 1;
+            continue;
         }
         (array_of_strings[counter]).string_size = (size_t) (strchr(current_pointer, ';') - current_pointer);
         (array_of_strings[counter]).string = current_pointer;
 
         current_pointer = strchr(current_pointer, '\n') + 1;
         ((array_of_strings[counter]).string)[(array_of_strings[counter]).string_size] = '\0';
-        printf("%s", (array_of_strings[counter]).string);
+        // printf("%s", (array_of_strings[counter]).string);
 
         counter++;
     }

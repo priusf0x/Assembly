@@ -1,8 +1,7 @@
 #ifndef READ_COMMANDS
 #define READ_COMMANDS
 
-#include "stack.h"
-#include "calculator.h"
+#include "commands.h"
 
 enum ReadErrorTypes
 {
@@ -26,11 +25,9 @@ struct string_t
     size_t string_size;
 };
 
-bool             ClearBuffer();
-calculator_commands_e ReadCommand(string_t input_command);
-void             ReadCoefficient(stack_t* swag, calculator_commands_e* input_command);
-void             CheckIfSpaces(calculator_commands_e* expected_state);
-ReadErrorTypes   ReadFile(char** input_buffer, string_t** array_of_strings, size_t* str_count, const char* input_name);
+commands_e         ReadCommand(char* input_command);
+ReadErrorTypes     ReadFile(char** input_buffer, string_t** array_of_strings, size_t* str_count, const char* input_name);
 CompilerErrorTypes EnterData(string_t* array_of_strings, size_t str_count, char*  input_buffer);
+commands_e         ReadIntValue(char* input_command);
 
 #endif //read_commands

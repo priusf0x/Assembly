@@ -1,4 +1,7 @@
-MEOW MEOW 1;
-MEOW 2;
-MEOW3;
+ADD;
+PUSH 234;
+OUT;
+
+
+SUB;
 

@@ -1,5 +1,5 @@
-SOURCES_COMPILER = tools.cpp logger.cpp read_commands.cpp stack.cpp calculator.cpp compiler.cpp
-SOURCES_INTERPRETER = tools.cpp logger.cpp read_commands.cpp stack.cpp calculator.cpp interpreter.cpp
+SOURCES_COMPILER = tools.cpp read_commands.cpp compiler.cpp
+#SOURCES_INTERPRETER = tools.cpp logger.cpp read_commands.cpp stack.cpp calculator.cpp interpreter.cpp
 
 OBJ_DIR = obj
 SOURCE_DIR = src
@@ -7,13 +7,13 @@ SOURCE_DIR = src
 OBJECTS_COMPILER := $(addprefix $(OBJ_DIR)/, $(SOURCES_COMPILER:.cpp=.o))
 SOURCES_COMPILER  := $(addprefix $(SOURCE_DIR)/, $(SOURCES_COMPILER))
 
-OBJECTS_INTERPRETER := $(addprefix $(OBJ_DIR)/, $(SOURCES_INTERPRETER:.cpp=.o))
-SOURCES_INTERPRETER := $(addprefix $(SOURCE_DIR)/, $(SOURCES_INTERPRETER))
+#OBJECTS_INTERPRETER := $(addprefix $(OBJ_DIR)/, $(SOURCES_INTERPRETER:.cpp=.o))
+#SOURCES_INTERPRETER := $(addprefix $(SOURCE_DIR)/, $(SOURCES_INTERPRETER))
 
 HEADERS = $(wildcard $(SOURCE_DIR)/*.h)
 
 TARGET_COMPILER = compiler.out
-TARGET_INTERPRETER= interpreter.out
+#TARGET_INTERPRETER= interpreter.out
 
 
 CC = g++
@@ -34,16 +34,16 @@ $(TARGET_COMPILER): $(OBJECTS_COMPILER)
 	@$(CC) $(CFLAGS) $^ -o $@
 	@echo "Linked Successfully"
 
-$(TARGET_INTERPRETER): $(OBJECTS_INTERPRETER)
-	@echo "Linking..."
-	@$(CC) $(CFLAGS) $^ -o $@
-	@echo "Linked Successfully"
+# $(TARGET_INTERPRETER): $(OBJECTS_INTERPRETER)
+# 	@echo "Linking..."
+# 	@$(CC) $(CFLAGS) $^ -o $@
+# 	@echo "Linked Successfully"
 
 comp: $(TARGET_COMPILER)
 	@./$(TARGET_COMPILER)
 
-int : $(TARGET_INTERPRETER)
-	@./$(TARGET_INTERPRETER)
+# int : $(TARGET_INTERPRETER)
+# 	@./$(TARGET_INTERPRETER)
 
 clean:
 	@rm -rf $(OBJ_DIR)
