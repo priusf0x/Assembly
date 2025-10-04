@@ -1,0 +1,79 @@
+#include <stdio.h>
+
+#include "commands.h"
+#include "read_commands.h"
+#include "color.h"
+#include "tools.h"
+
+/*Dear programmer:
+ *When I wrote this code, only god and
+ *I knew how it worked.
+ *Now, only god knows it!
+ */
+
+const char* INPUT_FILE_NAME = "input_file.asm";
+
+int main(void)
+{
+    char* input_buffer = NULL;
+    size_t str_count = 0;
+    string_t* array_of_strings = NULL;
+
+    instructions_t instructions = {.instructions_count = 0, .instructions_size = 3, .instructions_array = NULL};
+    instructions.instructions_array = (int*) calloc(instructions.instructions_size, sizeof(int));
+
+    if (ReadFile(&input_buffer, &array_of_strings, &str_count, INPUT_FILE_NAME) != 0)
+    {
+        FreeAll(&instructions, input_buffer, array_of_strings);
+        printf("FILE OPEN ERROR.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    for(size_t index = 0; index < str_count; index++)
+    {
+        commands_e output = ReadCommand(array_of_strings[index].string, &instructions);
+        if (output == COMMAND_HLT)
+        {
+            break;
+        }
+        if (output == COMMAND_INCORRECT_COMMAND)
+        {
+            FreeAll(&instructions, input_buffer, array_of_strings);
+            printf("INCORRECT COMMAND IN LINE %zu.\n", index + 1);
+            exit(EXIT_FAILURE);
+            break;
+        }
+        if (output == COMMAND_INVALID_SYNTAX)
+        {
+            FreeAll(&instructions, input_buffer, array_of_strings);
+            printf("INCORRECT SYNTAX IN LINE %zu.\n", index + 1);
+            exit(EXIT_FAILURE);
+            break;
+        }
+    }
+
+
+    instructions.instructions_array[0] =(int) instructions.instructions_count;
+
+    FILE* compiled_file = fopen("compiled.obj", "w+");
+    if (compiled_file == NULL)
+    {
+        FreeAll(&instructions, input_buffer, array_of_strings);
+        printf("FILE WRITE ERROR.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    fwrite(instructions.instructions_array , sizeof(int), instructions.instructions_count, compiled_file);
+
+    if (fclose(compiled_file) != 0)
+    {
+        FreeAll(&instructions, input_buffer, array_of_strings);
+        printf("FILE WRITE ERROR");
+        exit(EXIT_FAILURE);
+    }
+
+    FreeAll(&instructions, input_buffer, array_of_strings);
+
+    return 0;
+}
+

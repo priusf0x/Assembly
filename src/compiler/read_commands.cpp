@@ -11,14 +11,15 @@
 #include "tools.h"
 
 commands_e
-ReadCommand(char* input_command)
+ReadCommand(char*   input_command,
+            instructions_t* instructions)
 {
-    printf("%s\n", input_command);
     commands_e read_command = COMMAND_INCORRECT_COMMAND;
     if (input_command[0] == '\0')
     {
         return COMMAND_EMPTY_COMMAND;
     }
+    // printf("%s\n", input_command);
 
     size_t command_size = size_t(SkipNotSpaces(input_command) - input_command);
 
@@ -31,11 +32,15 @@ ReadCommand(char* input_command)
         if (strncmp(input_command, COMMANDS_ARRAY[index].command_name, command_size) == 0)
         {
             read_command = (COMMANDS_ARRAY[index]).return_value;
+
+            if (PutInstruction(read_command, instructions) == 1)
+            {
+                return COMMAND_INCORRECT_COMMAND;
+            }
+
             break;
         }
     }
-
-    printf("%d ", read_command);
 
     input_command = SkipNotSpaces(input_command);
 
@@ -48,15 +53,13 @@ ReadCommand(char* input_command)
             return COMMAND_INVALID_SYNTAX;
         }
 
-        if (ReadIntValue(input_command) == COMMAND_INVALID_SYNTAX)
+        if (ReadIntValue(input_command, instructions) == COMMAND_INVALID_SYNTAX)
         {
             return COMMAND_INVALID_SYNTAX;
         }
 
         input_command = SkipNotSpaces(input_command);
     }
-
-    printf("\n");
 
     if (*SkipSpaces(input_command) != '\0')
     {
@@ -67,14 +70,18 @@ ReadCommand(char* input_command)
 }
 
 commands_e
-ReadIntValue(char* input_command)
+ReadIntValue(char*   input_command,
+             instructions_t* instructions)
 {
     if (!IsStrNum(input_command))
     {
         return COMMAND_INVALID_SYNTAX;
     }
 
-    printf("%d", atoi(input_command));
+    if (PutInstruction(atoi(input_command), instructions) == 1)
+    {
+        return COMMAND_INCORRECT_COMMAND;
+    }
 
     return COMMAND_VALID_SYNTAX;
 }
@@ -115,7 +122,6 @@ ReadFile(char**      input_buffer,
     size_t read_count = fread(*input_buffer, sizeof(char), char_number, file_input);
     if (read_count != char_number)
     {
-        free(*input_buffer);
         *input_buffer = NULL;
         fclose(file_input);
         return READ_FILE_ERROR_TYPE_READ_ERROR;
@@ -123,7 +129,6 @@ ReadFile(char**      input_buffer,
 
     if (fclose(file_input) != 0)
     {
-        free(*input_buffer);
         *input_buffer = NULL;
         return READ_FILE_ERROR_TYPE_READ_ERROR;
     }
@@ -137,17 +142,15 @@ ReadFile(char**      input_buffer,
     }
     else
     {
-        free(*input_buffer);
         *input_buffer = NULL;
         return READ_FILE_ERROR_TYPE_EMPTY_FILE_ERROR;
     }
 
-    *str_count = CountCharInStr(';', *input_buffer);
+    *str_count = CountCharInStr('\n', *input_buffer);
     *array_of_strings = (string_t*) calloc(*str_count, sizeof(string_t));
 
     if (*array_of_strings == NULL)
     {
-        free(*input_buffer);
         *input_buffer = NULL;
         return READ_FILE_ERROR_TYPE_MEMORY_ERROR;
     }
@@ -170,20 +173,21 @@ EnterData(string_t* array_of_strings,
 
     while (counter < str_count)
     {
-        if (strchr(current_pointer, ';') > strchr(current_pointer, '\n'))
-        {
-            current_pointer = strchr(current_pointer, '\n') + 1;
-            continue;
-        }
-        (array_of_strings[counter]).string_size = (size_t) (strchr(current_pointer, ';') - current_pointer);
         (array_of_strings[counter]).string = current_pointer;
 
         current_pointer = strchr(current_pointer, '\n') + 1;
-        ((array_of_strings[counter]).string)[(array_of_strings[counter]).string_size] = '\0';
-        // printf("%s", (array_of_strings[counter]).string);
 
+        *strchr(array_of_strings[counter].string, '\n') = '\0';
+
+        (array_of_strings[counter]).string_size = (size_t) (strchr(array_of_strings[counter].string, '\0') - current_pointer);
+
+        if (strchr(array_of_strings[counter].string, '#') != NULL)
+        {
+            *strchr(array_of_strings[counter].string, '#') = 0;
+        }
         counter++;
     }
 
     return COMPILER_ERROR_TYPES_CORRECT;
 }
+

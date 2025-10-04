@@ -1,7 +1,16 @@
 #ifndef READ_COMMANDS
 #define READ_COMMANDS
 
+#include <stdlib.h>
+
 #include "commands.h"
+
+struct instructions_t
+{
+    size_t instructions_count;
+    size_t instructions_size;
+    int* instructions_array;
+};
 
 enum ReadErrorTypes
 {
@@ -25,9 +34,9 @@ struct string_t
     size_t string_size;
 };
 
-commands_e         ReadCommand(char* input_command);
+commands_e         ReadCommand(char* input_command, instructions_t* instructions);
 ReadErrorTypes     ReadFile(char** input_buffer, string_t** array_of_strings, size_t* str_count, const char* input_name);
 CompilerErrorTypes EnterData(string_t* array_of_strings, size_t str_count, char*  input_buffer);
-commands_e         ReadIntValue(char* input_command);
+commands_e         ReadIntValue(char* input_command, instructions_t* instructions);
 
 #endif //read_commands

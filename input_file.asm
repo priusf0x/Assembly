@@ -1,7 +1,9 @@
-ADD;
-PUSH 234;
-OUT;
+ADD
+PUSH 234
+OUT
 
-
-SUB;
+# fdsfsd
+OUT
+SUB
+HLT
 

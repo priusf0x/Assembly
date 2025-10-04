@@ -1,18 +1,19 @@
 #include "tools.h"
 
+#include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "Assert.h"
-#include "stdlib.h"
-#include "string.h"
-#include "ctype.h"
 #include "color.h"
+#include "read_commands.h"
 
 void* recalloc(void*  pointer,
                size_t current_size,
                size_t new_size)
 {
-    ASSERT(pointer == NULL);
+    ASSERT(pointer != NULL);
 
     pointer = realloc(pointer, new_size);
     memset((char*) pointer + current_size, 0, new_size - current_size);
@@ -110,4 +111,37 @@ IsStrNum(char* string)
     return true;
 }
 
+int
+PutInstruction(int             value,
+               instructions_t* instructions)
+{
+    ASSERT(instructions != NULL);
+    ASSERT(instructions->instructions_array != NULL);
+
+    if (instructions->instructions_count == instructions->instructions_size - 1)
+    {
+        instructions->instructions_array = (int*) recalloc(instructions->instructions_array, sizeof(int) * instructions->instructions_size, sizeof(int) * instructions->instructions_size * 2);
+        instructions->instructions_size *= 2;
+    }
+
+    if (instructions->instructions_array == NULL)
+    {
+        return 1;
+    }
+    // printf("%zu %zu\n", instructions->instructions_count, instructions->instructions_size);
+    (instructions->instructions_array)[instructions->instructions_count + 1] = value;
+    instructions->instructions_count++;
+
+    return 0;
+}
+
+void
+FreeAll(instructions_t* instructions, char* input_buffer, string_t* array_of_strings)
+{
+    free(instructions->instructions_array);
+    free(input_buffer);
+    free(array_of_strings);
+
+    memset(instructions, 0, sizeof(instructions_t));
+}
 
