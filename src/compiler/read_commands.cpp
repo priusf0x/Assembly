@@ -128,7 +128,7 @@ ReadCommand(char*   input_command,
 
     size_t command_size = size_t(SkipNotSpaces(input_command) - input_command);
 
-    for (size_t index = 0; index < commands_count; index++)
+    for (size_t index = 0; index < COMMANDS_COUNT; index++)
     {
         if ((COMMANDS_ARRAY[index]).command_name == NULL)
         {

@@ -51,7 +51,7 @@ int main(void)
         }
     }
 
-    instructions.instructions_array[0] =(int) instructions.instructions_count;
+    instructions.instructions_array[0] = (int) instructions.instructions_count;
 
     if (instructions.instructions_array[instructions.instructions_count] != COMMAND_HLT)
     {

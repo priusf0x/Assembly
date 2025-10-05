@@ -30,20 +30,9 @@ enum stack_state_e
     STACK_STATE_ZERO_CAPACITY = 3
 };
 
-struct stack_t
-{
-    const char* name;
-    uint8_t* canary_start;
-    uint8_t* canary_end;
-    value_type* stack_data;
-    size_t size;
-    size_t capacity;
-    size_t minimal_capacity;
-    size_t real_capacity_in_bytes;
-    enum stack_state_e state;
-};
+struct stack_t;
 
-stack_function_errors_e     StackInit(stack_t* swag, size_t count, const char* swag_name);
+stack_function_errors_e     StackInit(stack_t** swag, size_t count, const char* swag_name);
 stack_function_errors_e     StackDestroy(stack_t* swag);
 stack_function_errors_e     StackPush(stack_t* swag, value_type value);
 stack_function_errors_e     StackPop(stack_t* swag, value_type* pop_variable);

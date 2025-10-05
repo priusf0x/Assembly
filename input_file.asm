@@ -3,9 +3,7 @@ PUSH 234
 OUT
 # fdsfsd
 OUT
-
 SUB
-
 HLT
 
 

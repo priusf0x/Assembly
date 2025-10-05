@@ -32,7 +32,7 @@ const struct disassembler_command_t DISASSEMBLER_COMMANDS_ARRAY[] = {
     {.command_name = "SUB",   .return_value = COMMAND_SUB,               .binary_handler = NULL        },
     {.command_name = "MUL",   .return_value = COMMAND_MUL,               .binary_handler = NULL        },
     {.command_name = "DIV",   .return_value = COMMAND_DIV,               .binary_handler = NULL        }};
-const size_t commands_count = sizeof(DISASSEMBLER_COMMANDS_ARRAY) / sizeof(DISASSEMBLER_COMMANDS_ARRAY[0]);
+const size_t DISASSEMBLER_COMMANDS_ARRAY = sizeof(DISASSEMBLER_COMMANDS_ARRAY) / sizeof(DISASSEMBLER_COMMANDS_ARRAY[0]);
 
 
 #endif //DISASSEMBLER_COMMANDS_H

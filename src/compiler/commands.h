@@ -48,7 +48,7 @@ const struct command_t COMMANDS_ARRAY[] = {
     {.command_name = NULL,    .return_value = COMMAND_VALID_SYNTAX,     .handler = NULL},
     {.command_name = NULL,    .return_value = COMMAND_INVALID_SYNTAX,   .handler = NULL}};
 
-const size_t commands_count = sizeof(COMMANDS_ARRAY) / sizeof(COMMANDS_ARRAY[0]);
+const size_t COMMANDS_COUNT = sizeof(COMMANDS_ARRAY) / sizeof(COMMANDS_ARRAY[0]);
 
 
 #endif //COMMANDS_H

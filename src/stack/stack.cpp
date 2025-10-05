@@ -8,7 +8,7 @@
 #include "logger.h"
 #include "tools.h"
 
-const size_t CANARY_SIZE = 20;
+const size_t CANARY_SIZE = 4;
 const uint64_t CANARY_FILL = 0xB16B00B5;
 
 static bool                    CheckCanary(stack_t* swag);
@@ -16,44 +16,57 @@ static stack_function_errors_e SetCanary(void* pointer, uint64_t value);
 static stack_function_errors_e StackNormalizeSize(stack_t* swag);
 static stack_function_errors_e VerifyStack(stack_t* swag);
 
+struct stack_t
+{
+    const char* name;
+    uint8_t* canary_start;
+    uint8_t* canary_end;
+    value_type* stack_data;
+    size_t size;
+    size_t capacity;
+    size_t minimal_capacity;
+    size_t real_capacity_in_bytes;
+    enum stack_state_e state;
+};
 
 stack_function_errors_e
-StackInit(stack_t*    swag,
+StackInit(stack_t**   swag,
           size_t      expected_capacity,
           const char* swag_name)
 {
-    ASSERT(swag != NULL);
     ASSERT(swag_name != NULL);
 
-    swag->name = swag_name;
+    (*swag) = (stack_t*) calloc(1, sizeof(stack_t));
+
+    (*swag)->name = swag_name;
 
     if (expected_capacity == 0)
     {
         return STACK_FUNCTION_INCORRECT_VALUE_ERROR;
     }
 
-    swag->real_capacity_in_bytes = sizeof(value_type) * expected_capacity + sizeof(long long) * (2 * CANARY_SIZE + 1);
-    swag->canary_start = (uint8_t*) calloc(swag->real_capacity_in_bytes, sizeof(uint64_t));
-    if (swag->canary_start == NULL)
+    (*swag)->real_capacity_in_bytes = sizeof(value_type) * expected_capacity + sizeof(long long) * (2 * CANARY_SIZE + 1);
+    (*swag)->canary_start = (uint8_t*) calloc((*swag)->real_capacity_in_bytes, sizeof(uint64_t));
+    if ((*swag)->canary_start == NULL)
     {
-        swag->state = STACK_STATE_MEMORY_ERROR;
+        (*swag)->state = STACK_STATE_MEMORY_ERROR;
         return STACK_FUNCTION_MEMORY_ERROR;
     }
 
-    SetCanary(swag->canary_start, CANARY_FILL);
+    SetCanary((*swag)->canary_start, CANARY_FILL);
 
-    swag->stack_data = (value_type*) (swag->canary_start + sizeof(uint64_t) * CANARY_SIZE);
-    swag->capacity = expected_capacity;
-    swag->minimal_capacity = expected_capacity;
+    (*swag)->stack_data = (value_type*) ((*swag)->canary_start + sizeof(uint64_t) * CANARY_SIZE);
+    (*swag)->capacity = expected_capacity;
+    (*swag)->minimal_capacity = expected_capacity;
 
-    swag->canary_end = (uint8_t*) (swag->stack_data + expected_capacity);
-    while ((size_t) swag->canary_end % 8 != 0)
+    (*swag)->canary_end = (uint8_t*) ((*swag)->stack_data + expected_capacity);
+    while ((size_t) (*swag)->canary_end % 8 != 0)
     {
-        (swag->canary_end)++;
+        ((*swag)->canary_end)++;
     }
-    SetCanary(swag->canary_end, CANARY_FILL);
+    SetCanary((*swag)->canary_end, CANARY_FILL);
 
-    swag->state = STACK_STATE_OK;
+    (*swag)->state = STACK_STATE_OK;
 
     return STACK_FUNCTION_SUCCESS;
 }
@@ -62,8 +75,7 @@ stack_function_errors_e
 StackDestroy(stack_t* swag)
 {
     free(swag->canary_start);
-
-    memset(swag, 0, sizeof(*swag));
+    free(swag);
 
     return STACK_FUNCTION_SUCCESS;
 }
@@ -262,8 +274,4 @@ StackDump(stack_t* swag)
     return LOG_FUNCTION_SUCCESS;
 }
 
-int main(void)
-{
-    return 0;
-}
 
