@@ -5,86 +5,10 @@
 #include <ctype.h>
 #include <sys/stat.h>
 
-#include "commands.h"
 #include "Assert.h"
+#include "commands.h"
 #include "color.h"
 #include "tools.h"
-
-commands_e
-ReadCommand(char*   input_command,
-            instructions_t* instructions)
-{
-    commands_e read_command = COMMAND_INCORRECT_COMMAND;
-    if (input_command[0] == '\0')
-    {
-        return COMMAND_EMPTY_COMMAND;
-    }
-    // printf("%s\n", input_command);
-
-    size_t command_size = size_t(SkipNotSpaces(input_command) - input_command);
-
-    for (size_t index = 0; index < commands_count; index++)
-    {
-        if ((COMMANDS_ARRAY[index]).command_name == NULL)
-        {
-            continue;
-        }
-        if (strncmp(input_command, COMMANDS_ARRAY[index].command_name, command_size) == 0)
-        {
-            read_command = (COMMANDS_ARRAY[index]).return_value;
-
-            if (PutInstruction(read_command, instructions) != 0)
-            {
-                return COMMAND_INCORRECT_COMMAND;
-            }
-
-            break;
-        }
-    }
-
-    input_command = SkipNotSpaces(input_command);
-
-    for (size_t count = 0; count < COMMANDS_ARRAY[read_command].number_of_arguments; count++)
-    {
-        input_command = SkipSpaces(input_command);
-
-        if (*input_command == '\0')
-        {
-            return COMMAND_INVALID_SYNTAX;
-        }
-
-        if (ReadIntValue(input_command, instructions) == COMMAND_INVALID_SYNTAX)
-        {
-            return COMMAND_INVALID_SYNTAX;
-        }
-
-        input_command = SkipNotSpaces(input_command);
-    }
-
-    if (*SkipSpaces(input_command) != '\0')
-    {
-        return COMMAND_INVALID_SYNTAX;
-    }
-
-    return read_command;
-}
-
-commands_e
-ReadIntValue(char*   input_command,
-             instructions_t* instructions)
-{
-    if (!IsStrNum(input_command))
-    {
-        return COMMAND_INVALID_SYNTAX;
-    }
-
-    if (PutInstruction(atoi(input_command), instructions) == 1)
-    {
-        return COMMAND_INCORRECT_COMMAND;
-    }
-
-    return COMMAND_VALID_SYNTAX;
-}
 
 ReadErrorTypes
 ReadFile(char**      input_buffer,
@@ -160,7 +84,7 @@ ReadFile(char**      input_buffer,
     return READ_FILE_ERROR_TYPE_SUCCESS;
 }
 
-CompilerErrorTypes
+void
 EnterData(string_t* array_of_strings,
           size_t str_count,
           char*  input_buffer)
@@ -187,7 +111,89 @@ EnterData(string_t* array_of_strings,
         }
         counter++;
     }
-
-    return COMPILER_ERROR_TYPES_CORRECT;
 }
 
+//=================== READ COMMANDS FUNCTIONS ========================
+
+commands_e
+ReadCommand(char*   input_command,
+            instructions_t* instructions)
+{
+    commands_e read_command = COMMAND_INCORRECT_COMMAND;
+    if (input_command[0] == '\0')
+    {
+        return COMMAND_EMPTY_COMMAND;
+    }
+    // printf("%s\n", input_command);
+
+    size_t command_size = size_t(SkipNotSpaces(input_command) - input_command);
+
+    for (size_t index = 0; index < commands_count; index++)
+    {
+        if ((COMMANDS_ARRAY[index]).command_name == NULL)
+        {
+            continue;
+        }
+        if (strncmp(input_command, COMMANDS_ARRAY[index].command_name, command_size) == 0)
+        {
+            read_command = (COMMANDS_ARRAY[index]).return_value;
+
+            if (PutInstruction(read_command, instructions) != 0)
+            {
+                return COMMAND_INCORRECT_COMMAND;
+            }
+
+            break;
+        }
+    }
+
+    if (COMMANDS_ARRAY[read_command].handler != NULL)
+    {
+        commands_e output = ReadPushArgument(input_command, instructions);
+        if ((output == COMMAND_INVALID_SYNTAX) || (output == COMMAND_INCORRECT_COMMAND))
+        {
+            return output;
+        }
+    }
+
+    return read_command;
+}
+
+
+// ================ HANDLERS ====================
+
+commands_e
+ReadPushArgument(char*           input_command,
+                 instructions_t* instructions)
+{
+    ASSERT(input_command != NULL);
+    ASSERT(instructions != NULL);
+
+    input_command = SkipNotSpaces(input_command);
+    input_command = SkipSpaces(input_command);
+
+    if (*input_command == '\0')
+    {
+        return COMMAND_INVALID_SYNTAX;
+    }
+
+    if (!IsStrNum(input_command))
+    {
+        return COMMAND_INVALID_SYNTAX;
+    }
+
+    if (PutInstruction(atoi(input_command), instructions) == 1)
+    {
+        return COMMAND_INCORRECT_COMMAND;
+    }
+
+    input_command = SkipNotSpaces(input_command);
+    input_command = SkipSpaces(input_command);
+
+    if (*input_command != '\0')
+    {
+        return COMMAND_INVALID_SYNTAX;
+    }
+
+    return COMMAND_VALID_SYNTAX;
+}

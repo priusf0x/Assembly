@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "commands.h"
+#include "disassembler_commands.h"
 
 const char* ASSEMBLED_FILE_NAME = "compiled.obj";
 const char* DISASSEMBLED_FILE_NAME = "disassembled.asm";
@@ -37,14 +37,13 @@ int main(void)
 
     for(size_t command_index = 0; command_index < instructions_count; command_index++)
     {
-        fprintf(disassembled_file, "%s ", COMMANDS_ARRAY[instructions[command_index]].command_name);
-        size_t arg_count = (COMMANDS_ARRAY[instructions[command_index]]).number_of_arguments;
+        fprintf(disassembled_file, "%s", DISASSEMBLER_COMMANDS_ARRAY[instructions[command_index]].command_name);
 
-        for (size_t return_value_index = 0; return_value_index < arg_count; return_value_index++)
+        if (DISASSEMBLER_COMMANDS_ARRAY[instructions[command_index]].binary_handler != NULL)
         {
-            command_index++;
-            fprintf(disassembled_file, "%d", instructions[command_index]);
+            (DISASSEMBLER_COMMANDS_ARRAY[instructions[command_index]].binary_handler)(instructions, &command_index, disassembled_file);
         }
+
         fprintf(disassembled_file, "\n");
     }
 
