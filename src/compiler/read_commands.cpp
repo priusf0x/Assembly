@@ -33,7 +33,7 @@ ReadCommand(char*   input_command,
         {
             read_command = (COMMANDS_ARRAY[index]).return_value;
 
-            if (PutInstruction(read_command, instructions) == 1)
+            if (PutInstruction(read_command, instructions) != 0)
             {
                 return COMMAND_INCORRECT_COMMAND;
             }

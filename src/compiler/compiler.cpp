@@ -12,6 +12,7 @@
  */
 
 const char* INPUT_FILE_NAME = "input_file.asm";
+const char* COMPILED_NAME = "compiled.obj";
 
 int main(void)
 {
@@ -41,21 +42,25 @@ int main(void)
             FreeAll(&instructions, input_buffer, array_of_strings);
             printf("INCORRECT COMMAND IN LINE %zu.\n", index + 1);
             exit(EXIT_FAILURE);
-            break;
         }
         if (output == COMMAND_INVALID_SYNTAX)
         {
             FreeAll(&instructions, input_buffer, array_of_strings);
             printf("INCORRECT SYNTAX IN LINE %zu.\n", index + 1);
             exit(EXIT_FAILURE);
-            break;
         }
     }
 
-
     instructions.instructions_array[0] =(int) instructions.instructions_count;
 
-    FILE* compiled_file = fopen("compiled.obj", "w+");
+    if (instructions.instructions_array[instructions.instructions_count] != COMMAND_HLT)
+    {
+        FreeAll(&instructions, input_buffer, array_of_strings);
+        printf("NO HLT ERROR.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    FILE* compiled_file = fopen(COMPILED_NAME, "w+");
     if (compiled_file == NULL)
     {
         FreeAll(&instructions, input_buffer, array_of_strings);
@@ -63,12 +68,13 @@ int main(void)
         exit(EXIT_FAILURE);
     }
 
-    fwrite(instructions.instructions_array , sizeof(int), instructions.instructions_count, compiled_file);
+    fwrite(instructions.instructions_array , sizeof(int), instructions.instructions_count + 1, compiled_file);
+    fprintf(compiled_file, "\nHere was pr1usf0x.\n");
 
     if (fclose(compiled_file) != 0)
     {
         FreeAll(&instructions, input_buffer, array_of_strings);
-        printf("FILE WRITE ERROR");
+        printf("FILE WRITE ERROR.\n");
         exit(EXIT_FAILURE);
     }
 
