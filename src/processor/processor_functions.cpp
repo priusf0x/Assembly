@@ -1,159 +1,177 @@
 #include "processor_functions.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "Assert.h"
 #include "color.h"
 #include "logger.h"
 #include "stack.h"
 
-int
+const char* ASSEMBLED_FILE_NAME = "compiled.obj";
+const size_t REGISTER_COUNT = 4;
+const size_t START_STACK_SIZE = 8;
+
+static processor_functions_return_value_e DoOperation(spu_t* spu,int (*operation)(int, int));
+
+processor_functions_return_value_e
 InitializeSPU(spu_t* spu)
 {
+    if (StackInit(&(spu->spu_stack), START_STACK_SIZE, "SPU stack") != 0)
+    {
+        return PROCESSOR_FUNCTION_RETURN_VALUE_FAILED_TO_INIT_STACK;
+    }
 
-    return 0;
+    FILE* assembled_file = fopen(ASSEMBLED_FILE_NAME, "r");
+    if (assembled_file == NULL)
+    {
+        return PROCESSOR_FUNCTION_RETURN_VALUE_FAILED_TO_READ_INSTRUCTIONS;
+    }
+
+    int max_instruction_count = 0;
+    fread(&(max_instruction_count) , sizeof(int), 1, assembled_file);
+
+    spu->instructions = (int*) calloc((size_t) max_instruction_count, sizeof(int));
+    if (spu->instructions == NULL)
+    {
+        return PROCESSOR_FUNCTION_RETURN_VALUE_MEMORY_ERROR;
+    }
+    fread(spu->instructions, sizeof(int), (size_t)max_instruction_count, assembled_file);
+
+    if (fclose(assembled_file) != 0)
+    {
+        return PROCESSOR_FUNCTION_RETURN_VALUE_FAILED_TO_READ_INSTRUCTIONS;
+    }
+
+    spu->instruction_count = 0;
+
+    spu->registers = (int*) calloc(REGISTER_COUNT, sizeof(int));
+    if (spu->registers == NULL)
+    {
+        return PROCESSOR_FUNCTION_RETURN_VALUE_MEMORY_ERROR;
+    }
+
+    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
-// stack_function_errors_e StartCalculator(stack_t* calculator_stack)
-// {
-//     ASSERT(calculator_stack);
-//
-//     VERIFY_STACK_WITH_RETURN(calculator_stack);
-//
-//     calculator_commands_e input_command = CALCULATOR_COMMAND_START;
-//
-//     while (input_command != CALCULATOR_COMMAND_HLT)
-//     {
-//         ((commands_array[input_command]).command_function)(calculator_stack, &input_command);
-//     }
-//
-//     return STACK_FUNCTION_SUCCESS;
-// }
-//
+
+processor_functions_return_value_e
+DestroySPU(spu_t* spu)
+{
+    StackDestroy(spu->spu_stack);
+    free(spu->instructions);
+    free(spu->registers);
+
+    memset(spu, 0, sizeof(spu_t));
+
+    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
+}
+
+processor_functions_return_value_e
+ExecuteInstructions(spu_t* spu)
+{
+    ASSERT(spu);
+    int read_command = (spu->instructions)[spu->instruction_count];
+
+    while (read_command != PROCESSOR_COMMAND_HLT)
+    {
+        if (PROCESSOR_COMMANDS_ARRAY[read_command].command_function != NULL)
+        {
+            (PROCESSOR_COMMANDS_ARRAY[read_command].command_function) (spu);
+        }
+
+        spu->instruction_count++;
+        read_command = (spu->instructions)[spu->instruction_count];
+    }
+
+    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
+}
+
 // //================ COMMANDS_FUNCTIONS =========================
-//
-// void
-// StackOut(stack_t*               calculator_stack,
-//                   calculator_commands_e* input_command)
-// {
-//     ASSERT(calculator_stack != NULL);
-//     ASSERT(input_command != NULL);
-//
-//     CheckIfSpaces(input_command);
-//     if (*input_command == CALCULATOR_COMMAND_INVALID_SYNTAX)
-//     {
-//         return;
-//     }
-//
-//     value_type intermediate_value = 0;
-//     stack_function_errors_e return_error = StackPop(calculator_stack, &intermediate_value);
-//
-//     if (return_error != STACK_FUNCTION_SUCCESS)
-//     {
-//         LOG_FUNCTION_ERROR(return_error);
-//         *input_command = CALCULATOR_COMMAND_PROGRAM_ERROR;
-//         return;
-//     }
-//     printf("%d\n", intermediate_value);
-//     *input_command = CALCULATOR_COMMAND_START;
-// }
-//
-// stack_function_errors_e
-// StackAdd(stack_t* swag)
-// {
-//     ASSERT(swag != NULL);
-//
-//     VERIFY_STACK_WITH_RETURN(swag);
-//
-//     value_type value_1 = 0;
-//     value_type value_2 = 0;
-//
-//     if (swag->size < 2)
-//     {
-//         return STACK_FUNCTION_NOT_ENOUGH_ELEMENTS;
-//     }
-//
-//     StackPop(swag, &value_1);
-//     StackPop(swag, &value_2);
-//
-//     StackPush(swag, value_1 + value_2);
-//
-//     VERIFY_STACK_WITH_RETURN(swag);
-//
-//     return STACK_FUNCTION_SUCCESS;
-// }
-//
-// stack_function_errors_e
-// StackSub(stack_t* swag)
-// {
-//     ASSERT(swag != NULL);
-//
-//     VERIFY_STACK_WITH_RETURN(swag);
-//
-//     value_type value_1 = 0;
-//     value_type value_2 = 0;
-//
-//     if (swag->size < 2)
-//     {
-//         return STACK_FUNCTION_NOT_ENOUGH_ELEMENTS;
-//     }
-//
-//     StackPop(swag, &value_1);
-//     StackPop(swag, &value_2);
-//
-//     StackPush(swag, value_2 - value_1);
-//
-//     VERIFY_STACK_WITH_RETURN(swag);
-//
-//     return STACK_FUNCTION_SUCCESS;
-// }
-//
-// stack_function_errors_e
-// StackMul(stack_t* swag)
-// {
-//     ASSERT(swag != NULL);
-//
-//     VERIFY_STACK_WITH_RETURN(swag);
-//
-//     value_type value_1 = 0;
-//     value_type value_2 = 0;
-//
-//     if (swag->size < 2)
-//     {
-//         return STACK_FUNCTION_NOT_ENOUGH_ELEMENTS;
-//     }
-//
-//     StackPop(swag, &value_1);
-//     StackPop(swag, &value_2);
-//
-//     StackPush(swag, value_1 * value_2);
-//
-//     VERIFY_STACK_WITH_RETURN(swag);
-//
-//     return STACK_FUNCTION_SUCCESS;
-// }
-//
-// stack_function_errors_e
-// StackDiv(stack_t* swag)
-// {
-//     ASSERT(swag != NULL);
-//
-//     VERIFY_STACK_WITH_RETURN(swag);
-//
-//     value_type value_1 = 0;
-//     value_type value_2 = 0;
-//
-//     if (swag->size < 2)
-//     {
-//         return STACK_FUNCTION_NOT_ENOUGH_ELEMENTS;
-//     }
-//
-//     StackPop(swag, &value_1);
-//     StackPop(swag, &value_2);
-//
-//     StackPush(swag, value_2 / value_1);
-//
-//     VERIFY_STACK_WITH_RETURN(swag);
-//
-//     return STACK_FUNCTION_SUCCESS;
-// }
-//
+
+processor_functions_return_value_e
+StackCommandPush(spu_t* spu)
+{
+    PROCESSOR_VERIFY(spu);
+
+    spu->instruction_count++;
+    if (StackPush(spu->spu_stack, (spu->instructions)[spu->instruction_count]) != 0)
+    {
+        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+    }
+
+    PROCESSOR_VERIFY(spu);
+
+    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
+}
+
+processor_functions_return_value_e
+StackOut(spu_t* spu)
+{
+    PROCESSOR_VERIFY(spu);
+
+    int intermediate_value = 0;
+
+    if (StackPop(spu->spu_stack, &intermediate_value) != 0)
+    {
+        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+    }
+
+    printf (GREEN "OUT-VALUE" WHITE " - %d\n" STANDARD, intermediate_value);
+
+    PROCESSOR_VERIFY(spu);
+
+    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
+}
+
+static inline int sum_var(int intermediate_value_1, int intermediate_value_2) {return intermediate_value_2 + intermediate_value_1;}
+static inline int sub_var(int intermediate_value_1, int intermediate_value_2) {return intermediate_value_2 - intermediate_value_1;}
+static inline int mul_var(int intermediate_value_1, int intermediate_value_2) {return intermediate_value_2 * intermediate_value_1;}
+static inline int div_var(int intermediate_value_1, int intermediate_value_2) {return intermediate_value_2 / intermediate_value_1;}
+
+static processor_functions_return_value_e
+DoOperation(spu_t* spu,
+            int    (*operation)(int, int))
+{
+    PROCESSOR_VERIFY(spu);
+
+    int intermediate_value_1 = 0;
+    int intermediate_value_2 = 0;
+
+    if (StackPop(spu->spu_stack, &intermediate_value_1) != 0)
+    {
+        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+    }
+
+    if (StackPop(spu->spu_stack, &intermediate_value_2) != 0)
+    {
+        StackPush(spu->spu_stack, intermediate_value_1);
+        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+    }
+
+    if (StackPush(spu->spu_stack, operation(intermediate_value_1, intermediate_value_2)) != 0)
+    {
+        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+    }
+
+    PROCESSOR_VERIFY(spu);
+
+    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
+}
+
+processor_functions_return_value_e StackAdd(spu_t* spu)
+{
+    return DoOperation(spu, sum_var);
+}
+processor_functions_return_value_e StackSub(spu_t* spu)
+{
+    return DoOperation(spu, sub_var);
+}
+processor_functions_return_value_e StackMul(spu_t* spu)
+{
+    return DoOperation(spu, mul_var);
+}
+processor_functions_return_value_e StackDiv(spu_t* spu)
+{
+    return DoOperation(spu, div_var);
+}
+

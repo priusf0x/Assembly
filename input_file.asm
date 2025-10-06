@@ -1,7 +1,12 @@
-ADD
 PUSH 234
+PUSH 228
+
+PUSH 69
+
+ADD
+
 OUT
-# fdsfsd
+OUT
 OUT
 SUB
 HLT

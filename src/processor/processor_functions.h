@@ -6,6 +6,15 @@
 #include "logger.h"
 #include "stack.h"
 
+enum processor_functions_return_value_e
+{
+    PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS,
+    PROCESSOR_FUNCTION_RETURN_VALUE_FAILED_TO_READ_INSTRUCTIONS,
+    PROCESSOR_FUNCTION_RETURN_VALUE_FAILED_TO_INIT_STACK,
+    PROCESSOR_FUNCTION_RETURN_VALUE_MEMORY_ERROR,
+    PROCESSOR_FUNCTION_RETURN_STACK_ERROR
+};
+
 enum  processor_commands_e
 {
     PROCESSOR_COMMAND_HLT  = 0,
@@ -27,31 +36,37 @@ struct spu_t
 
 struct processor_command_t
 {
-    const char*               command_name = NULL;
     enum processor_commands_e return_value;
-    void (*command_function)(spu_t* spu);
+    processor_functions_return_value_e (*command_function)(spu_t* spu);
 };
 
+processor_functions_return_value_e StackCommandPush(spu_t* spu);
+processor_functions_return_value_e StackOut(spu_t* spu);
+processor_functions_return_value_e StackMul(spu_t* spu);
+processor_functions_return_value_e StackAdd(spu_t* spu);
+processor_functions_return_value_e StackSub(spu_t* spu);
+processor_functions_return_value_e StackDiv(spu_t* spu);
 
-stack_function_errors_e StartCalculator(stack_t* calculator_stack);
-
-void StackOut(spu_t* spu);
-void StackAdd(spu_t* spu);
-void StackSub(spu_t* spu);
-void StackMul(spu_t* spu);
-void StackDiv(spu_t* spu);
-
-int InitializeSPU(spu_t* spu);
+processor_functions_return_value_e InitializeSPU(spu_t* spu);
+processor_functions_return_value_e ExecuteInstructions(spu_t* spu);
+processor_functions_return_value_e DestroySPU(spu_t* spu);
 
 const struct processor_command_t PROCESSOR_COMMANDS_ARRAY[] = {
-    {.command_name = "HLT",   .return_value = PROCESSOR_COMMAND_HLT,   .command_function = NULL},
-    {.command_name = "PUSH",  .return_value = PROCESSOR_COMMAND_PUSH,  .command_function = NULL},
-    {.command_name = "OUT",   .return_value = PROCESSOR_COMMAND_OUT,   .command_function = StackOut},
-    {.command_name = "ADD",   .return_value = PROCESSOR_COMMAND_ADD,   .command_function = StackAdd},
-    {.command_name = "SUB",   .return_value = PROCESSOR_COMMAND_SUB,   .command_function = StackSub},
-    {.command_name = "MUL",   .return_value = PROCESSOR_COMMAND_MUL,   .command_function = StackMul},
-    {.command_name = "DIV",   .return_value = PROCESSOR_COMMAND_DIV,   .command_function = StackDiv}};
+    {.return_value = PROCESSOR_COMMAND_HLT,   .command_function = NULL            },
+    {.return_value = PROCESSOR_COMMAND_PUSH,  .command_function = StackCommandPush},
+    {.return_value = PROCESSOR_COMMAND_OUT,   .command_function = StackOut        },
+    {.return_value = PROCESSOR_COMMAND_ADD,   .command_function = StackAdd        },
+    {.return_value = PROCESSOR_COMMAND_SUB,   .command_function = StackSub        },
+    {.return_value = PROCESSOR_COMMAND_MUL,   .command_function = StackMul        },
+    {.return_value = PROCESSOR_COMMAND_DIV,   .command_function = StackDiv        }};
 
 const size_t PROCESSOR_COMMANDS_COUNT = sizeof(PROCESSOR_COMMANDS_ARRAY) / sizeof(PROCESSOR_COMMANDS_ARRAY[0]);
+
+#ifdef NVERIFY
+#define PROCESSOR_VERIFY(X)
+#else
+#define PROCESSOR_VERIFY(X)
+#endif
+
 
 #endif //PROCESSOR_FUNCTIONS_H
