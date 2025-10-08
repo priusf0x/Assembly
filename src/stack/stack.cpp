@@ -7,6 +7,7 @@
 #include "Assert.h"
 #include "logger.h"
 #include "tools.h"
+#include "color.h"
 
 const size_t CANARY_SIZE = 4;
 const uint64_t CANARY_FILL = 0xB16B00B5;
@@ -153,7 +154,7 @@ VerifyStack(stack_t* swag)
     }
     else if (!CheckCanary(swag))
     {
-        StackDump(swag);
+        StackDumpInLog(swag);
         return STACK_FUNCTION_MEMORY_ERROR;
     }
     return STACK_FUNCTION_SUCCESS;
@@ -215,7 +216,7 @@ SetCanary(void*    pointer,
 }
 
 log_function_return_value_e
-StackDump(stack_t* swag)
+StackDumpInLog(stack_t* swag)
 {
     FILE * log_file = GetLogFile();
 
@@ -271,6 +272,32 @@ StackDump(stack_t* swag)
 
         }
     }
+    return LOG_FUNCTION_SUCCESS;
+}
+
+log_function_return_value_e
+StackDump(stack_t* swag)
+{
+    printf(YELLOW "______________________________________________________________________________________________\n"
+                  "------------------------------------------STACK_DATA------------------------------------------\n" STANDARD);
+
+    for (size_t index = 0; index < swag->real_capacity_in_bytes; index++)
+    {
+        if ((index % 8 == 0) && (index != 0))
+        {
+            printf(YELLOW "||\n" STANDARD);
+        }
+
+        if (index % 4 == 0)
+        {
+            printf(YELLOW"||" STANDARD);
+        }
+
+        printf(RED "[%3.0zu]" WHITE "%4d  " STANDARD, (size_t) &((swag->canary_start)[index]) % 1000,(swag->canary_start)[index]);
+    }
+
+    printf(YELLOW "||\n" STANDARD);
+
     return LOG_FUNCTION_SUCCESS;
 }
 

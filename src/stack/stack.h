@@ -36,6 +36,7 @@ stack_function_errors_e     StackInit(stack_t** swag, size_t count, const char* 
 stack_function_errors_e     StackDestroy(stack_t* swag);
 stack_function_errors_e     StackPush(stack_t* swag, value_type value);
 stack_function_errors_e     StackPop(stack_t* swag, value_type* pop_variable);
+log_function_return_value_e StackDumpInLog(stack_t* swag);
 log_function_return_value_e StackDump(stack_t* swag);
 
 #ifdef HARD_SWAG

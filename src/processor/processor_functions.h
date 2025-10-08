@@ -12,7 +12,10 @@ enum processor_functions_return_value_e
     PROCESSOR_FUNCTION_RETURN_VALUE_FAILED_TO_READ_INSTRUCTIONS,
     PROCESSOR_FUNCTION_RETURN_VALUE_FAILED_TO_INIT_STACK,
     PROCESSOR_FUNCTION_RETURN_VALUE_MEMORY_ERROR,
-    PROCESSOR_FUNCTION_RETURN_STACK_ERROR
+    PROCESSOR_FUNCTION_RETURN_STACK_ERROR,
+    PROCESSOR_FUNCTION_RETURN_DIVISION_BY_ZERO,
+    PROCESSOR_FUNCTION_RETURN_SQRT_ERROR,
+    PROCESSOR_FUNCTION_RETURN_SCAN_FAILED
 };
 
 enum  processor_commands_e
@@ -25,7 +28,9 @@ enum  processor_commands_e
     PROCESSOR_COMMAND_MUL          = 5,
     PROCESSOR_COMMAND_DIV          = 6,
     PROCESSOR_COMMAND_PUSH_IN_REG  = 7,
-    PROCESSOR_COMMAND_POP          = 8
+    PROCESSOR_COMMAND_POP          = 8,
+    PROCESSOR_COMMAND_SQRT         = 9,
+    PROCESSOR_COMMAND_IN           = 10,
 };
 
 struct spu_t
@@ -48,19 +53,28 @@ processor_functions_return_value_e StackMul(spu_t* spu);
 processor_functions_return_value_e StackAdd(spu_t* spu);
 processor_functions_return_value_e StackSub(spu_t* spu);
 processor_functions_return_value_e StackDiv(spu_t* spu);
+processor_functions_return_value_e StackSqrt(spu_t* spu);
+processor_functions_return_value_e StackCommandPopToReg(spu_t* spu);
+processor_functions_return_value_e StackCommandPushFromReg(spu_t* spu);
+processor_functions_return_value_e StackCommandIn(spu_t* spu);
 
 processor_functions_return_value_e InitializeSPU(spu_t* spu);
 processor_functions_return_value_e ExecuteInstructions(spu_t* spu);
 processor_functions_return_value_e DestroySPU(spu_t* spu);
+processor_functions_return_value_e ProcessorDump(spu_t* spu);
 
 const struct processor_command_t PROCESSOR_COMMANDS_ARRAY[] = {
-    {.return_value = PROCESSOR_COMMAND_HLT,   .command_function = NULL            },
-    {.return_value = PROCESSOR_COMMAND_PUSH,  .command_function = StackCommandPush},
-    {.return_value = PROCESSOR_COMMAND_OUT,   .command_function = StackOut        },
-    {.return_value = PROCESSOR_COMMAND_ADD,   .command_function = StackAdd        },
-    {.return_value = PROCESSOR_COMMAND_SUB,   .command_function = StackSub        },
-    {.return_value = PROCESSOR_COMMAND_MUL,   .command_function = StackMul        },
-    {.return_value = PROCESSOR_COMMAND_DIV,   .command_function = StackDiv        }};
+    {.return_value = PROCESSOR_COMMAND_HLT,           .command_function = NULL                   },
+    {.return_value = PROCESSOR_COMMAND_PUSH,          .command_function = StackCommandPush       },
+    {.return_value = PROCESSOR_COMMAND_OUT,           .command_function = StackOut               },
+    {.return_value = PROCESSOR_COMMAND_ADD,           .command_function = StackAdd               },
+    {.return_value = PROCESSOR_COMMAND_SUB,           .command_function = StackSub               },
+    {.return_value = PROCESSOR_COMMAND_MUL,           .command_function = StackMul               },
+    {.return_value = PROCESSOR_COMMAND_DIV,           .command_function = StackDiv               },
+    {.return_value = PROCESSOR_COMMAND_PUSH_IN_REG,   .command_function = StackCommandPushFromReg},
+    {.return_value = PROCESSOR_COMMAND_POP,           .command_function = StackCommandPopToReg   },
+    {.return_value = PROCESSOR_COMMAND_SQRT,          .command_function = StackSqrt              },
+    {.return_value = PROCESSOR_COMMAND_IN,            .command_function = StackCommandIn         }};
 
 const size_t PROCESSOR_COMMANDS_COUNT = sizeof(PROCESSOR_COMMANDS_ARRAY) / sizeof(PROCESSOR_COMMANDS_ARRAY[0]);
 

@@ -243,8 +243,6 @@ ReadPopArgument(char*           input_command,
                 return COMPILER_COMMAND_INCORRECT_COMMAND;
             }
             find_flag = true;
-            (instructions->instructions_array)[instructions->instructions_count - 1] = COMPILER_COMMAND_PUSH_IN_REG;
-
             break;
         }
     }

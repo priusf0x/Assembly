@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "Assert.h"
 #include "color.h"
@@ -84,6 +85,8 @@ ExecuteInstructions(spu_t* spu)
             }
         }
 
+        ProcessorDump(spu);
+
         spu->instruction_count++;
         read_command = (spu->instructions)[spu->instruction_count];
     }
@@ -91,7 +94,61 @@ ExecuteInstructions(spu_t* spu)
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
 
-//================ COMMANDS_FUNCTIONS =========================
+//================ COMMANDS_FUNCTIONS =========================ь
+
+processor_functions_return_value_e
+StackCommandIn(spu_t* spu)
+{
+    PROCESSOR_VERIFY(spu);
+
+    int intermediate_value = 0;
+
+    if (scanf("%d", &intermediate_value) != 1)
+    {
+        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+    }
+
+    if (StackPush(spu->spu_stack, intermediate_value) != 0)
+    {
+        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+    }
+
+    PROCESSOR_VERIFY(spu);
+
+    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
+}
+
+processor_functions_return_value_e
+StackCommandPushFromReg(spu_t* spu)
+{
+    PROCESSOR_VERIFY(spu);
+
+    spu->instruction_count++;
+    if (StackPush(spu->spu_stack, (spu->registers)[(spu->instructions)[spu->instruction_count]]) != 0)
+    {
+        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+    }
+
+    PROCESSOR_VERIFY(spu);
+
+    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
+}
+
+processor_functions_return_value_e
+StackCommandPopToReg(spu_t* spu)
+{
+    PROCESSOR_VERIFY(spu);
+
+    spu->instruction_count++;
+    if (StackPop(spu->spu_stack, &(spu->registers)[(spu->instructions)[spu->instruction_count]]) != 0)
+    {
+        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+    }
+
+    PROCESSOR_VERIFY(spu);
+
+    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
+}
 
 processor_functions_return_value_e
 StackCommandPush(spu_t* spu)
@@ -128,6 +185,35 @@ StackOut(spu_t* spu)
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
 
+// ================= ARITHMETIC OPERATIONS =======================
+
+processor_functions_return_value_e
+StackSqrt(spu_t* spu)
+{
+    PROCESSOR_VERIFY(spu);
+
+    int intermediate_value = 0;
+
+    if (StackPop(spu->spu_stack, &intermediate_value) != 0)
+    {
+        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+    }
+
+    if (intermediate_value < 0)
+    {
+        return PROCESSOR_FUNCTION_RETURN_SQRT_ERROR;
+    }
+
+    if (StackPush(spu->spu_stack, (int) sqrt(intermediate_value)) != 0)
+    {
+        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+    }
+
+    PROCESSOR_VERIFY(spu);
+
+    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
+}
+
 static inline int sum_var(int intermediate_value_1, int intermediate_value_2) {return intermediate_value_2 + intermediate_value_1;}
 static inline int sub_var(int intermediate_value_1, int intermediate_value_2) {return intermediate_value_2 - intermediate_value_1;}
 static inline int mul_var(int intermediate_value_1, int intermediate_value_2) {return intermediate_value_2 * intermediate_value_1;}
@@ -151,6 +237,11 @@ DoOperation(spu_t* spu,
     {
         StackPush(spu->spu_stack, intermediate_value_1);
         return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+    }
+
+    if ((operation == div_var) && (intermediate_value_2 == 0))
+    {
+        return PROCESSOR_FUNCTION_RETURN_DIVISION_BY_ZERO;
     }
 
     if (StackPush(spu->spu_stack, operation(intermediate_value_1, intermediate_value_2)) != 0)
@@ -182,5 +273,18 @@ processor_functions_return_value_e
 StackDiv(spu_t* spu)
 {
     return DoOperation(spu, div_var);
+}
+
+//================== VERIFICATION =====================
+
+processor_functions_return_value_e
+ProcessorDump(spu_t* spu)
+{
+    StackDump(spu->spu_stack);
+
+    // printf(YELLOW "______________________________________________________________________________________________\n"
+    //               "------------------------------------------------------------------------------------\n" STANDARD);
+
+    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
 

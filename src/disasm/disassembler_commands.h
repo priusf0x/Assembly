@@ -17,7 +17,9 @@ enum  disassembler_commands_e
     DISASSEMBLER_COMMAND_MUL          = 5,
     DISASSEMBLER_COMMAND_DIV          = 6,
     DISASSEMBLER_COMMAND_PUSH_IN_REG  = 7,
-    DISASSEMBLER_COMMAND_POP          = 8
+    DISASSEMBLER_COMMAND_POP          = 8,
+    DISASSEMBLER_COMMAND_SQRT         = 9,
+    DISASSEMBLER_COMMAND_IN           = 10
 };
 
 struct disassembler_command_t
@@ -36,7 +38,9 @@ const struct disassembler_command_t DISASSEMBLER_COMMANDS_ARRAY[] = {
     {.command_name = "MUL",  .return_value = DISASSEMBLER_COMMAND_MUL,         .binary_handler = NULL        },
     {.command_name = "DIV",  .return_value = DISASSEMBLER_COMMAND_DIV,         .binary_handler = NULL        },
     {.command_name = "PUSH", .return_value = DISASSEMBLER_COMMAND_PUSH_IN_REG, .binary_handler = PrintPushArg},
-    {.command_name = "PUSH", .return_value = DISASSEMBLER_COMMAND_POP,         .binary_handler = PrintPopArg }};
+    {.command_name = "POP",  .return_value = DISASSEMBLER_COMMAND_POP,         .binary_handler = PrintPopArg },
+    {.command_name = "SQRT", .return_value = DISASSEMBLER_COMMAND_SQRT,        .binary_handler = NULL        },
+    {.command_name = "DIV",  .return_value = DISASSEMBLER_COMMAND_IN,          .binary_handler = NULL        }};
 const size_t DISASSEMBLER_COMMANDS_COUNT = sizeof(DISASSEMBLER_COMMANDS_ARRAY) / sizeof(DISASSEMBLER_COMMANDS_ARRAY[0]);
 
 const char* const PROCESSORS_REG[] =
