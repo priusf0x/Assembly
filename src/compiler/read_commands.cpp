@@ -6,7 +6,6 @@
 #include <sys/stat.h>
 
 #include "Assert.h"
-#include "commands.h"
 #include "color.h"
 #include "tools.h"
 
@@ -86,8 +85,8 @@ ReadFile(char**      input_buffer,
 
 void
 EnterData(string_t* array_of_strings,
-          size_t str_count,
-          char*  input_buffer)
+          size_t    str_count,
+          char*     input_buffer)
 {
     ASSERT(array_of_strings != NULL);
     ASSERT(input_buffer != NULL);
@@ -115,18 +114,18 @@ EnterData(string_t* array_of_strings,
 
 //=================== READ COMMANDS FUNCTIONS ========================
 
-commands_e
-ReadCommand(char*   input_command,
+compiler_commands_e
+ReadCommand(char*           input_command,
             instructions_t* instructions)
 {
-    commands_e read_command = COMMAND_INCORRECT_COMMAND;
+    compiler_commands_e read_command = COMPILER_COMMAND_INCORRECT_COMMAND;
     if (input_command[0] == '\0')
     {
-        return COMMAND_EMPTY_COMMAND;
+        return COMPILER_COMMAND_EMPTY_COMMAND;
     }
     // printf("%s\n", input_command);
 
-    size_t command_size = size_t(SkipNotSpaces(input_command) - input_command);
+    size_t command_size = (size_t) (SkipNotSpaces(input_command) - input_command);
 
     for (size_t index = 0; index < COMMANDS_COUNT; index++)
     {
@@ -140,7 +139,7 @@ ReadCommand(char*   input_command,
 
             if (PutInstruction(read_command, instructions) != 0)
             {
-                return COMMAND_INCORRECT_COMMAND;
+                return COMPILER_COMMAND_INCORRECT_COMMAND;
             }
 
             break;
@@ -149,8 +148,8 @@ ReadCommand(char*   input_command,
 
     if (COMMANDS_ARRAY[read_command].handler != NULL)
     {
-        commands_e output = ReadPushArgument(input_command, instructions);
-        if ((output == COMMAND_INVALID_SYNTAX) || (output == COMMAND_INCORRECT_COMMAND))
+        compiler_commands_e output = (COMMANDS_ARRAY[read_command].handler)(input_command, instructions);
+        if ((output == COMPILER_COMMAND_INVALID_SYNTAX) || (output == COMPILER_COMMAND_INCORRECT_COMMAND))
         {
             return output;
         }
@@ -162,7 +161,7 @@ ReadCommand(char*   input_command,
 
 // ================ HANDLERS ====================
 
-commands_e
+compiler_commands_e
 ReadPushArgument(char*           input_command,
                  instructions_t* instructions)
 {
@@ -174,17 +173,36 @@ ReadPushArgument(char*           input_command,
 
     if (*input_command == '\0')
     {
-        return COMMAND_INVALID_SYNTAX;
+        return COMPILER_COMMAND_INVALID_SYNTAX;
     }
 
     if (!IsStrNum(input_command))
     {
-        return COMMAND_INVALID_SYNTAX;
-    }
+        bool find_flag = false;
 
-    if (PutInstruction(atoi(input_command), instructions) == 1)
+        for (int register_number = 0; register_number < PROCESSOR_REG_COUNT; register_number++)
+        {
+            if (strncmp(PROCESSORS_REG[register_number], input_command, (size_t) (SkipNotSpaces(input_command) - input_command)) == 0)
+            {
+                // printf("%s", PROCESSORS_REG[register_number]);
+                if (PutInstruction(register_number, instructions) == 1)
+                {
+                    return COMPILER_COMMAND_INCORRECT_COMMAND;
+                }
+                find_flag = true;
+                (instructions->instructions_array)[instructions->instructions_count - 1] = COMPILER_COMMAND_PUSH_IN_REG;
+
+                break;
+            }
+        }
+        if (!find_flag)
+        {
+            return COMPILER_COMMAND_INVALID_SYNTAX;
+        }
+    }
+    else if (PutInstruction(atoi(input_command), instructions) == 1)
     {
-        return COMMAND_INCORRECT_COMMAND;
+        return COMPILER_COMMAND_INCORRECT_COMMAND;
     }
 
     input_command = SkipNotSpaces(input_command);
@@ -192,8 +210,48 @@ ReadPushArgument(char*           input_command,
 
     if (*input_command != '\0')
     {
-        return COMMAND_INVALID_SYNTAX;
+        return COMPILER_COMMAND_INVALID_SYNTAX;
     }
 
-    return COMMAND_VALID_SYNTAX;
+    return COMPILER_COMMAND_VALID_SYNTAX;
+}
+
+compiler_commands_e
+ReadPopArgument(char*           input_command,
+                 instructions_t* instructions)
+{
+    ASSERT(input_command != NULL);
+    ASSERT(instructions != NULL);
+
+    input_command = SkipNotSpaces(input_command);
+    input_command = SkipSpaces(input_command);
+
+    if (*input_command == '\0')
+    {
+        return COMPILER_COMMAND_INVALID_SYNTAX;
+    }
+
+    bool find_flag = false;
+
+    for (int register_number = 0; register_number < PROCESSOR_REG_COUNT; register_number++)
+    {
+        if (strncmp(PROCESSORS_REG[register_number], input_command, (size_t) (SkipNotSpaces(input_command) - input_command)) == 0)
+        {
+            // printf("%s", PROCESSORS_REG[register_number]);
+            if (PutInstruction(register_number, instructions) == 1)
+            {
+                return COMPILER_COMMAND_INCORRECT_COMMAND;
+            }
+            find_flag = true;
+            (instructions->instructions_array)[instructions->instructions_count - 1] = COMPILER_COMMAND_PUSH_IN_REG;
+
+            break;
+        }
+    }
+    if (!find_flag)
+    {
+        return COMPILER_COMMAND_INVALID_SYNTAX;
+    }
+
+    return COMPILER_COMMAND_VALID_SYNTAX;
 }

@@ -8,6 +8,7 @@
 #include "Assert.h"
 #include "color.h"
 #include "read_commands.h"
+#include "commands.h"
 
 void* recalloc(void*  pointer,
                size_t current_size,
@@ -79,7 +80,7 @@ SkipNotSpaces(char* string)
 bool
 IsStrNum(char* string)
 {
-    int count = int(SkipNotSpaces(string) - string);
+    int count = (int) (SkipNotSpaces(string) - string);
     for (int index = 0; index < count; index++)
     {
         if (!isdigit(string[index]))
@@ -90,7 +91,7 @@ IsStrNum(char* string)
 }
 
 int
-PutInstruction(int             value,
+PutInstruction(int             value,           //PLUS-MINUS ONE FOR ZERO_ELEMENT THAT MEANS COUNT
                instructions_t* instructions)
 {
     ASSERT(instructions != NULL);

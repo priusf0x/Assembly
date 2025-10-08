@@ -1,4 +1,4 @@
-SOURCES_COMPILER = common/tools.cpp compiler/read_commands.cpp compiler/compiler.cpp
+SOURCES_COMPILER =  compiler/read_commands.cpp compiler/compiler.cpp common/tools.cpp
 SOURCES_DISASSEMBLER = disasm/disassembler.cpp disasm/disassembler_commands.cpp
 SOURCES_PROCESSOR = stack/stack.cpp processor/processor.cpp processor/processor_functions.cpp common/logger.cpp common/tools.cpp
 

@@ -17,13 +17,15 @@ enum processor_functions_return_value_e
 
 enum  processor_commands_e
 {
-    PROCESSOR_COMMAND_HLT  = 0,
-    PROCESSOR_COMMAND_PUSH = 1,
-    PROCESSOR_COMMAND_OUT  = 2,
-    PROCESSOR_COMMAND_ADD  = 3,
-    PROCESSOR_COMMAND_SUB  = 4,
-    PROCESSOR_COMMAND_MUL  = 5,
-    PROCESSOR_COMMAND_DIV  = 6,
+    PROCESSOR_COMMAND_HLT          = 0,
+    PROCESSOR_COMMAND_PUSH         = 1,
+    PROCESSOR_COMMAND_OUT          = 2,
+    PROCESSOR_COMMAND_ADD          = 3,
+    PROCESSOR_COMMAND_SUB          = 4,
+    PROCESSOR_COMMAND_MUL          = 5,
+    PROCESSOR_COMMAND_DIV          = 6,
+    PROCESSOR_COMMAND_PUSH_IN_REG  = 7,
+    PROCESSOR_COMMAND_POP          = 8
 };
 
 struct spu_t

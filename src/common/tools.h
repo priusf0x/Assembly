@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "read_commands.h"
+#include "commands.h"
 
 size_t CountCharInStr(char character, const char* str);
 char*  SkipSpaces(char* string);

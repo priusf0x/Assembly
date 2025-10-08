@@ -1,9 +1,7 @@
-#ifndef READ_COMMANDS
-#define READ_COMMANDS
+#ifndef READ_COMMANDS_H
+#define READ_COMMANDS_H
 
 #include <stdlib.h>
-
-#include "commands.h"
 
 enum ReadErrorTypes
 {
@@ -24,4 +22,4 @@ struct string_t
 ReadErrorTypes ReadFile(char** input_buffer, string_t** array_of_strings, size_t* str_count, const char* input_name);
 void           EnterData(string_t* array_of_strings, size_t str_count, char*  input_buffer);
 
-#endif //read_commands
+#endif //READ_COMMANDS_H

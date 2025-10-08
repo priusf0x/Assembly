@@ -71,12 +71,17 @@ ExecuteInstructions(spu_t* spu)
 {
     ASSERT(spu);
     int read_command = (spu->instructions)[spu->instruction_count];
+    processor_functions_return_value_e processor_error = PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 
     while (read_command != PROCESSOR_COMMAND_HLT)
     {
         if (PROCESSOR_COMMANDS_ARRAY[read_command].command_function != NULL)
         {
-            (PROCESSOR_COMMANDS_ARRAY[read_command].command_function) (spu);
+            processor_error = PROCESSOR_COMMANDS_ARRAY[read_command].command_function (spu);
+            if (processor_error != PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS)
+            {
+                return processor_error;
+            }
         }
 
         spu->instruction_count++;
@@ -86,7 +91,7 @@ ExecuteInstructions(spu_t* spu)
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
 
-// //================ COMMANDS_FUNCTIONS =========================
+//================ COMMANDS_FUNCTIONS =========================
 
 processor_functions_return_value_e
 StackCommandPush(spu_t* spu)
@@ -158,19 +163,23 @@ DoOperation(spu_t* spu,
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
 
-processor_functions_return_value_e StackAdd(spu_t* spu)
+processor_functions_return_value_e
+StackAdd(spu_t* spu)
 {
     return DoOperation(spu, sum_var);
 }
-processor_functions_return_value_e StackSub(spu_t* spu)
+processor_functions_return_value_e
+StackSub(spu_t* spu)
 {
     return DoOperation(spu, sub_var);
 }
-processor_functions_return_value_e StackMul(spu_t* spu)
+processor_functions_return_value_e
+StackMul(spu_t* spu)
 {
     return DoOperation(spu, mul_var);
 }
-processor_functions_return_value_e StackDiv(spu_t* spu)
+processor_functions_return_value_e
+StackDiv(spu_t* spu)
 {
     return DoOperation(spu, div_var);
 }

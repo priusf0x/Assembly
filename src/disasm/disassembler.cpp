@@ -10,7 +10,7 @@ int main(void)
 {
     size_t instructions_count = 0;
 
-    FILE* assembled_file = fopen(ASSEMBLED_FILE_NAME, "r");
+    FILE* assembled_file = fopen(ASSEMBLED_FILE_NAME, "rb");
     if (assembled_file == NULL)
     {
         printf("ASSEMBLED FILE WRITE ERROR.\n");
