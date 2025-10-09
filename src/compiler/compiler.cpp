@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "common_commands.h"
 #include "read_commands.h"
 #include "color.h"
 #include "tools.h"
@@ -18,7 +19,7 @@ int main(void)
     char* input_buffer = NULL;
     size_t str_count = 0;
     string_t* array_of_strings = NULL;
-    instructions_t instructions = {.instructions_count = 0, .instructions_size = 3, .instructions_array = NULL};
+    compiler_instructions_t instructions = {.instructions_count = 0, .instructions_size = 3, .instructions_array = NULL};
     instructions.instructions_array = (int*) calloc(instructions.instructions_size, sizeof(int));
 
     if (ReadFile(&input_buffer, &array_of_strings, &str_count, INPUT_FILE_NAME) != 0)
@@ -30,15 +31,15 @@ int main(void)
 
     for(size_t index = 0; index < str_count; index++)
     {
-        compiler_commands_e output = ReadCommand(array_of_strings[index].string, &instructions);
+        compiler_return_e output = Readcommand(array_of_strings[index].string, &instructions);
 
-        if (output == COMPILER_COMMAND_INCORRECT_COMMAND)
+        if (output == COMPILER_RETURN_INCORRECT_COMMAND)
         {
             FreeAll(&instructions, input_buffer, array_of_strings);
-            printf("INCORRECT COMMAND IN LINE %zu.\n", index + 1);
+            printf("INCORRECT command IN LINE %zu.\n", index + 1);
             exit(EXIT_FAILURE);
         }
-        if (output == COMPILER_COMMAND_INVALID_SYNTAX)
+        if (output == COMPILER_RETURN_INVALID_SYNTAX)
         {
             FreeAll(&instructions, input_buffer, array_of_strings);
             printf("INCORRECT SYNTAX IN LINE %zu.\n", index + 1);

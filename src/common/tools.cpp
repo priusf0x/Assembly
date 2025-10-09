@@ -8,7 +8,7 @@
 #include "Assert.h"
 #include "color.h"
 #include "read_commands.h"
-#include "commands.h"
+#include "compiler_commands.h"
 
 void* recalloc(void*  pointer,
                size_t current_size,
@@ -52,8 +52,12 @@ SkipSpaces(char* string)
 
     char character = *string;
 
-    while (isspace(character) && (character != '\0'))
+    while (isspace(character) && (character == '#') &&(character != '\0'))
     {
+        // if (character == '#')
+        // {
+        //     string = SkipNotSpaces(string);
+        // }
         string++;
         character = *string;
     }
@@ -91,8 +95,8 @@ IsStrNum(char* string)
 }
 
 int
-PutInstruction(int             value,           //PLUS-MINUS ONE FOR ZERO_ELEMENT THAT MEANS COUNT
-               instructions_t* instructions)
+PutInstruction(int                      value,           //PLUS-MINUS ONE FOR ZERO_ELEMENT THAT MEANS COUNT
+               compiler_instructions_t* instructions)
 {
     ASSERT(instructions != NULL);
     ASSERT(instructions->instructions_array != NULL);
@@ -115,12 +119,14 @@ PutInstruction(int             value,           //PLUS-MINUS ONE FOR ZERO_ELEMEN
 }
 
 void
-FreeAll(instructions_t* instructions, char* input_buffer, string_t* array_of_strings)
+FreeAll(compiler_instructions_t* instructions,
+        char*                    input_buffer,
+        string_t*                array_of_strings)
 {
     free(instructions->instructions_array);
     free(input_buffer);
     free(array_of_strings);
 
-    memset(instructions, 0, sizeof(instructions_t));
+    memset(instructions, 0, sizeof(compiler_instructions_t));
 }
 

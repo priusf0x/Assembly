@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "disassembler_commands.h"
+#include "common_commands.h"
 
 const char* ASSEMBLED_FILE_NAME = "compiled.obj";
 const char* DISASSEMBLED_FILE_NAME = "disassembled.asm";

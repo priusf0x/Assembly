@@ -8,9 +8,10 @@
 #include "color.h"
 #include "logger.h"
 #include "stack.h"
+#include "common_commands.h"
 
 const char* ASSEMBLED_FILE_NAME = "compiled.obj";
-const size_t REGISTER_COUNT = 4;
+const size_t REGISTER_COUNT = 5;
 const size_t START_STACK_SIZE = 8;
 
 static processor_functions_return_value_e DoOperation(spu_t* spu,int (*operation)(int, int));
@@ -74,7 +75,7 @@ ExecuteInstructions(spu_t* spu)
     int read_command = (spu->instructions)[spu->instruction_count];
     processor_functions_return_value_e processor_error = PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 
-    while (read_command != PROCESSOR_COMMAND_HLT)
+    while (read_command != COMMAND_HLT)
     {
         if (PROCESSOR_COMMANDS_ARRAY[read_command].command_function != NULL)
         {
@@ -94,10 +95,10 @@ ExecuteInstructions(spu_t* spu)
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
 
-//================ COMMANDS_FUNCTIONS =========================ь
+//================ commandS_FUNCTIONS =========================ь
 
 processor_functions_return_value_e
-StackCommandIn(spu_t* spu)
+StackcommandIn(spu_t* spu)
 {
     PROCESSOR_VERIFY(spu);
 
@@ -119,7 +120,7 @@ StackCommandIn(spu_t* spu)
 }
 
 processor_functions_return_value_e
-StackCommandPushFromReg(spu_t* spu)
+StackcommandPushFromReg(spu_t* spu)
 {
     PROCESSOR_VERIFY(spu);
 
@@ -135,7 +136,7 @@ StackCommandPushFromReg(spu_t* spu)
 }
 
 processor_functions_return_value_e
-StackCommandPopToReg(spu_t* spu)
+StackcommandPopToReg(spu_t* spu)
 {
     PROCESSOR_VERIFY(spu);
 
@@ -151,7 +152,7 @@ StackCommandPopToReg(spu_t* spu)
 }
 
 processor_functions_return_value_e
-StackCommandPush(spu_t* spu)
+StackcommandPush(spu_t* spu)
 {
     PROCESSOR_VERIFY(spu);
 
@@ -280,10 +281,53 @@ StackDiv(spu_t* spu)
 processor_functions_return_value_e
 ProcessorDump(spu_t* spu)
 {
+    size_t index = 0;
+
+    printf(YELLOW   "          ██▓███   ██▀███   ▒█████   ▄████▄  ▓█████   ██████   ██████  ▒█████    ██▀███  \n"
+                    "         ▓██░  ██▒▓██ ▒ ██▒▒██▒  ██▒▒██▀ ▀█  ▓█   ▀ ▒██    ▒ ▒██    ▒ ▒██▒  ██▒▓██ ▒ ██▒ \n"
+                    "         ▓██░ ██▓▒▓██ ░▄█ ▒▒██░  ██▒▒▓█    ▄ ▒███   ░ ▓██▄   ░ ▓██▄   ▒██░  ██▒▓██ ░▄█ ▒ \n"
+                    "         ▒██▄█▓▒ ▒▒██▀▀█▄  ▒██   ██░▒▓▓▄ ▄██▒▒▓█  ▄   ▒   ██▒  ▒   ██▒▒██   ██░▒██▀▀█▄   \n"
+                    "         ▒██▒ ░  ░░██▓ ▒██▒░ ████▓▒░▒ ▓███▀ ░░▒████▒▒██████▒▒▒██████▒▒░ ████▓▒░░██▓ ▒██▒ \n"
+                    "         ▒▓▒░ ░  ░░ ▒▓ ░▒▓░░ ▒░▒░▒░ ░ ░▒ ▒  ░░░ ▒░ ░▒ ▒▓▒ ▒ ░▒ ▒▓▒ ▒ ░░ ▒░▒░▒░ ░ ▒▓ ░▒▓░ \n"
+                    "         ░▒ ░       ░▒ ░ ▒░  ░ ▒ ▒░   ░  ▒    ░ ░  ░░ ░▒  ░ ░░ ░▒  ░ ░  ░ ▒ ▒░   ░▒ ░ ▒░ \n"
+                    "         ░░         ░░   ░ ░ ░ ░ ▒  ░           ░   ░  ░  ░  ░  ░  ░  ░ ░ ░ ▒    ░░   ░  \n"
+                    "                     ░         ░ ░  ░ ░         ░  ░      ░        ░      ░ ░     ░      \n"
+                    "                                 ░                                                       \n");
+
+    printf(YELLOW "__________________________________________________________________________________________________\n"
+                  "-------------------------------------------COMMANDS-----------------------------------------------\n" STANDARD);
+    do
+    {
+        if ((spu->instruction_count) == index)
+        {
+            printf(YELLOW "||" GREEN "%6d<---" STANDARD, (spu->instructions)[index]);
+        }
+        else
+        {
+            printf(YELLOW "||" WHITE "%6d    " STANDARD, (spu->instructions)[index]);
+        }
+
+        index++;
+
+        if (index % 8 == 0)
+        {
+            printf(YELLOW "||\n" WHITE);
+        }
+    } while ((spu->instructions)[index] != COMMAND_HLT);
+    printf(YELLOW "||\n" WHITE);
+
+    printf(YELLOW "              ___________________________________________________________________\n"
+                  "              ----------------------------REGISTERS------------------------------\n              " STANDARD);
+
+    for (size_t reg_index = 0; reg_index < PROCESSOR_REG_COUNT; reg_index++)
+    {
+        printf(YELLOW"||" RED "%s = " WHITE "%5d"  STANDARD, PROCESSORS_REG[reg_index], (spu->registers)[reg_index]);
+    }
+
+    printf(YELLOW "||\n");
+
     StackDump(spu->spu_stack);
 
-    // printf(YELLOW "______________________________________________________________________________________________\n"
-    //               "------------------------------------------------------------------------------------\n" STANDARD);
 
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }

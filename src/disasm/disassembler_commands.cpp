@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "Assert.h"
+#include "common_commands.h"
 
 void
 PrintPushArg(int*    instructions,
@@ -13,7 +14,7 @@ PrintPushArg(int*    instructions,
     ASSERT(instructions != NULL);
     ASSERT(instructions != NULL);
     ASSERT(instructions != NULL);
-    if (instructions[*command_index] == DISASSEMBLER_COMMAND_PUSH_IN_REG)
+    if (instructions[*command_index] == COMMAND_PUSH_IN_REG)
     {
         (*command_index)++;
         fprintf(output, " %s", PROCESSORS_REG[instructions[*command_index]]);

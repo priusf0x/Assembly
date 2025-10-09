@@ -297,6 +297,8 @@ StackDump(stack_t* swag)
     }
 
     printf(YELLOW "||\n" STANDARD);
+    printf(YELLOW "----------------------------------------------------------------------------------------------\n" STANDARD);
+
 
     return LOG_FUNCTION_SUCCESS;
 }
