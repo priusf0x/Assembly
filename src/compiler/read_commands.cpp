@@ -12,13 +12,9 @@
 
 ReadErrorTypes
 ReadFile(char**      input_buffer,
-         string_t**  array_of_strings,
-         size_t*     str_count,
          const char* input_name)
 {
     ASSERT(input_buffer != NULL);
-    ASSERT(array_of_strings != NULL);
-    ASSERT(str_count != NULL);
     ASSERT(input_name != NULL);
 
     struct stat file_stat = {};
@@ -70,87 +66,105 @@ ReadFile(char**      input_buffer,
         return READ_FILE_ERROR_TYPE_EMPTY_FILE_ERROR;
     }
 
-    *str_count = CountCharInStr('\n', *input_buffer);
-    *array_of_strings = (string_t*) calloc(*str_count, sizeof(string_t));
-
-    if (*array_of_strings == NULL)
-    {
-        *input_buffer = NULL;
-        return READ_FILE_ERROR_TYPE_MEMORY_ERROR;
-    }
-
-    EnterData(*array_of_strings, *str_count, *input_buffer);
-
     return READ_FILE_ERROR_TYPE_SUCCESS;
 }
 
-void
-EnterData(string_t* array_of_strings,
-          size_t    str_count,
-          char*     input_buffer)
+ReadErrorTypes
+WriteInFile(compiler_instructions_t* instructions,
+            const char*              write_name)
 {
-    ASSERT(array_of_strings != NULL);
-    ASSERT(input_buffer != NULL);
-
-    char* current_pointer = input_buffer;
-    size_t counter = 0;
-
-    while (counter < str_count)
+    FILE* compiled_file = fopen(write_name, "wb+");
+    if (compiled_file == NULL)
     {
-        (array_of_strings[counter]).string = current_pointer;
-
-        current_pointer = strchr(current_pointer, '\n') + 1;
-
-        *strchr(array_of_strings[counter].string, '\n') = '\0';
-
-        (array_of_strings[counter]).string_size = (size_t) (strchr(array_of_strings[counter].string, '\0') - current_pointer);
-
-        if (strchr(array_of_strings[counter].string, '#') != NULL)
-        {
-            *strchr(array_of_strings[counter].string, '#') = 0;
-        }
-        counter++;
+        printf("FILE WRITE ERROR.\n");
+        return READ_FILE_ERROR_TYPE_WRITE_ERROR;
     }
+
+    fwrite(instructions->instructions_array , sizeof(int), instructions->instructions_count + 1, compiled_file);
+    fprintf(compiled_file, "\nHere was pr1usf0x.\n");
+
+    if (fclose(compiled_file) != 0)
+    {
+        printf("FILE WRITE ERROR.\n");
+        return READ_FILE_ERROR_TYPE_WRITE_ERROR;
+    }
+
+    return READ_FILE_ERROR_TYPE_SUCCESS;
 }
 
 //=================== READ COMMANDS FUNCTIONS ========================
 
 compiler_return_e
-Readcommand(char*                    input_command,
+TranslateCode(char*                    input_buffer,
+              compiler_instructions_t* instructions)
+{
+    char* input_command = input_buffer;
+    size_t command_index = 0;
+
+    while (*(input_command) != '\0')
+    {
+        compiler_return_e output = ReadCommand(&input_command, instructions);
+        input_command = SkipNotSpaces(input_command) + 1;
+        command_index++;
+
+        if (output == COMPILER_RETURN_INCORRECT_COMMAND)
+        {
+            printf("INCORRECT COMMAND %zu.\n", command_index);
+            return COMPILER_RETURN_INCORRECT_COMMAND;
+        }
+        if (output == COMPILER_RETURN_INVALID_SYNTAX)
+        {
+            printf("INCORRECT SYNTAX IN COMMAND %zu.\n", command_index);
+            return COMPILER_RETURN_INVALID_SYNTAX;
+        }
+    }
+
+    (instructions->instructions_array)[0] = (int) instructions->instructions_count;
+
+    return COMPILER_RETURN_SUCCESS;
+}
+
+
+
+compiler_return_e
+ReadCommand(char**                   input_command,
             compiler_instructions_t* instructions)
 {
     commands_e read_command = COMMAND_HLT;
-    if (input_command[0] == '\0')
-    {
-        return COMPILER_RETURN_EMPTY_COMMAND;
-    }
-    // printf("%s\n", input_command);
 
-    size_t command_size = (size_t) (SkipNotSpaces(input_command) - input_command);
-
+    size_t command_size = (size_t) (SkipNotSpaces(*input_command) - *input_command);
+    bool find_flag = false;
     for (size_t index = 0; index < COMMANDS_COUNT; index++)
     {
         if ((COMPILER_COMMANDS_ARRAY[index]).command_name == NULL)
         {
             continue;
         }
-        if (strncmp(input_command, COMPILER_COMMANDS_ARRAY[index].command_name, command_size) == 0)
+        if (strncmp(*input_command, COMPILER_COMMANDS_ARRAY[index].command_name, command_size) == 0)
         {
             read_command = (COMPILER_COMMANDS_ARRAY[index]).return_value;
-
             if (PutInstruction(read_command, instructions) != 0)
             {
                 return COMPILER_RETURN_INCORRECT_COMMAND;
             }
+            find_flag = true;
 
             break;
         }
     }
 
+    if (!find_flag)
+    {
+        return COMPILER_RETURN_INCORRECT_COMMAND;
+    }
+
     if (COMPILER_COMMANDS_ARRAY[read_command].handler != NULL)
     {
+        *input_command = SkipNotSpaces(*input_command);
+        *input_command = SkipSpaces(*input_command);
+
         compiler_return_e output = (COMPILER_COMMANDS_ARRAY[read_command].handler)(input_command, instructions);
-        if ((output == COMPILER_RETURN_INVALID_SYNTAX) || (output == COMPILER_RETURN_INCORRECT_COMMAND))
+        if (output != COMPILER_RETURN_VALID_SYNTAX)
         {
             return output;
         }
@@ -163,27 +177,19 @@ Readcommand(char*                    input_command,
 // ================ HANDLERS ====================
 
 compiler_return_e
-ReadPushArgument(char*                    input_command,
+ReadPushArgument(char**                   input_command,
                  compiler_instructions_t* instructions)
 {
-    ASSERT(input_command != NULL);
+    ASSERT(*input_command != NULL);
     ASSERT(instructions != NULL);
 
-    input_command = SkipNotSpaces(input_command);
-    input_command = SkipSpaces(input_command);
-
-    if (*input_command == '\0')
-    {
-        return COMPILER_RETURN_INVALID_SYNTAX;
-    }
-
-    if (!IsStrNum(input_command))
+    if (!IsStrNum(*input_command))
     {
         bool find_flag = false;
 
         for (int register_number = 0; register_number < PROCESSOR_REG_COUNT; register_number++)
         {
-            if (strncmp(PROCESSORS_REG[register_number], input_command, (size_t) (SkipNotSpaces(input_command) - input_command)) == 0)
+            if (strncmp(PROCESSORS_REG[register_number], *input_command, strlen(PROCESSORS_REG[register_number])) == 0)
             {
                 // printf("%s", PROCESSORS_REG[register_number]);
                 if (PutInstruction(register_number, instructions) == 1)
@@ -201,54 +207,40 @@ ReadPushArgument(char*                    input_command,
             return COMPILER_RETURN_INVALID_SYNTAX;
         }
     }
-    else if (PutInstruction(atoi(input_command), instructions) == 1)
+    else if (PutInstruction(atoi(*input_command), instructions) == 1)
     {
         return COMPILER_RETURN_INCORRECT_COMMAND;
-    }
-
-    input_command = SkipNotSpaces(input_command);
-    input_command = SkipSpaces(input_command);
-
-    if (*input_command != '\0')
-    {
-        return COMPILER_RETURN_INVALID_SYNTAX;
     }
 
     return COMPILER_RETURN_VALID_SYNTAX;
 }
 
 compiler_return_e
-ReadPopArgument(char*                     input_command,
-                 compiler_instructions_t* instructions)
+ReadPopArgument(char**                    input_command,
+                compiler_instructions_t*  instructions)
 {
     ASSERT(input_command != NULL);
     ASSERT(instructions != NULL);
-
-    input_command = SkipNotSpaces(input_command);
-    input_command = SkipSpaces(input_command);
-
-    if (*input_command == '\0')
-    {
-        return COMPILER_RETURN_INVALID_SYNTAX;
-    }
 
     bool find_flag = false;
 
     for (int register_number = 0; register_number < PROCESSOR_REG_COUNT; register_number++)
     {
-        if (strncmp(PROCESSORS_REG[register_number], input_command, (size_t) (SkipNotSpaces(input_command) - input_command)) == 0)
+        if (strncmp(PROCESSORS_REG[register_number], *input_command, strlen(PROCESSORS_REG[register_number])) == 0)
         {
             // printf("%s", PROCESSORS_REG[register_number]);
             if (PutInstruction(register_number, instructions) == 1)
             {
                 return COMPILER_RETURN_INCORRECT_COMMAND;
             }
+
             find_flag = true;
             break;
         }
     }
     if (!find_flag)
     {
+        // printf("huesos");
         return COMPILER_RETURN_INVALID_SYNTAX;
     }
 

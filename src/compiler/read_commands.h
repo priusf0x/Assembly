@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+#include "compiler_commands.h"
+
 enum ReadErrorTypes
 {
     READ_FILE_ERROR_TYPE_SUCCESS          = 0,
@@ -10,7 +12,8 @@ enum ReadErrorTypes
     READ_FILE_ERROR_TYPE_INPUT_ERROR      = 2,
     READ_FILE_ERROR_TYPE_READ_ERROR       = 3,
     READ_FILE_ERROR_TYPE_EMPTY_FILE_ERROR = 4,
-    READ_FILE_ERROR_TYPE_SYSTEM_ERROR     = 5
+    READ_FILE_ERROR_TYPE_SYSTEM_ERROR     = 5,
+    READ_FILE_ERROR_TYPE_WRITE_ERROR      = 6
 };
 
 struct string_t
@@ -19,7 +22,6 @@ struct string_t
     size_t string_size;
 };
 
-ReadErrorTypes ReadFile(char** input_buffer, string_t** array_of_strings, size_t* str_count, const char* input_name);
-void           EnterData(string_t* array_of_strings, size_t str_count, char*  input_buffer);
-
+ReadErrorTypes ReadFile(char** input_buffer, const char* input_name);
+ReadErrorTypes WriteInFile(compiler_instructions_t* instructions, const char* write_name);
 #endif //READ_COMMANDS_H

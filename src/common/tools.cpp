@@ -52,14 +52,18 @@ SkipSpaces(char* string)
 
     char character = *string;
 
-    while (isspace(character) && (character == '#') &&(character != '\0'))
+    while ((character == ' ') && (character != '\n'))
     {
-        // if (character == '#')
-        // {
-        //     string = SkipNotSpaces(string);
-        // }
         string++;
         character = *string;
+    }
+
+    if (character == '#')
+    {
+        while (character != '\n')
+        {
+            string++;
+        }
     }
 
     return string;
@@ -72,7 +76,7 @@ SkipNotSpaces(char* string)
 
     char character = *string;
 
-    while (!isspace(character) && (character != '\0'))
+    while (!isspace(character))
     {
         string++;
         character = *string;
@@ -120,12 +124,10 @@ PutInstruction(int                      value,           //PLUS-MINUS ONE FOR ZE
 
 void
 FreeAll(compiler_instructions_t* instructions,
-        char*                    input_buffer,
-        string_t*                array_of_strings)
+        char*                    input_buffer)
 {
     free(instructions->instructions_array);
     free(input_buffer);
-    free(array_of_strings);
 
     memset(instructions, 0, sizeof(compiler_instructions_t));
 }

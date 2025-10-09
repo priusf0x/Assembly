@@ -11,7 +11,6 @@
 #include "common_commands.h"
 
 const char* ASSEMBLED_FILE_NAME = "compiled.obj";
-const size_t REGISTER_COUNT = 5;
 const size_t START_STACK_SIZE = 8;
 
 static processor_functions_return_value_e DoOperation(spu_t* spu,int (*operation)(int, int));
@@ -47,7 +46,7 @@ InitializeSPU(spu_t* spu)
 
     spu->instruction_count = 0;
 
-    spu->registers = (int*) calloc(REGISTER_COUNT, sizeof(int));
+    spu->registers = (int*) calloc(PROCESSOR_REG_COUNT, sizeof(int));
     if (spu->registers == NULL)
     {
         return PROCESSOR_FUNCTION_RETURN_VALUE_MEMORY_ERROR;

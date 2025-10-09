@@ -21,15 +21,16 @@ enum  compiler_return_e
     COMPILER_RETURN_EMPTY_COMMAND
 };
 
-compiler_return_e ReadPushArgument(char* input_command, compiler_instructions_t* instructions);
-compiler_return_e ReadPopArgument(char* input_command, compiler_instructions_t* instructions);
-compiler_return_e Readcommand(char* input_command, compiler_instructions_t* instructions);
+compiler_return_e ReadPushArgument(char** input_command, compiler_instructions_t* instructions);
+compiler_return_e ReadPopArgument(char** input_command, compiler_instructions_t* instructions);
+compiler_return_e TranslateCode(char* input_command, compiler_instructions_t* instructions);
+compiler_return_e ReadCommand(char** input_command, compiler_instructions_t* instructions);
 
 struct compiler_command_t
 {
     const char* command_name;
     const enum commands_e return_value;
-    enum compiler_return_e (*handler)(char* input_command, struct compiler_instructions_t* instructions);
+    enum compiler_return_e (*handler)(char** input_command, struct compiler_instructions_t* instructions);
 };
 
 const struct compiler_command_t COMPILER_COMMANDS_ARRAY[] = {
