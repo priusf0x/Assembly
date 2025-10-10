@@ -7,9 +7,9 @@
 
 struct compiler_instructions_t
 {
-    size_t instructions_count;
-    size_t instructions_size;
-    int* instructions_array;
+    size_t           instructions_count;
+    size_t           instructions_size;
+    int*             instructions_array;
 };
 
 enum  compiler_return_e
@@ -18,7 +18,8 @@ enum  compiler_return_e
     COMPILER_RETURN_VALID_SYNTAX,
     COMPILER_RETURN_INCORRECT_COMMAND,
     COMPILER_RETURN_INVALID_SYNTAX,
-    COMPILER_RETURN_EMPTY_COMMAND
+    COMPILER_RETURN_EMPTY_COMMAND,
+    COMPILER_RETURN_LABEL_ERROR
 };
 
 compiler_return_e ReadPushArgument(char** input_command, compiler_instructions_t* instructions);
@@ -47,4 +48,4 @@ const struct compiler_command_t COMPILER_COMMANDS_ARRAY[] = {
     {.command_name = "IN",    .return_value = COMMAND_IN,               .handler = NULL            }}; //USER_commandS 10
 const int COMMANDS_COUNT = sizeof(COMPILER_COMMANDS_ARRAY) / sizeof(COMPILER_COMMANDS_ARRAY[0]);
 
-#endif //commandS_H
+#endif //COMPILER_COMMANDS_H

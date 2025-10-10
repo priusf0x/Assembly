@@ -7,6 +7,7 @@
 
 #include "Assert.h"
 #include "color.h"
+#include "labels.h"
 #include "tools.h"
 #include "common_commands.h"
 
@@ -76,7 +77,6 @@ WriteInFile(compiler_instructions_t* instructions,
     FILE* compiled_file = fopen(write_name, "wb+");
     if (compiled_file == NULL)
     {
-        printf("FILE WRITE ERROR.\n");
         return READ_FILE_ERROR_TYPE_WRITE_ERROR;
     }
 
@@ -85,7 +85,6 @@ WriteInFile(compiler_instructions_t* instructions,
 
     if (fclose(compiled_file) != 0)
     {
-        printf("FILE WRITE ERROR.\n");
         return READ_FILE_ERROR_TYPE_WRITE_ERROR;
     }
 
@@ -100,26 +99,48 @@ TranslateCode(char*                    input_buffer,
 {
     char* input_command = input_buffer;
     size_t command_index = 0;
+    label_tabular_t* label_tabular = InitialiseLabelTabular();
 
     while (*(input_command) != '\0')
     {
+        if (CheckIfLabel(input_command))
+        {
+            char* label_name = input_command;
+            *(SkipNotSpaces(label_name) - 1) = '\0';
+
+            if (UseLabel(label_name, instructions,  label_tabular) != LABEL_INSTRUCTION_RETURN_SUCCESS)
+            {
+                printf("EMPTY LABEL OR REUSED TWICE.\n");
+                DestroyLabelTabular(label_tabular);
+                return COMPILER_RETURN_LABEL_ERROR;
+            }
+
+            LabelTabularDump(label_tabular);
+
+            input_command = SkipSpaces(SkipNotSpaces(input_command)) + 1;
+        }
+
         compiler_return_e output = ReadCommand(&input_command, instructions);
-        input_command = SkipNotSpaces(input_command) + 1;
+        input_command = SkipSpaces(SkipNotSpaces(input_command)) + 1;
         command_index++;
 
         if (output == COMPILER_RETURN_INCORRECT_COMMAND)
         {
             printf("INCORRECT COMMAND %zu.\n", command_index);
+            DestroyLabelTabular(label_tabular);
             return COMPILER_RETURN_INCORRECT_COMMAND;
         }
         if (output == COMPILER_RETURN_INVALID_SYNTAX)
         {
             printf("INCORRECT SYNTAX IN COMMAND %zu.\n", command_index);
+            DestroyLabelTabular(label_tabular);
             return COMPILER_RETURN_INVALID_SYNTAX;
         }
     }
 
     (instructions->instructions_array)[0] = (int) instructions->instructions_count;
+
+    DestroyLabelTabular(label_tabular);
 
     return COMPILER_RETURN_SUCCESS;
 }

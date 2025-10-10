@@ -15,4 +15,5 @@ bool   IsStrNum(char* string);
 int    PutInstruction(int value, compiler_instructions_t* instructions);
 void   FreeAll(compiler_instructions_t* instructions, char* input_buffer);
 
+
 #endif //TOOLS_H

@@ -1,9 +1,10 @@
 #include <stdio.h>
 
+#include "color.h"
 #include "common_commands.h"
 #include "read_commands.h"
-#include "color.h"
 #include "tools.h"
+#include "labels.h"
 
 /*Dear programmer:
  *When I wrote this code, only god and
@@ -24,19 +25,20 @@ int main(void)
     {
         FreeAll(&instructions, input_buffer);
         printf("FILE OPEN ERROR.\n");
-        return 1;
+        return 1; //ПОПКА-БУДЕТ-КРАСНАЯ -
     }
 
     if (TranslateCode(input_buffer, &instructions) != COMPILER_RETURN_SUCCESS)
     {
         FreeAll(&instructions, input_buffer);
-        return 1;
+        return 2;
     }
 
     if (WriteInFile(&instructions, COMPILED_NAME) != READ_FILE_ERROR_TYPE_SUCCESS)
     {
         FreeAll(&instructions, input_buffer);
-        return 1;
+        printf("FILE WRITE ERROR.\n");
+        return 3;
     }
 
     FreeAll(&instructions, input_buffer);

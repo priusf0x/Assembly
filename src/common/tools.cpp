@@ -57,12 +57,12 @@ SkipSpaces(char* string)
         string++;
         character = *string;
     }
-
     if (character == '#')
     {
         while (character != '\n')
         {
             string++;
+            character = *string;
         }
     }
 
@@ -76,7 +76,7 @@ SkipNotSpaces(char* string)
 
     char character = *string;
 
-    while (!isspace(character))
+    while (!isspace(character) && (character != '#'))
     {
         string++;
         character = *string;
