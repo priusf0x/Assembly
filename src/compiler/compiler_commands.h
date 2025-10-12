@@ -5,11 +5,23 @@
 
 #include "common_commands.h"
 
+struct label_tabular_t;
+
+enum label_instruction_return_e
+{
+    LABEL_INSTRUCTION_RETURN_SUCCESS,
+    LABEL_INSTRUCTION_RETURN_MEMORY_ERROR,
+    LABEL_INSTRUCTION_RETURN_INITIALIZATION_REPEAT,
+    LABEL_INSTRUCTION_RETURN_EMPTY_NAME
+};
+
+
 struct compiler_instructions_t
 {
     size_t           instructions_count;
     size_t           instructions_size;
     int*             instructions_array;
+    label_tabular_t* instructions_label_tabular;
 };
 
 enum  compiler_return_e
@@ -26,6 +38,13 @@ compiler_return_e ReadPushArgument(char** input_command, compiler_instructions_t
 compiler_return_e ReadPopArgument(char** input_command, compiler_instructions_t* instructions);
 compiler_return_e TranslateCode(char* input_command, compiler_instructions_t* instructions);
 compiler_return_e ReadCommand(char** input_command, compiler_instructions_t* instructions);
+
+bool                       CheckIfLabel(char* string);
+label_tabular_t*           InitialiseLabelTabular();
+label_instruction_return_e InitLabel(char* label_name, compiler_instructions_t* instructions);
+label_instruction_return_e UseLabel(char* label_name, compiler_instructions_t* instructions);
+void                       LabelTabularDump(compiler_instructions_t* instructions);
+void                       DestroyLabelTabular(label_tabular_t* label_tabular);
 
 struct compiler_command_t
 {

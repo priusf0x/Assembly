@@ -7,7 +7,6 @@
 
 #include "Assert.h"
 #include "color.h"
-#include "labels.h"
 #include "tools.h"
 #include "common_commands.h"
 
@@ -99,7 +98,7 @@ TranslateCode(char*                    input_buffer,
 {
     char* input_command = input_buffer;
     size_t command_index = 0;
-    label_tabular_t* label_tabular = InitialiseLabelTabular();
+    instructions->instructions_label_tabular = InitialiseLabelTabular();
 
     while (*(input_command) != '\0')
     {
@@ -108,14 +107,11 @@ TranslateCode(char*                    input_buffer,
             char* label_name = input_command;
             *(SkipNotSpaces(label_name) - 1) = '\0';
 
-            if (UseLabel(label_name, instructions,  label_tabular) != LABEL_INSTRUCTION_RETURN_SUCCESS)
+            if (InitLabel(label_name, instructions) != LABEL_INSTRUCTION_RETURN_SUCCESS)
             {
                 printf("EMPTY LABEL OR REUSED TWICE.\n");
-                DestroyLabelTabular(label_tabular);
                 return COMPILER_RETURN_LABEL_ERROR;
             }
-
-            LabelTabularDump(label_tabular);
 
             input_command = SkipSpaces(SkipNotSpaces(input_command)) + 1;
         }
@@ -127,20 +123,16 @@ TranslateCode(char*                    input_buffer,
         if (output == COMPILER_RETURN_INCORRECT_COMMAND)
         {
             printf("INCORRECT COMMAND %zu.\n", command_index);
-            DestroyLabelTabular(label_tabular);
             return COMPILER_RETURN_INCORRECT_COMMAND;
         }
         if (output == COMPILER_RETURN_INVALID_SYNTAX)
         {
             printf("INCORRECT SYNTAX IN COMMAND %zu.\n", command_index);
-            DestroyLabelTabular(label_tabular);
             return COMPILER_RETURN_INVALID_SYNTAX;
         }
     }
 
     (instructions->instructions_array)[0] = (int) instructions->instructions_count;
-
-    DestroyLabelTabular(label_tabular);
 
     return COMPILER_RETURN_SUCCESS;
 }
@@ -243,7 +235,7 @@ ReadPopArgument(char**                    input_command,
     ASSERT(input_command != NULL);
     ASSERT(instructions != NULL);
 
-    bool find_flag = false;
+    bool find_flag = false; //PUSHHUETA
 
     for (int register_number = 0; register_number < PROCESSOR_REG_COUNT; register_number++)
     {

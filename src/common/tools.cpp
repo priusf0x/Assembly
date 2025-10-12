@@ -128,7 +128,22 @@ FreeAll(compiler_instructions_t* instructions,
 {
     free(instructions->instructions_array);
     free(input_buffer);
+    DestroyLabelTabular(instructions->instructions_label_tabular);
 
     memset(instructions, 0, sizeof(compiler_instructions_t));
 }
+
+size_t
+ReturnIfNNull(size_t* pointer)
+{
+    if (pointer != NULL)
+    {
+        return *pointer;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
 

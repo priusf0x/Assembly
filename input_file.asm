@@ -1,3 +1,4 @@
+
 IN
 IN
 IN
@@ -14,7 +15,7 @@ PUSH RAX
 MUL
 MUL
 SUB
-
+label2:
 SQRT
 PUSH RBX
 SUB
