@@ -13,7 +13,6 @@ char*  SkipNotSpaces(char* string);
 void*  recalloc(void*  pointer, size_t current_size, size_t new_size);
 bool   IsStrNum(char* string);
 int    PutInstruction(int value, compiler_instructions_t* instructions);
-void   FreeAll(compiler_instructions_t* instructions, char* input_buffer);
 size_t ReturnIfNNull(size_t* pointer);
 
 #endif //TOOLS_H

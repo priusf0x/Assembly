@@ -14,7 +14,7 @@ PrintPushArg(int*    instructions,
     ASSERT(instructions != NULL);
     ASSERT(instructions != NULL);
     ASSERT(instructions != NULL);
-    if (instructions[*command_index] == COMMAND_PUSH_IN_REG)
+    if (instructions[*command_index] == COMMAND_PUSH_FROM_REG)
     {
         (*command_index)++;
         fprintf(output, " %s", PROCESSORS_REG[instructions[*command_index]]);
@@ -28,8 +28,8 @@ PrintPushArg(int*    instructions,
 
 void
 PrintPopArg(int*    instructions,
-             size_t* command_index,
-             FILE*   output)
+            size_t* command_index,
+            FILE*   output)
 {
     ASSERT(instructions != NULL);
     ASSERT(instructions != NULL);
@@ -38,4 +38,18 @@ PrintPopArg(int*    instructions,
     (*command_index)++;
     fprintf(output, " %s", PROCESSORS_REG[instructions[*command_index]]);
 }
+
+void
+PrintJumpArg(int*    instructions,
+             size_t* command_index,
+             FILE*   output)
+{
+    ASSERT(instructions != NULL);
+    ASSERT(instructions != NULL);
+    ASSERT(instructions != NULL);
+
+    (*command_index)++;
+    fprintf(output, " %d", instructions[*command_index]);
+}
+
 

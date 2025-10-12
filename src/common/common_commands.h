@@ -10,10 +10,19 @@ enum commands_e
     COMMAND_SUB               = 4,
     COMMAND_MUL               = 5,
     COMMAND_DIV               = 6,
-    COMMAND_PUSH_IN_REG       = 7,
+    COMMAND_PUSH_FROM_REG     = 7,
     COMMAND_POP               = 8,
     COMMAND_SQRT              = 9,
-    COMMAND_IN                = 10
+    COMMAND_IN                = 10,
+    COMMAND_JMP               = 11,
+    COMMAND_JA                = 12,
+    COMMAND_JAE               = 13,
+    COMMAND_JB                = 14,
+    COMMAND_JBE               = 15,
+    COMMAND_JE                = 16,
+    COMMAND_JNE               = 17,
+    COMMAND_CALL              = 18,
+    COMMAND_RET               = 19
 };
 
 const char* const PROCESSORS_REG[] =

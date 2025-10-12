@@ -33,11 +33,19 @@ int main(void)
         return 2;
     }
 
+    // LabelTabularDump(&instructions);
+
+    if (FixUp(&instructions) != COMPILER_RETURN_SUCCESS)
+    {
+        FreeAll(&instructions, input_buffer);
+        return 3;
+    }
+
     if (WriteInFile(&instructions, COMPILED_NAME) != READ_FILE_ERROR_TYPE_SUCCESS)
     {
         FreeAll(&instructions, input_buffer);
         printf("FILE WRITE ERROR.\n");
-        return 3;
+        return 4;
     }
 
     FreeAll(&instructions, input_buffer);

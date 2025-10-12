@@ -52,7 +52,7 @@ SkipSpaces(char* string)
 
     char character = *string;
 
-    while ((character == ' ') && (character != '\n'))
+    while ((character == ' ') && (character != '\n') && (character != '\0'))
     {
         string++;
         character = *string;
@@ -76,7 +76,7 @@ SkipNotSpaces(char* string)
 
     char character = *string;
 
-    while (!isspace(character) && (character != '#'))
+    while (!isspace(character) && (character != '#') && (character != '\0'))
     {
         string++;
         character = *string;
@@ -120,17 +120,6 @@ PutInstruction(int                      value,           //PLUS-MINUS ONE FOR ZE
     instructions->instructions_count++;
 
     return 0;
-}
-
-void
-FreeAll(compiler_instructions_t* instructions,
-        char*                    input_buffer)
-{
-    free(instructions->instructions_array);
-    free(input_buffer);
-    DestroyLabelTabular(instructions->instructions_label_tabular);
-
-    memset(instructions, 0, sizeof(compiler_instructions_t));
 }
 
 size_t

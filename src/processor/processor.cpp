@@ -1,6 +1,5 @@
 #include <stdio.h>
 
-#include "tools.h"
 #include "stack.h"
 #include "processor_functions.h"
 

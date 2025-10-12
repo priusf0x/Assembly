@@ -1,27 +1,19 @@
+push 1
+pop RAX
+printsquares:
 
-IN
-IN
-IN
-POP RCX
-POP RBX
-POP RAX
-label1:
-PUSH RBX
-PUSH RBX
-MUL
-PUSH 4
-PUSH RCX
-PUSH RAX
-MUL
-MUL
-SUB
-label2:
-SQRT
-PUSH RBX
-SUB
-PUSH 2
-PUSH RAX
-MUL
-DIV
-OUT
-HLT
+    push RAX
+    push RAX
+    mul
+    out
+
+    push RAX #adding 1 to value
+    push 1
+    add
+    pop RAX
+
+    push RAX
+    push 10
+
+jbe printsquares:
+hlt

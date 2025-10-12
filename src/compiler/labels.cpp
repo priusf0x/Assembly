@@ -149,12 +149,12 @@ LabelTabularDump(compiler_instructions_t* instructions)
 {
     label_tabular_t* label_tabular = instructions->instructions_label_tabular;
 
-    printf(YELLOW "||" RED "    Names" YELLOW "||" RED "     From" YELLOW "||" RED "       To" YELLOW "||" RED "   IsInit" YELLOW "||" RED "   IsUsed" YELLOW "||\n" STANDARD);
+    printf(YELLOW "||" RED "          Names" YELLOW "||" RED "     From" YELLOW "||" RED "       To" YELLOW "||" RED "   IsInit" YELLOW "||" RED "   IsUsed" YELLOW "||\n" STANDARD);
 
     for (size_t index = 0; index < label_tabular->count; index++)
     {
         label_t current_label = (label_tabular->labels)[index];
-        printf(YELLOW "||" WHITE "%9s" YELLOW "||" WHITE "%9zu" YELLOW "||" WHITE "%9zu" YELLOW "||" WHITE "%9d" YELLOW "||" WHITE "%9d" YELLOW "||\n" STANDARD, current_label.name, current_label.from, current_label.to, current_label.is_initialized, current_label.is_used);
+        printf(YELLOW "||" WHITE "%15s" YELLOW "||" WHITE "%9zu" YELLOW "||" WHITE "%9zu" YELLOW "||" WHITE "%9d" YELLOW "||" WHITE "%9d" YELLOW "||\n" STANDARD, current_label.name, current_label.from, current_label.to, current_label.is_initialized, current_label.is_used);
     }
 }
 
@@ -163,4 +163,26 @@ DestroyLabelTabular(label_tabular_t* label_tabular)
 {
     free(label_tabular->labels);
     free(label_tabular);
+};
+
+label_instruction_return_e
+FixUp(compiler_instructions_t* instructions)
+{
+    label_tabular_t* label_tabular= instructions->instructions_label_tabular;
+
+    for(size_t index = 0; index < label_tabular->count; index++)
+    {
+        if (!(label_tabular->labels)[index].is_initialized)
+        {
+            return LABEL_INSTRUCTION_RETURN_UNINITIALIZED_LABEL;
+        }
+
+        if ((label_tabular->labels)[index].is_used)
+        {
+            (instructions->instructions_array)[(label_tabular->labels)[index].from + 1] = (int) (label_tabular->labels)[index].to;
+            // printf("%d" ,(instructions->instructions_array)[(label_tabular->labels)[index].from]);
+        }
+    }
+
+    return LABEL_INSTRUCTION_RETURN_SUCCESS;
 };

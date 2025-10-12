@@ -15,7 +15,7 @@ int main(void)
     if (assembled_file == NULL)
     {
         printf("ASSEMBLED FILE WRITE ERROR.\n");
-        exit(EXIT_FAILURE);
+        return 1;
     }
 
     fread(&instructions_count , sizeof(int), 1, assembled_file);
@@ -26,14 +26,14 @@ int main(void)
     if (fclose(assembled_file) != 0)
     {
         printf("ASSEMBLED FILE WRITE ERROR.\n");
-        exit(EXIT_FAILURE);
+        return 1;
     }
 
     FILE* disassembled_file = fopen(DISASSEMBLED_FILE_NAME, "w+");
     if (disassembled_file == NULL)
     {
         printf("DISASSEMBLED FILE WRITE ERROR.\n");
-        exit(EXIT_FAILURE);
+        return 1;
     }
 
     for(size_t command_index = 0; command_index < instructions_count; command_index++)
@@ -51,7 +51,7 @@ int main(void)
     if (fclose(disassembled_file) != 0)
     {
         printf("DISASSEMBLED FILE WRITE ERROR.\n");
-        exit(EXIT_FAILURE);
+        return 1;
     }
 
     free(instructions);

@@ -116,6 +116,8 @@ TranslateCode(char*                    input_buffer,
             input_command = SkipSpaces(SkipNotSpaces(input_command)) + 1;
         }
 
+        input_command = SkipSpaces(input_command);
+
         compiler_return_e output = ReadCommand(&input_command, instructions);
         input_command = SkipSpaces(SkipNotSpaces(input_command)) + 1;
         command_index++;
@@ -137,8 +139,6 @@ TranslateCode(char*                    input_buffer,
     return COMPILER_RETURN_SUCCESS;
 }
 
-
-
 compiler_return_e
 ReadCommand(char**                   input_command,
             compiler_instructions_t* instructions)
@@ -146,6 +146,12 @@ ReadCommand(char**                   input_command,
     commands_e read_command = COMMAND_HLT;
 
     size_t command_size = (size_t) (SkipNotSpaces(*input_command) - *input_command);
+
+    if (command_size == 0)
+    {
+        return COMPILER_RETURN_EMPTY_COMMAND;
+    }
+
     bool find_flag = false;
     for (size_t index = 0; index < COMMANDS_COUNT; index++)
     {
@@ -210,7 +216,7 @@ ReadPushArgument(char**                   input_command,
                     return COMPILER_RETURN_INCORRECT_COMMAND;
                 }
                 find_flag = true;
-                (instructions->instructions_array)[instructions->instructions_count - 1] = COMMAND_PUSH_IN_REG;
+                (instructions->instructions_array)[instructions->instructions_count - 1] = COMMAND_PUSH_FROM_REG;
 
                 break;
             }
@@ -235,13 +241,12 @@ ReadPopArgument(char**                    input_command,
     ASSERT(input_command != NULL);
     ASSERT(instructions != NULL);
 
-    bool find_flag = false; //PUSHHUETA
+    bool find_flag = false;
 
     for (int register_number = 0; register_number < PROCESSOR_REG_COUNT; register_number++)
     {
         if (strncmp(PROCESSORS_REG[register_number], *input_command, strlen(PROCESSORS_REG[register_number])) == 0)
         {
-            // printf("%s", PROCESSORS_REG[register_number]);
             if (PutInstruction(register_number, instructions) == 1)
             {
                 return COMPILER_RETURN_INCORRECT_COMMAND;
@@ -253,9 +258,57 @@ ReadPopArgument(char**                    input_command,
     }
     if (!find_flag)
     {
-        // printf("huesos");
         return COMPILER_RETURN_INVALID_SYNTAX;
     }
 
     return COMPILER_RETURN_VALID_SYNTAX;
 }
+
+compiler_return_e
+ReadJumpArgument(char**                    input_command,
+                 compiler_instructions_t*  instructions)
+{
+    ASSERT(input_command != NULL);
+    ASSERT(instructions != NULL);
+
+    if (!CheckIfLabel(*input_command))
+    {
+        if (IsStrNum(*input_command))
+        {
+            if (PutInstruction(atoi(*input_command), instructions) == 1)
+            {
+                return COMPILER_RETURN_INCORRECT_COMMAND;
+            }
+        }
+        else
+        {
+            return COMPILER_RETURN_INVALID_SYNTAX;
+        }
+    }
+    else
+    {
+        char* label_name = *input_command;
+        *(SkipNotSpaces(label_name) - 1) = '\0';
+
+        if (UseLabel(label_name, instructions) != 0)
+        {
+            return COMPILER_RETURN_INVALID_SYNTAX;
+        }
+
+        instructions->instructions_count++;
+    }
+
+    return COMPILER_RETURN_VALID_SYNTAX;
+}
+
+void
+FreeAll(compiler_instructions_t* instructions,
+        char*                    input_buffer)
+{
+    free(instructions->instructions_array);
+    free(input_buffer);
+    DestroyLabelTabular(instructions->instructions_label_tabular);
+
+    memset(instructions, 0, sizeof(compiler_instructions_t));
+}
+
