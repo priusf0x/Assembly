@@ -36,7 +36,7 @@ const struct disassemble_command_t DISASSEMBLER_COMMANDS_ARRAY[] = {
     {.command_name = "jbe",  .return_value = COMMAND_JBE,          .binary_handler = PrintJumpArg},
     {.command_name = "je",   .return_value = COMMAND_JE,           .binary_handler = PrintJumpArg},
     {.command_name = "jne",  .return_value = COMMAND_JNE,          .binary_handler = PrintJumpArg},
-    {.command_name = "call", .return_value = COMMAND_CALL,         .binary_handler = NULL        },
+    {.command_name = "call", .return_value = COMMAND_CALL,         .binary_handler = PrintJumpArg},
     {.command_name = "ret",  .return_value = COMMAND_RET,          .binary_handler = NULL        }};
 const size_t DISASSEMBLER_COMMANDS_COUNT = sizeof(DISASSEMBLER_COMMANDS_ARRAY) / sizeof(DISASSEMBLER_COMMANDS_ARRAY[0]);
 

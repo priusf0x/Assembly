@@ -40,6 +40,7 @@ compiler_return_e ReadPopArgument(char** input_command, compiler_instructions_t*
 compiler_return_e ReadJumpArgument(char** input_command, compiler_instructions_t* instructions);
 compiler_return_e TranslateCode(char* input_command, compiler_instructions_t* instructions);
 compiler_return_e ReadCommand(char** input_command, compiler_instructions_t* instructions);
+compiler_return_e ReadCallArgument(char** input_command, compiler_instructions_t* instructions);
 
 bool                       CheckIfLabel(char* string);
 label_tabular_t*           InitialiseLabelTabular();
@@ -75,7 +76,7 @@ const struct compiler_command_t COMPILER_COMMANDS_ARRAY[] = {
     {.command_name = "jbe",   .return_value = COMMAND_JBE,              .handler = ReadJumpArgument}, //USER_COMMANDS  15
     {.command_name = "je",    .return_value = COMMAND_JE,               .handler = ReadJumpArgument}, //USER_COMMANDS  16
     {.command_name = "jne",   .return_value = COMMAND_JNE,              .handler = ReadJumpArgument}, //USER_COMMANDS  17
-    {.command_name = "call",  .return_value = COMMAND_CALL,             .handler = NULL            }, //USER_COMMANDS  18
+    {.command_name = "call",  .return_value = COMMAND_CALL,             .handler = ReadCallArgument}, //USER_COMMANDS  18
     {.command_name = "ret",   .return_value = COMMAND_RET,              .handler = NULL            }};//USER_COMMANDS  19
 
 const int COMMANDS_COUNT = sizeof(COMPILER_COMMANDS_ARRAY) / sizeof(COMPILER_COMMANDS_ARRAY[0]);

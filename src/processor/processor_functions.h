@@ -25,6 +25,7 @@ struct spu_t
     int*            instructions;
     size_t          instruction_count;
     int*            registers;
+    size_t          max_instruction_count;
 };
 
 struct processor_command_t
@@ -47,6 +48,8 @@ processor_functions_return_value_e JumpB(spu_t* spu);
 processor_functions_return_value_e JumpBE(spu_t* spu);
 processor_functions_return_value_e JumpE(spu_t* spu);
 processor_functions_return_value_e JumpNE(spu_t* spu);
+processor_functions_return_value_e Call(spu_t* spu);
+processor_functions_return_value_e Return(spu_t* spu);
 
 processor_functions_return_value_e StackCommandPopToReg(spu_t* spu);
 processor_functions_return_value_e StackCommandPushFromReg(spu_t* spu);
@@ -75,7 +78,9 @@ const struct processor_command_t PROCESSOR_COMMANDS_ARRAY[] = {
     {.return_value = COMMAND_JB,            .command_function = JumpB                  },
     {.return_value = COMMAND_JBE,           .command_function = JumpBE                 },
     {.return_value = COMMAND_JE,            .command_function = JumpE                  },
-    {.return_value = COMMAND_JNE,           .command_function = JumpNE                 }};
+    {.return_value = COMMAND_JNE,           .command_function = JumpNE                 },
+    {.return_value = COMMAND_CALL,          .command_function = Call                   },
+    {.return_value = COMMAND_RET,           .command_function = Return                 }};
 const size_t PROCESSOR_COMMANDS_COUNT = sizeof(PROCESSOR_COMMANDS_ARRAY) / sizeof(PROCESSOR_COMMANDS_ARRAY[0]);
 
 #ifdef NDEBUG

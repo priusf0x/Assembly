@@ -35,6 +35,7 @@ InitializeSPU(spu_t* spu)
     int max_instruction_count = 0;
     fread(&(max_instruction_count) , sizeof(int), 1, assembled_file);
 
+    spu->max_instruction_count = (size_t) max_instruction_count;
     spu->instructions = (int*) calloc((size_t) max_instruction_count, sizeof(int));
     if (spu->instructions == NULL)
     {
@@ -217,7 +218,6 @@ static int comparator_not_eq (int a, int b) {return (a != b);};
 processor_functions_return_value_e
 Jump(spu_t* spu)
 {
-
     spu->instruction_count++;
     spu->instruction_count = (size_t) (spu->instructions)[spu->instruction_count];
 
@@ -293,6 +293,43 @@ processor_functions_return_value_e
 JumpNE(spu_t* spu)
 {
     return JumpFunction(spu, comparator_not_eq);
+}
+
+processor_functions_return_value_e
+Call(spu_t* spu)
+{
+    PROCESSOR_VERIFY(spu);
+
+    if (StackPush(spu->spu_stack, (int) spu->instruction_count) != 0)
+    {
+        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+    }
+
+    spu->instruction_count++;
+    spu->instruction_count = (size_t) (spu->instructions)[spu->instruction_count];
+
+    PROCESSOR_VERIFY(spu);
+
+    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
+}
+
+processor_functions_return_value_e
+Return(spu_t* spu)
+{
+    PROCESSOR_VERIFY(spu);
+
+    int intermediate_value = 0;
+
+    if (StackPop(spu->spu_stack, &intermediate_value) != 0)
+    {
+        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+    }
+
+    spu->instruction_count = (size_t) intermediate_value + 2; //to skip function size
+
+    PROCESSOR_VERIFY(spu);
+
+    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
 
 
@@ -429,7 +466,7 @@ ProcessorDump(spu_t* spu)
         {
             printf(YELLOW "||\n" WHITE);
         }
-    } while ((spu->instructions)[index] != COMMAND_HLT);
+    } while (index != spu->max_instruction_count);
     printf(YELLOW "||\n" WHITE);
 
     printf(YELLOW "              ___________________________________________________________________\n"

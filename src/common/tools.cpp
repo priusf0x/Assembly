@@ -105,7 +105,7 @@ PutInstruction(int                      value,           //PLUS-MINUS ONE FOR ZE
     ASSERT(instructions != NULL);
     ASSERT(instructions->instructions_array != NULL);
 
-    if (instructions->instructions_count == instructions->instructions_size - 1)
+    if (instructions->instructions_count == instructions->instructions_size - 2)
     {
         instructions->instructions_array = (int*) recalloc(instructions->instructions_array, sizeof(int) * instructions->instructions_size, sizeof(int) * instructions->instructions_size * 2);
         instructions->instructions_size *= 2;
@@ -115,7 +115,7 @@ PutInstruction(int                      value,           //PLUS-MINUS ONE FOR ZE
     {
         return 1;
     }
-    // printf("%zu %zu\n", instructions->instructions_count, instructions->instructions_size);
+    // fprintf(stderr, "%zu %zu\n", instructions->instructions_count, instructions->instructions_size);
     (instructions->instructions_array)[instructions->instructions_count + 1] = value;
     instructions->instructions_count++;
 

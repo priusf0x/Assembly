@@ -2,10 +2,7 @@ push 1
 pop RAX
 printsquares:
 
-    push RAX
-    push RAX
-    mul
-    out
+    call calculate_square
 
     push RAX #adding 1 to value
     push 1
@@ -17,3 +14,17 @@ printsquares:
 
 jbe printsquares:
 hlt
+
+#functions
+
+calculate_square:
+    push RAX
+    push RAX
+    mul
+    out
+ret
+
+hlt
+
+
+

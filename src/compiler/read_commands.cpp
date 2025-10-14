@@ -208,7 +208,7 @@ ReadPushArgument(char**                   input_command,
 
         for (int register_number = 0; register_number < PROCESSOR_REG_COUNT; register_number++)
         {
-            if (strncmp(PROCESSORS_REG[register_number], *input_command, strlen(PROCESSORS_REG[register_number])) == 0)
+            if ((SkipNotSpaces(*input_command) - *input_command == (long) strlen(PROCESSORS_REG[register_number])) && (strncmp(PROCESSORS_REG[register_number], *input_command, strlen(PROCESSORS_REG[register_number]))) == 0)
             {
                 // printf("%s", PROCESSORS_REG[register_number]);
                 if (PutInstruction(register_number, instructions) == 1)
@@ -271,6 +271,11 @@ ReadJumpArgument(char**                    input_command,
     ASSERT(input_command != NULL);
     ASSERT(instructions != NULL);
 
+    if (**input_command == '\n')
+    {
+        return COMPILER_RETURN_INVALID_SYNTAX;
+    }
+
     if (!CheckIfLabel(*input_command))
     {
         if (IsStrNum(*input_command))
@@ -288,6 +293,12 @@ ReadJumpArgument(char**                    input_command,
     else
     {
         char* label_name = *input_command;
+
+        if (*(SkipNotSpaces(label_name) - 1) != ':')
+        {
+            return COMPILER_RETURN_INVALID_SYNTAX;
+        }
+
         *(SkipNotSpaces(label_name) - 1) = '\0';
 
         if (UseLabel(label_name, instructions) != 0)
@@ -312,3 +323,27 @@ FreeAll(compiler_instructions_t* instructions,
     memset(instructions, 0, sizeof(compiler_instructions_t));
 }
 
+compiler_return_e
+ReadCallArgument(char**                    input_command,
+                 compiler_instructions_t*  instructions)
+{
+    ASSERT(input_command != NULL);
+    ASSERT(instructions != NULL);
+
+    if (**input_command == '\n')
+    {
+        return COMPILER_RETURN_INVALID_SYNTAX;
+    }
+
+    char* label_name = *input_command;
+    *(SkipNotSpaces(label_name)) = '\0';
+
+    if (UseLabel(label_name, instructions) != 0)
+    {
+        return COMPILER_RETURN_INVALID_SYNTAX;
+    }
+
+    instructions->instructions_count++;
+
+    return COMPILER_RETURN_VALID_SYNTAX;
+}
