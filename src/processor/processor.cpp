@@ -11,7 +11,7 @@
  */
 
 enum
-compiler_main_return_e
+processor_main_return_e
 {
     PROCESSOR_MAIN_RETURN_SUCCESS,
     PROCESSOR_MAIN_RETURN_FILE_READ_ERROR,
@@ -34,11 +34,13 @@ main(int                argc,
 
     if (InitializeSPU(&processor, ASSEMBLED_FILE_NAME) != (int) PROCESSOR_MAIN_RETURN_SUCCESS)
     {
+        DestroySPU(&processor);
         return PROCESSOR_MAIN_RETURN_INIT_ERROR;
     };
 
     if (ExecuteInstructions(&processor) != (int) PROCESSOR_MAIN_RETURN_SUCCESS)
     {
+        DestroySPU(&processor);
         return PROCESSOR_MAIN_RETURN_EXECUTION_ERROR;
     };
 

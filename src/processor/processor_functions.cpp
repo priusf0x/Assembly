@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <stdint.h>
 
 #include "Assert.h"
 #include "color.h"
@@ -14,6 +15,7 @@
 #define NDEBUG
 
 const size_t START_STACK_SIZE = 8;
+const uint64_t PROCESSOR_VERSION = 1;
 
 static processor_functions_return_value_e DoOperation(spu_t* spu,int (*operation)(int, int));
 
@@ -33,6 +35,14 @@ InitializeSPU(spu_t*      spu,
         return PROCESSOR_FUNCTION_RETURN_VALUE_FAILED_TO_READ_INSTRUCTIONS;
     }
 
+    uint64_t compiler_version = 0;
+    fread(&compiler_version , sizeof(uint64_t), 1, assembled_file);
+    if (compiler_version != PROCESSOR_VERSION)
+    {
+        printf(RED "VERSION OF COMPILER IS MISMATCHING WITH VERSION OF DISASSEMBLER.\n" STANDARD);
+        return PROCESSOR_FUNCTION_RETURN_VERSIONS_MISMATCH;
+    }
+
     int max_instruction_count = 0;
     fread(&(max_instruction_count) , sizeof(int), 1, assembled_file);
 
@@ -40,6 +50,7 @@ InitializeSPU(spu_t*      spu,
     spu->instructions = (int*) calloc((size_t) max_instruction_count, sizeof(int));
     if (spu->instructions == NULL)
     {
+        fclose(assembled_file);
         return PROCESSOR_FUNCTION_RETURN_VALUE_MEMORY_ERROR;
     }
     fread(spu->instructions, sizeof(int), (size_t)max_instruction_count, assembled_file);

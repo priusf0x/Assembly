@@ -2,8 +2,11 @@
 #define READ_COMMANDS_H
 
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "compiler_commands.h"
+
+const uint64_t COMPILER_VERSION = 1;
 
 enum ReadErrorTypes
 {

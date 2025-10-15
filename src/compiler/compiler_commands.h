@@ -65,7 +65,7 @@ const struct compiler_command_t COMPILER_COMMANDS_ARRAY[] = {
     {.command_name = "sub",   .return_value = COMMAND_SUB,              .handler = NULL            }, //USER_COMMANDS  4
     {.command_name = "mul",   .return_value = COMMAND_MUL,              .handler = NULL            }, //USER_COMMANDS  5
     {.command_name = "div",   .return_value = COMMAND_DIV,              .handler = NULL            }, //USER_COMMANDS  6
-    {.command_name = NULL,    .return_value = COMMAND_PUSH_FROM_REG,      .handler = NULL            }, //USER_COMMANDS  7
+    {.command_name = NULL,    .return_value = COMMAND_PUSH_FROM_REG,      .handler = NULL          }, //USER_COMMANDS  7
     {.command_name = "pop",   .return_value = COMMAND_POP,              .handler = ReadPopArgument }, //USER_COMMANDS  8
     {.command_name = "sqrt",  .return_value = COMMAND_SQRT,             .handler = NULL            }, //USER_COMMANDS  9
     {.command_name = "in",    .return_value = COMMAND_IN,               .handler = NULL            }, //USER_COMMANDS  10
@@ -77,7 +77,13 @@ const struct compiler_command_t COMPILER_COMMANDS_ARRAY[] = {
     {.command_name = "je",    .return_value = COMMAND_JE,               .handler = ReadJumpArgument}, //USER_COMMANDS  16
     {.command_name = "jne",   .return_value = COMMAND_JNE,              .handler = ReadJumpArgument}, //USER_COMMANDS  17
     {.command_name = "call",  .return_value = COMMAND_CALL,             .handler = ReadCallArgument}, //USER_COMMANDS  18
-    {.command_name = "ret",   .return_value = COMMAND_RET,              .handler = NULL            }};//USER_COMMANDS  19
+    {.command_name = "ret",   .return_value = COMMAND_RET,              .handler = NULL            },//USER_COMMANDS  19
+    {.command_name = NULL,    .return_value = COMMAND_PUSH_FROM_MEMORY,             .handler = ReadCallArgument}, //USER_COMMANDS  18
+    {.command_name = "ret",   .return_value = COMMAND_POP_TO_MEMORY,              .handler = NULL            }};//USER_COMMANDS  19
+
+
+COMMAND_PUSH_FROM_MEMORY    = 20,
+COMMAND_POP_TO_MEMORY       = 21,
 
 const int COMMANDS_COUNT = sizeof(COMPILER_COMMANDS_ARRAY) / sizeof(COMPILER_COMMANDS_ARRAY[0]);
 

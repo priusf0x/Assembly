@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #include "disassembler_commands.h"
 #include "common_commands.h"
@@ -10,18 +11,22 @@ enum disassembler_main_return_e
 {
     DISASSEMBLER_MAIN_RETURN_SUCCESS,
     DISASSEMBLER_MAIN_RETURN_READ_FLAG_ERROR,
-    DISASSEMBLER_MAIN_RETURN_SUCCESS_ASSEMBLED_FILE_OPEN_ERROR,
-    DISASSEMBLER_MAIN_RETURN_SUCCESS_DISASSEMBLED_FILE_OPEN_ERROR
+    DISASSEMBLER_MAIN_RETURN_ASSEMBLED_FILE_OPEN_ERROR,
+    DISASSEMBLER_MAIN_RETURN_DISASSEMBLED_FILE_OPEN_ERROR,
+    DISASSEMBLER_MAIN_RETURN_VERSION_MISMATCH
 };
 
 const char* ASSEMBLED_FILE_NAME = "compiled.obj";
 const char* DISASSEMBLED_FILE_NAME = "disassembled.asm";
+
+const uint64_t DISASSEMBLER_VERSION = 2;
 
 int
 main(int                argc,
      const char* const* argv)
 {
     size_t instructions_count = 0;
+    uint64_t compiler_version = 0;
 
     if (ReadFlags(argc, argv, &ASSEMBLED_FILE_NAME, &DISASSEMBLED_FILE_NAME) != (int) DISASSEMBLER_MAIN_RETURN_SUCCESS)
     {
@@ -35,7 +40,14 @@ main(int                argc,
     {
         printf(RED "ASSEMBLED FILE WRITE ERROR.\n" STANDARD);
 
-        return DISASSEMBLER_MAIN_RETURN_SUCCESS_ASSEMBLED_FILE_OPEN_ERROR;
+        return DISASSEMBLER_MAIN_RETURN_ASSEMBLED_FILE_OPEN_ERROR;
+    }
+
+    fread(&compiler_version , sizeof(uint64_t), 1, assembled_file);
+    if (compiler_version != DISASSEMBLER_VERSION)
+    {
+        printf(RED "VERSION OF COMPILER IS MISMATCHING WITH VERSION OF DISASSEMBLER.\n" STANDARD);
+        return DISASSEMBLER_MAIN_RETURN_VERSION_MISMATCH;
     }
 
     fread(&instructions_count , sizeof(int), 1, assembled_file);
@@ -47,7 +59,7 @@ main(int                argc,
     {
         printf(RED "ASSEMBLED FILE WRITE ERROR.\n" STANDARD);
 
-        return DISASSEMBLER_MAIN_RETURN_SUCCESS_ASSEMBLED_FILE_OPEN_ERROR;
+        return DISASSEMBLER_MAIN_RETURN_ASSEMBLED_FILE_OPEN_ERROR;
     }
 
     FILE* disassembled_file = fopen(DISASSEMBLED_FILE_NAME, "w+");
@@ -55,7 +67,7 @@ main(int                argc,
     {
         printf(RED "DISASSEMBLED FILE WRITE ERROR.\n" STANDARD);
 
-        return DISASSEMBLER_MAIN_RETURN_SUCCESS_DISASSEMBLED_FILE_OPEN_ERROR;
+        return DISASSEMBLER_MAIN_RETURN_DISASSEMBLED_FILE_OPEN_ERROR;
     }
 
     for(size_t command_index = 0; command_index < instructions_count; command_index++)
@@ -74,7 +86,7 @@ main(int                argc,
     {
         printf(RED "DISASSEMBLED FILE WRITE ERROR.\n" STANDARD);
 
-        return DISASSEMBLER_MAIN_RETURN_SUCCESS_DISASSEMBLED_FILE_OPEN_ERROR;
+        return DISASSEMBLER_MAIN_RETURN_DISASSEMBLED_FILE_OPEN_ERROR;
     }
 
     free(instructions);

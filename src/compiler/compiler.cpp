@@ -6,6 +6,7 @@
 #include "read_commands.h"
 #include "simple_parser.h"
 
+
 /*Dear programmer:
  *When I wrote this code, only god and
  *I knew how it worked.
@@ -17,6 +18,7 @@
 //  -Readme(REQUIRED) (2 priority)
 //  -add processor_verifier (2 priority)
 //  -offset for checking actual version (3 priority)
+
 
 enum compiler_main_return_e
 {

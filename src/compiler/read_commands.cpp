@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <sys/stat.h>
+#include <stdint.h>
 
 #include "Assert.h"
 #include "color.h"
@@ -79,8 +80,9 @@ WriteInFile(compiler_instructions_t* instructions,
         return READ_FILE_ERROR_TYPE_WRITE_ERROR;
     }
 
+    fwrite(&COMPILER_VERSION , sizeof(uint64_t), 1, compiled_file);
     fwrite(instructions->instructions_array , sizeof(int), instructions->instructions_count + 1, compiled_file);
-    fprintf(compiled_file, "\nHere was pr1usf0x.\n");
+    fprintf(compiled_file, "\n\nHere was pr1usf0x.\n");
 
     if (fclose(compiled_file) != 0)
     {
