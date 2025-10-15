@@ -1,0 +1,6 @@
+.vscode
+obj
+logs
+processor.out
+compiler.out
+disassembler.out

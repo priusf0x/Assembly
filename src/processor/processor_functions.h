@@ -55,7 +55,7 @@ processor_functions_return_value_e StackCommandPopToReg(spu_t* spu);
 processor_functions_return_value_e StackCommandPushFromReg(spu_t* spu);
 processor_functions_return_value_e StackCommandIn(spu_t* spu);
 
-processor_functions_return_value_e InitializeSPU(spu_t* spu);
+processor_functions_return_value_e InitializeSPU(spu_t* spu, const char* assembled_file_name);
 processor_functions_return_value_e ExecuteInstructions(spu_t* spu);
 processor_functions_return_value_e DestroySPU(spu_t* spu);
 processor_functions_return_value_e ProcessorDump(spu_t* spu);

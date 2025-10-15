@@ -13,20 +13,21 @@
 
 #define NDEBUG
 
-const char* ASSEMBLED_FILE_NAME = "compiled.obj";
 const size_t START_STACK_SIZE = 8;
 
 static processor_functions_return_value_e DoOperation(spu_t* spu,int (*operation)(int, int));
 
 processor_functions_return_value_e
-InitializeSPU(spu_t* spu)
+InitializeSPU(spu_t*      spu,
+              const char* assembled_file_name)
 {
+
     if (StackInit(&(spu->spu_stack), START_STACK_SIZE, "SPU stack") != 0)
     {
         return PROCESSOR_FUNCTION_RETURN_VALUE_FAILED_TO_INIT_STACK;
     }
 
-    FILE* assembled_file = fopen(ASSEMBLED_FILE_NAME, "rb");
+    FILE* assembled_file = fopen(assembled_file_name, "rb");
     if (assembled_file == NULL)
     {
         return PROCESSOR_FUNCTION_RETURN_VALUE_FAILED_TO_READ_INSTRUCTIONS;

@@ -1,6 +1,6 @@
-SOURCES_COMPILER =  compiler/read_commands.cpp compiler/compiler.cpp common/tools.cpp compiler/labels.cpp
-SOURCES_DISASSEMBLER = disasm/disassembler.cpp disasm/disassembler_commands.cpp
-SOURCES_PROCESSOR = stack/stack.cpp processor/processor.cpp processor/processor_functions.cpp common/logger.cpp common/tools.cpp
+SOURCES_COMPILER =  compiler/read_commands.cpp compiler/compiler.cpp common/tools.cpp compiler/labels.cpp common/simple_parser.cpp
+SOURCES_DISASSEMBLER = disasm/disassembler.cpp disasm/disassembler_commands.cpp common/simple_parser.cpp
+SOURCES_PROCESSOR = stack/stack.cpp processor/processor.cpp processor/processor_functions.cpp common/logger.cpp common/tools.cpp common/simple_parser.cpp
 
 OBJ_DIR = obj
 SOURCE_DIR = src
@@ -22,14 +22,13 @@ TARGET_PROCESSOR= processor.out
 
 CC = g++
 
-CFLAGS = -D _DEBUG -ggdb3 -std=c++17 -O2 -Wall -Wextra -Weffc++ -Waggressive-loop-optimizations -Wc++14-compat -Wmissing-declarations -Wcast-align -Wcast-qual -Wchar-subscripts -Wconditionally-supported -Wconversion -Wctor-dtor-privacy -Wempty-body -Wfloat-equal -Wformat-nonliteral -Wformat-security -Wformat-signedness -Wformat=2 -Winline -Wlogical-op -Wnon-virtual-dtor -Wopenmp-simd -Woverloaded-virtual -Wpacked -Wpointer-arith -Winit-self -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=2 -Wsuggest-attribute=noreturn -Wsuggest-final-methods -Wsuggest-final-types -Wsuggest-override -Wswitch-default -Wswitch-enum -Wsync-nand -Wundef -Wunreachable-code -Wunused -Wuseless-cast -Wvariadic-macros -Wno-literal-suffix -Wno-missing-field-initializers -Wno-narrowing -Wno-old-style-cast -Wno-varargs -Wstack-protector -fcheck-new -fsized-deallocation -fstack-protector -fstrict-overflow -flto-odr-type-merging -fno-omit-frame-pointer -Wlarger-than=8192 -Wstack-usage=8192 -pie -fPIE -Werror=vla -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,leak,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
+CFLAGS = -D _DEBUG -ggdb3 -std=c++17 -O2 -Wall -Wextra -Weffc++ -Waggressive-loop-optimizations -Wc++14-compat -Wmissing-declarations -Wcast-align -Wcast-qual -Wchar-subscripts -Wconditionally-supported -Wconversion -Wctor-dtor-privacy -Wempty-body -Wfloat-equal -Wformat-nonliteral -Wformat-security -Wformat-signedness -Wformat=2 -Winline -Wlogical-op -Wnon-virtual-dtor -Wopenmp-simd -Woverloaded-virtual -Wpacked -Wpointer-arith -Winit-self -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=2 -Wsuggest-attribute=noreturn -Wsuggest-final-methods -Wsuggest-final-types -Wsuggest-override -Wswitch-default -Wswitch-enum -Wsync-nand -Wundef -Wunreachable-code -Wunused -Wuseless-cast -Wvariadic-macros -Wno-literal-suffix -Wno-missing-field-initializers -Wno-narrowing -Wno-old-style-cast -Wno-varargs -Wstack-protector -fcheck-new -fsized-deallocation -fstack-protector -fstrict-overflow -flto-odr-type-merging -fno-omit-frame-pointer  -Wstack-usage=8192 -pie -fPIE -Werror=vla -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,leak,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
+# -Wlarger-than=8192
 
 CFLAGS += -I$(SOURCE_DIR)/compiler -I$(SOURCE_DIR)/common -I$(SOURCE_DIR)/processor -I$(SOURCE_DIR)/disasm -I$(SOURCE_DIR)/stack
 
 $(OBJ_DIR)/%.o: $(SOURCE_DIR)/%.cpp $(HEADERS)
 	@mkdir -p $(dir $@)
-	@mkdir -p $(dir $@)/compiler
-	@mkdir -p $(dir $@)/disassembler
 	@mkdir -p logs
 	@echo "Compiling" $<
 	@$(CC) $(CFLAGS) -c $< -o $@
@@ -58,6 +57,8 @@ disasm: $(TARGET_DISASSEMBLER)
 
 proc : $(TARGET_PROCESSOR)
 	@./$(TARGET_PROCESSOR)
+
+build: $(TARGET_COMPILER) $(TARGET_DISASSEMBLER) $(TARGET_PROCESSOR)
 
 clean:
 	@rm -rf $(OBJ_DIR)

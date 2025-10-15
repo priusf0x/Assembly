@@ -14,3 +14,4 @@ push RAX
 mul
 out
 ret
+hlt

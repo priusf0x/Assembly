@@ -3,19 +3,39 @@
 
 #include "disassembler_commands.h"
 #include "common_commands.h"
+#include "color.h"
+#include "simple_parser.h"
+
+enum disassembler_main_return_e
+{
+    DISASSEMBLER_MAIN_RETURN_SUCCESS,
+    DISASSEMBLER_MAIN_RETURN_READ_FLAG_ERROR,
+    DISASSEMBLER_MAIN_RETURN_SUCCESS_ASSEMBLED_FILE_OPEN_ERROR,
+    DISASSEMBLER_MAIN_RETURN_SUCCESS_DISASSEMBLED_FILE_OPEN_ERROR
+};
 
 const char* ASSEMBLED_FILE_NAME = "compiled.obj";
 const char* DISASSEMBLED_FILE_NAME = "disassembled.asm";
 
-int main(void)
+int
+main(int                argc,
+     const char* const* argv)
 {
     size_t instructions_count = 0;
+
+    if (ReadFlags(argc, argv, &ASSEMBLED_FILE_NAME, &DISASSEMBLED_FILE_NAME) != (int) DISASSEMBLER_MAIN_RETURN_SUCCESS)
+    {
+        printf(RED "FLAG READ ERROR.\n" STANDARD);
+
+        return DISASSEMBLER_MAIN_RETURN_READ_FLAG_ERROR;
+    }
 
     FILE* assembled_file = fopen(ASSEMBLED_FILE_NAME, "rb");
     if (assembled_file == NULL)
     {
-        printf("ASSEMBLED FILE WRITE ERROR.\n");
-        return 1;
+        printf(RED "ASSEMBLED FILE WRITE ERROR.\n" STANDARD);
+
+        return DISASSEMBLER_MAIN_RETURN_SUCCESS_ASSEMBLED_FILE_OPEN_ERROR;
     }
 
     fread(&instructions_count , sizeof(int), 1, assembled_file);
@@ -23,17 +43,19 @@ int main(void)
     int* instructions = (int*) calloc(instructions_count, sizeof(int));
     fread(instructions, sizeof(int), instructions_count, assembled_file);
 
-    if (fclose(assembled_file) != 0)
+    if (fclose(assembled_file) != (int) DISASSEMBLER_MAIN_RETURN_SUCCESS)
     {
-        printf("ASSEMBLED FILE WRITE ERROR.\n");
-        return 1;
+        printf(RED "ASSEMBLED FILE WRITE ERROR.\n" STANDARD);
+
+        return DISASSEMBLER_MAIN_RETURN_SUCCESS_ASSEMBLED_FILE_OPEN_ERROR;
     }
 
     FILE* disassembled_file = fopen(DISASSEMBLED_FILE_NAME, "w+");
     if (disassembled_file == NULL)
     {
-        printf("DISASSEMBLED FILE WRITE ERROR.\n");
-        return 1;
+        printf(RED "DISASSEMBLED FILE WRITE ERROR.\n" STANDARD);
+
+        return DISASSEMBLER_MAIN_RETURN_SUCCESS_DISASSEMBLED_FILE_OPEN_ERROR;
     }
 
     for(size_t command_index = 0; command_index < instructions_count; command_index++)
@@ -48,13 +70,14 @@ int main(void)
         fprintf(disassembled_file, "\n");
     }
 
-    if (fclose(disassembled_file) != 0)
+    if (fclose(disassembled_file) != (int) DISASSEMBLER_MAIN_RETURN_SUCCESS)
     {
-        printf("DISASSEMBLED FILE WRITE ERROR.\n");
-        return 1;
+        printf(RED "DISASSEMBLED FILE WRITE ERROR.\n" STANDARD);
+
+        return DISASSEMBLER_MAIN_RETURN_SUCCESS_DISASSEMBLED_FILE_OPEN_ERROR;
     }
 
     free(instructions);
 
-    return 0;
+    return DISASSEMBLER_MAIN_RETURN_SUCCESS;
 }
