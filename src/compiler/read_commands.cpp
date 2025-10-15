@@ -220,9 +220,11 @@ ReadPushArgument(char**                   input_command,
             // printf("%s", *input_command);
             if (strncmp(PROCESSORS_REG[register_number], *input_command, strlen(PROCESSORS_REG[register_number])) == 0)
             {
+                *input_command = SkipSpaces(*input_command + strlen(PROCESSORS_REG[register_number]));
+
                 if (memory_usage)
                 {
-                    if (*(*input_command = SkipSpaces(*input_command + strlen(PROCESSORS_REG[register_number]))) != ']')
+                    if (**input_command != ']')
                     {
                         return COMPILER_RETURN_INVALID_SYNTAX;
                     }
@@ -232,6 +234,7 @@ ReadPushArgument(char**                   input_command,
                         return COMPILER_RETURN_INCORRECT_COMMAND;
                     }
 
+                    *input_command = SkipSpaces(*input_command + 1);
                     (instructions->instructions_array)[instructions->instructions_count - 1] = COMMAND_PUSH_FROM_MEMORY;
                 }
                 else
@@ -262,9 +265,11 @@ ReadPushArgument(char**                   input_command,
         {
             return COMPILER_RETURN_INVALID_SYNTAX;
         }
+
+        *input_command = end_str;
     }
 
-    if (*SkipSpaces(SkipNotSpaces(*input_command)) != '\n')
+    if (**input_command != '\n')
     {
         return COMPILER_RETURN_INVALID_SYNTAX;
     }
@@ -290,12 +295,13 @@ ReadPopArgument(char**                    input_command,
 
     for (int register_number = 0; register_number < PROCESSOR_REG_COUNT; register_number++)
     {
-        // printf("%s", *input_command);
         if (strncmp(PROCESSORS_REG[register_number], *input_command, strlen(PROCESSORS_REG[register_number])) == 0)
         {
+            *input_command = SkipSpaces(*input_command + strlen(PROCESSORS_REG[register_number]));
+
             if (memory_usage)
             {
-                if (*(*input_command = SkipSpaces(*input_command + strlen(PROCESSORS_REG[register_number]))) != ']')
+                if (**input_command != ']')
                 {
                     return COMPILER_RETURN_INVALID_SYNTAX;
                 }
@@ -305,7 +311,8 @@ ReadPopArgument(char**                    input_command,
                     return COMPILER_RETURN_INCORRECT_COMMAND;
                 }
 
-                (instructions->instructions_array)[instructions->instructions_count - 1] = COMMAND_POP_TO_MEMORY;
+                *input_command = SkipSpaces(*input_command + 1);
+                (instructions->instructions_array)[instructions->instructions_count - 1] = COMMAND_PUSH_FROM_MEMORY;
             }
             else
             {
@@ -313,6 +320,8 @@ ReadPopArgument(char**                    input_command,
                 {
                     return COMPILER_RETURN_INCORRECT_COMMAND;
                 }
+
+                (instructions->instructions_array)[instructions->instructions_count - 1] = COMMAND_PUSH_FROM_REG;
             }
 
             find_flag = true;
@@ -326,7 +335,7 @@ ReadPopArgument(char**                    input_command,
         return COMPILER_RETURN_INVALID_SYNTAX;
     }
 
-    if (*SkipSpaces(SkipNotSpaces(*input_command)) != '\n')
+    if (**input_command != '\n')
     {
         return COMPILER_RETURN_INVALID_SYNTAX;
     }

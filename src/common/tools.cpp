@@ -76,7 +76,7 @@ SkipNotSpaces(char* string)
 
     char character = *string;
 
-    while (!isspace(character) && (character != '#') && (character != '\0'))
+    while (!isspace(character) && (character != '\0'))
     {
         string++;
         character = *string;
