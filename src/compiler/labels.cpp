@@ -161,8 +161,11 @@ LabelTabularDump(compiler_instructions_t* instructions)
 void
 DestroyLabelTabular(label_tabular_t* label_tabular)
 {
+    if (label_tabular != NULL)
+    {
     free(label_tabular->labels);
     free(label_tabular);
+    }
 };
 
 label_instruction_return_e

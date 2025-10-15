@@ -104,7 +104,7 @@ TranslateCode(char*                    input_buffer,
 
     while (*(input_command) != '\0')
     {
-        if (CheckIfLabel(input_command))
+        while (CheckIfLabel(input_command))
         {
             char* label_name = input_command;
             *(SkipNotSpaces(label_name) - 1) = '\0';
@@ -204,21 +204,47 @@ ReadPushArgument(char**                   input_command,
     ASSERT(*input_command != NULL);
     ASSERT(instructions != NULL);
 
-    if (!IsStrNum(*input_command))
+    if (!isdigit(**input_command))
     {
         bool find_flag = false;
+        bool memory_usage = false;
+
+        if (**input_command == '[')
+        {
+            *input_command = SkipSpaces(*input_command + 1);
+            memory_usage = true;
+        }
 
         for (int register_number = 0; register_number < PROCESSOR_REG_COUNT; register_number++)
         {
-            if ((SkipNotSpaces(*input_command) - *input_command == (long) strlen(PROCESSORS_REG[register_number])) && (strncmp(PROCESSORS_REG[register_number], *input_command, strlen(PROCESSORS_REG[register_number]))) == 0)
+            // printf("%s", *input_command);
+            if (strncmp(PROCESSORS_REG[register_number], *input_command, strlen(PROCESSORS_REG[register_number])) == 0)
             {
-                // printf("%s", PROCESSORS_REG[register_number]);
-                if (PutInstruction(register_number, instructions) == 1)
+                if (memory_usage)
                 {
-                    return COMPILER_RETURN_INCORRECT_COMMAND;
+                    if (*(*input_command = SkipSpaces(*input_command + strlen(PROCESSORS_REG[register_number]))) != ']')
+                    {
+                        return COMPILER_RETURN_INVALID_SYNTAX;
+                    }
+
+                    if (PutInstruction(register_number, instructions) != 0)
+                    {
+                        return COMPILER_RETURN_INCORRECT_COMMAND;
+                    }
+
+                    (instructions->instructions_array)[instructions->instructions_count - 1] = COMMAND_PUSH_FROM_MEMORY;
                 }
+                else
+                {
+                    if (PutInstruction(register_number, instructions) != 0)
+                    {
+                        return COMPILER_RETURN_INCORRECT_COMMAND;
+                    }
+
+                    (instructions->instructions_array)[instructions->instructions_count - 1] = COMMAND_PUSH_FROM_REG;
+                }
+
                 find_flag = true;
-                (instructions->instructions_array)[instructions->instructions_count - 1] = COMMAND_PUSH_FROM_REG;
 
                 break;
             }
@@ -228,9 +254,19 @@ ReadPushArgument(char**                   input_command,
             return COMPILER_RETURN_INVALID_SYNTAX;
         }
     }
-    else if (PutInstruction(atoi(*input_command), instructions) == 1)
+    else
     {
-        return COMPILER_RETURN_INCORRECT_COMMAND;
+        char* end_str = NULL;
+
+        if ((PutInstruction((int) strtol(*input_command, &end_str, 0), instructions) != 0) || (end_str - *input_command == 0))
+        {
+            return COMPILER_RETURN_INVALID_SYNTAX;
+        }
+    }
+
+    if (*SkipSpaces(SkipNotSpaces(*input_command)) != '\n')
+    {
+        return COMPILER_RETURN_INVALID_SYNTAX;
     }
 
     return COMPILER_RETURN_VALID_SYNTAX;
@@ -244,21 +280,53 @@ ReadPopArgument(char**                    input_command,
     ASSERT(instructions != NULL);
 
     bool find_flag = false;
+    bool memory_usage = false;
+
+    if (**input_command == '[')
+    {
+        *input_command = SkipSpaces(*input_command + 1);
+        memory_usage = true;
+    }
 
     for (int register_number = 0; register_number < PROCESSOR_REG_COUNT; register_number++)
     {
+        // printf("%s", *input_command);
         if (strncmp(PROCESSORS_REG[register_number], *input_command, strlen(PROCESSORS_REG[register_number])) == 0)
         {
-            if (PutInstruction(register_number, instructions) == 1)
+            if (memory_usage)
             {
-                return COMPILER_RETURN_INCORRECT_COMMAND;
+                if (*(*input_command = SkipSpaces(*input_command + strlen(PROCESSORS_REG[register_number]))) != ']')
+                {
+                    return COMPILER_RETURN_INVALID_SYNTAX;
+                }
+
+                if (PutInstruction(register_number, instructions) != 0)
+                {
+                    return COMPILER_RETURN_INCORRECT_COMMAND;
+                }
+
+                (instructions->instructions_array)[instructions->instructions_count - 1] = COMMAND_POP_TO_MEMORY;
+            }
+            else
+            {
+                if (PutInstruction(register_number, instructions) != 0)
+                {
+                    return COMPILER_RETURN_INCORRECT_COMMAND;
+                }
             }
 
             find_flag = true;
+
             break;
         }
     }
+
     if (!find_flag)
+    {
+        return COMPILER_RETURN_INVALID_SYNTAX;
+    }
+
+    if (*SkipSpaces(SkipNotSpaces(*input_command)) != '\n')
     {
         return COMPILER_RETURN_INVALID_SYNTAX;
     }

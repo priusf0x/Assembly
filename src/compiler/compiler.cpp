@@ -14,11 +14,8 @@
  */
 
 // Adding features
-//  -strtol (3 priority)
 //  -Readme(REQUIRED) (2 priority)
 //  -add processor_verifier (2 priority)
-//  -offset for checking actual version (3 priority)
-
 
 enum compiler_main_return_e
 {
