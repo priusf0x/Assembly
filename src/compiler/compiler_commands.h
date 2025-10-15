@@ -77,9 +77,10 @@ const struct compiler_command_t COMPILER_COMMANDS_ARRAY[] = {
     {.command_name = "je",    .return_value = COMMAND_JE,               .handler = ReadJumpArgument}, //USER_COMMANDS  16
     {.command_name = "jne",   .return_value = COMMAND_JNE,              .handler = ReadJumpArgument}, //USER_COMMANDS  17
     {.command_name = "call",  .return_value = COMMAND_CALL,             .handler = ReadCallArgument}, //USER_COMMANDS  18
-    {.command_name = "ret",   .return_value = COMMAND_RET,              .handler = NULL            },//USER_COMMANDS  19
-    {.command_name = NULL,    .return_value = COMMAND_PUSH_FROM_MEMORY, .handler = ReadCallArgument}, //USER_COMMANDS  18
-    {.command_name = "ret",   .return_value = COMMAND_POP_TO_MEMORY,    .handler = NULL            }};//USER_COMMANDS  19
+    {.command_name = "ret",   .return_value = COMMAND_RET,              .handler = NULL            }, //USER_COMMANDS  19
+    {.command_name = NULL,    .return_value = COMMAND_PUSH_FROM_MEMORY, .handler = ReadCallArgument}, //USER_COMMANDS  20
+    {.command_name = NULL,    .return_value = COMMAND_POP_TO_MEMORY,    .handler = NULL            }, //USER_COMMANDS  21
+    {.command_name = "draw",  .return_value = COMMAND_PUSH_FROM_MEMORY, .handler = NULL            }}; //USER_COMMANDS 22
 const int COMMANDS_COUNT = sizeof(COMPILER_COMMANDS_ARRAY) / sizeof(COMPILER_COMMANDS_ARRAY[0]);
 
 void   FreeAll(compiler_instructions_t* instructions, char* input_buffer);

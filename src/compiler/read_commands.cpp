@@ -312,7 +312,7 @@ ReadPopArgument(char**                    input_command,
                 }
 
                 *input_command = SkipSpaces(*input_command + 1);
-                (instructions->instructions_array)[instructions->instructions_count - 1] = COMMAND_PUSH_FROM_MEMORY;
+                (instructions->instructions_array)[instructions->instructions_count - 1] = COMMAND_POP_TO_MEMORY;
             }
             else
             {
@@ -321,7 +321,7 @@ ReadPopArgument(char**                    input_command,
                     return COMPILER_RETURN_INCORRECT_COMMAND;
                 }
 
-                (instructions->instructions_array)[instructions->instructions_count - 1] = COMMAND_PUSH_FROM_REG;
+                (instructions->instructions_array)[instructions->instructions_count - 1] = COMMAND_POP;
             }
 
             find_flag = true;

@@ -25,6 +25,7 @@ enum commands_e
     COMMAND_RET                 = 19,
     COMMAND_PUSH_FROM_MEMORY    = 20,
     COMMAND_POP_TO_MEMORY       = 21,
+    COMMAND_DRAW                = 22,
 };
 
 const char* const PROCESSORS_REG[] =

@@ -12,10 +12,13 @@
 #include "tools.h"
 #include "common_commands.h"
 
-#define NDEBUG
+// #define NDEBUG
 
 const size_t START_STACK_SIZE = 8;
 const uint64_t PROCESSOR_VERSION = 1;
+const size_t RAM_SIZE = 128;//32768;
+// const size_t SCREEN_SIZE_X = 50;
+// const size_t SCREEN_SIZE_Y = 50;
 
 static processor_functions_return_value_e DoOperation(spu_t* spu,int (*operation)(int, int));
 
@@ -68,6 +71,12 @@ InitializeSPU(spu_t*      spu,
         return PROCESSOR_FUNCTION_RETURN_VALUE_MEMORY_ERROR;
     }
 
+    spu->RAM = (int*) calloc(RAM_SIZE, sizeof(int));
+    if (spu->RAM == NULL)
+    {
+        return PROCESSOR_FUNCTION_RETURN_VALUE_MEMORY_ERROR;
+    }
+
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
 
@@ -77,6 +86,7 @@ DestroySPU(spu_t* spu)
     StackDestroy(spu->spu_stack);
     free(spu->instructions);
     free(spu->registers);
+    free(spu->RAM);
 
     memset(spu, 0, sizeof(spu_t));
 
@@ -160,12 +170,48 @@ StackCommandPushFromReg(spu_t* spu)
 }
 
 processor_functions_return_value_e
+StackCommandPushFromMemory(spu_t* spu)
+{
+    PROCESSOR_VERIFY(spu);
+
+    spu->instruction_count++;
+    if (StackPush(spu->spu_stack, (spu->RAM)[(spu->instructions)[spu->instruction_count]]) != 0)
+    {
+        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+    }
+
+    PROCESSOR_VERIFY(spu);
+
+    spu->instruction_count++;
+
+    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
+}
+
+processor_functions_return_value_e
 StackCommandPopToReg(spu_t* spu)
 {
     PROCESSOR_VERIFY(spu);
 
     spu->instruction_count++;
     if (StackPop(spu->spu_stack, &(spu->registers)[(spu->instructions)[spu->instruction_count]]) != 0)
+    {
+        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+    }
+
+    PROCESSOR_VERIFY(spu);
+
+    spu->instruction_count++;
+
+    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
+}
+
+processor_functions_return_value_e
+StackCommandPopToMemory(spu_t* spu)
+{
+    PROCESSOR_VERIFY(spu);
+
+    spu->instruction_count++;
+    if (StackPop(spu->spu_stack, &(spu->RAM)[(spu->instructions)[spu->instruction_count]]) != 0)
     {
         return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
     }
@@ -215,6 +261,8 @@ StackOut(spu_t* spu)
 
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
+
+
 
 // ================= COMPARATORS ==============================
 
@@ -492,6 +540,25 @@ ProcessorDump(spu_t* spu)
     printf(YELLOW "||\n");
 
     StackDump(spu->spu_stack);
+
+    printf(YELLOW "__________________________________________________________________________________________________________\n"
+                  "----------------------------------------------------RAM---------------------------------------------------\n" STANDARD);
+
+    for (size_t index = 0; index < RAM_SIZE; index++)
+    {
+        if ((index % 8 == 0) && (index != 0))
+        {
+            printf(YELLOW "||\n" STANDARD);
+        }
+
+        printf(RED "[%3zu]" WHITE "%6d  " STANDARD, index % 1000,(spu->RAM)[index]);
+
+    }
+
+    printf(YELLOW "||\n" STANDARD);
+    printf(YELLOW "----------------------------------------------------------------------------------------------------------\n" STANDARD);
+
+
 
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
