@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdint.h>
+#include <unistd.h>
 
 #include "Assert.h"
 #include "color.h"
@@ -13,12 +14,14 @@
 #include "common_commands.h"
 
 #define NDEBUG
+#define VIDEO_PLAY
 // #define SHOW_RAM
+
 const size_t START_STACK_SIZE = 8;
 const uint64_t PROCESSOR_VERSION = 1;
 const size_t SCREEN_SIZE_X = 98;
-const size_t SCREEN_SIZE_Y = 38;
-const size_t RAM_SIZE = (SCREEN_SIZE_X + 1) * SCREEN_SIZE_Y;//32768;
+const size_t SCREEN_SIZE_Y = 36;
+const size_t RAM_SIZE = (SCREEN_SIZE_X) * SCREEN_SIZE_Y;
 
 static processor_functions_return_value_e DoOperation(spu_t* spu,int (*operation)(int, int));
 
@@ -133,8 +136,10 @@ DrawScreen(spu_t* spu)
     PROCESSOR_VERIFY(spu);
 
     fprintf(stdout, "\e[1;1H\e[2J"); //clear screen
-    fwrite(spu->RAM, sizeof(char), (SCREEN_SIZE_X + 1) * SCREEN_SIZE_Y, stdout); //+1 for \n symbol
-
+    fwrite(spu->RAM, sizeof(char), SCREEN_SIZE_X * SCREEN_SIZE_Y, stdout); //+1 for \n symbol
+    #ifdef VIDEO_PLAY
+        usleep( 20000 );
+    #endif
     PROCESSOR_VERIFY(spu);
 
     spu->instruction_count++;
@@ -190,7 +195,7 @@ StackCommandPushFromMemory(spu_t* spu)
     PROCESSOR_VERIFY(spu);
 
     spu->instruction_count++;
-    if (StackPush(spu->spu_stack, (spu->RAM)[(spu->instructions)[spu->instruction_count]]) != 0)
+    if (StackPush(spu->spu_stack, (spu->RAM)[(spu->registers)[(spu->instructions)[spu->instruction_count]]]) != 0)
     {
         return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
     }
@@ -226,7 +231,7 @@ StackCommandPopToMemory(spu_t* spu)
     PROCESSOR_VERIFY(spu);
 
     spu->instruction_count++;
-    if (StackPop(spu->spu_stack, &(spu->RAM)[(spu->instructions)[spu->instruction_count]]) != 0)
+    if (StackPop(spu->spu_stack, &((spu->RAM)[(spu->registers)[(spu->instructions)[spu->instruction_count]]])) != 0)
     {
         return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
     }
@@ -578,7 +583,7 @@ ProcessorDump(spu_t* spu)
 
     StackDump(spu->spu_stack);
 
-    #ifdef SHOW_RAW
+    #ifdef SHOW_RAM
     PrintRAMData(spu);
     #endif
 

@@ -266,10 +266,11 @@ ReadPushArgument(char**                   input_command,
             return COMPILER_RETURN_INVALID_SYNTAX;
         }
 
+
         *input_command = end_str;
     }
 
-    if (**input_command != '\n')
+    if (!isspace(**input_command))
     {
         return COMPILER_RETURN_INVALID_SYNTAX;
     }

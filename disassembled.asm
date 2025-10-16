@@ -1,6 +1,0 @@
-push 538976288
-push 538976288
-push 538976288
-push 538976288
-drawb
-hlt
