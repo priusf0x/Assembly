@@ -12,13 +12,13 @@
 #include "tools.h"
 #include "common_commands.h"
 
-// #define NDEBUG
-
+#define NDEBUG
+// #define SHOW_RAM
 const size_t START_STACK_SIZE = 8;
 const uint64_t PROCESSOR_VERSION = 1;
-const size_t RAM_SIZE = 128;//32768;
-// const size_t SCREEN_SIZE_X = 50;
-// const size_t SCREEN_SIZE_Y = 50;
+const size_t SCREEN_SIZE_X = 98;
+const size_t SCREEN_SIZE_Y = 38;
+const size_t RAM_SIZE = (SCREEN_SIZE_X + 1) * SCREEN_SIZE_Y;//32768;
 
 static processor_functions_return_value_e DoOperation(spu_t* spu,int (*operation)(int, int));
 
@@ -126,6 +126,21 @@ ExecuteInstructions(spu_t* spu)
 }
 
 //================ COMMANDS_FUNCTIONS =========================ь
+
+processor_functions_return_value_e
+DrawScreen(spu_t* spu)
+{
+    PROCESSOR_VERIFY(spu);
+
+    fprintf(stdout, "\e[1;1H\e[2J"); //clear screen
+    fwrite(spu->RAM, sizeof(char), (SCREEN_SIZE_X + 1) * SCREEN_SIZE_Y, stdout); //+1 for \n symbol
+
+    PROCESSOR_VERIFY(spu);
+
+    spu->instruction_count++;
+
+    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
+}
 
 processor_functions_return_value_e
 StackCommandIn(spu_t* spu)
@@ -491,6 +506,28 @@ StackDiv(spu_t* spu)
 
 //================== VERIFICATION =====================
 
+static void
+PrintRAMData(spu_t* spu)
+{
+    printf(YELLOW "__________________________________________________________________________________________________________\n"
+                  "----------------------------------------------------RAM---------------------------------------------------\n" STANDARD);
+
+    for (size_t index = 0; index < RAM_SIZE; index++)
+    {
+        if ((index % 8 == 0) && (index != 0))
+        {
+            printf(YELLOW "||\n" STANDARD);
+        }
+
+        printf(RED "[%3zu]" WHITE "%6d  " STANDARD, index % 1000,(spu->RAM)[index]);
+
+    }
+
+    printf(YELLOW "||\n" STANDARD);
+    printf(YELLOW "----------------------------------------------------------------------------------------------------------\n" STANDARD);
+}
+
+
 processor_functions_return_value_e
 ProcessorDump(spu_t* spu)
 {
@@ -541,24 +578,9 @@ ProcessorDump(spu_t* spu)
 
     StackDump(spu->spu_stack);
 
-    printf(YELLOW "__________________________________________________________________________________________________________\n"
-                  "----------------------------------------------------RAM---------------------------------------------------\n" STANDARD);
-
-    for (size_t index = 0; index < RAM_SIZE; index++)
-    {
-        if ((index % 8 == 0) && (index != 0))
-        {
-            printf(YELLOW "||\n" STANDARD);
-        }
-
-        printf(RED "[%3zu]" WHITE "%6d  " STANDARD, index % 1000,(spu->RAM)[index]);
-
-    }
-
-    printf(YELLOW "||\n" STANDARD);
-    printf(YELLOW "----------------------------------------------------------------------------------------------------------\n" STANDARD);
-
-
+    #ifdef SHOW_RAW
+    PrintRAMData(spu);
+    #endif
 
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }

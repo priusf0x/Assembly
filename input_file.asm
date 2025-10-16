@@ -1,29 +1,21 @@
-push 1
-pop [RAX]
-printsquares:
-
-    call calculate_square
-
-    push [RAX] #adding 1 to value
+fill_screen:
+    push 0b01001101010011010100110101001101
+    push 0
+    pop RAX
+    push [RAX]
+    push 0b01001101010011010100110101001101
     push 1
-    add
-    pop [RAX]
-
+    pop RAX
     push [RAX]
-    push 10
-
-jbe printsquares:
-hlt
-
-#functions
-
-calculate_square:
+    push 0b01001101010011010100110101001101
+    push 2
+    pop RAX
     push [RAX]
+    push 0b01001101010011010100110101001101
+    push 3
+    pop RAX
     push [RAX]
-    mul
-    out
-ret
-
+drawb
 hlt
 
 

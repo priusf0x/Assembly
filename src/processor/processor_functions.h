@@ -58,6 +58,7 @@ processor_functions_return_value_e StackCommandPopToReg(spu_t* spu);
 processor_functions_return_value_e StackCommandPushFromMemory(spu_t* spu);
 processor_functions_return_value_e StackCommandPushFromReg(spu_t* spu);
 processor_functions_return_value_e StackCommandIn(spu_t* spu);
+processor_functions_return_value_e DrawScreen(spu_t* spu);
 
 processor_functions_return_value_e InitializeSPU(spu_t* spu, const char* assembled_file_name);
 processor_functions_return_value_e ExecuteInstructions(spu_t* spu);
@@ -86,7 +87,8 @@ const struct processor_command_t PROCESSOR_COMMANDS_ARRAY[] = {
     {.return_value = COMMAND_CALL,            .command_function = Call                      },
     {.return_value = COMMAND_RET,             .command_function = Return                    },
     {.return_value = COMMAND_PUSH_FROM_MEMORY,.command_function = StackCommandPushFromMemory},
-    {.return_value = COMMAND_POP_TO_MEMORY,   .command_function = StackCommandPopToMemory   }};
+    {.return_value = COMMAND_POP_TO_MEMORY,   .command_function = StackCommandPopToMemory   },
+    {.return_value = COMMAND_DRAW_B,          .command_function = DrawScreen                }};
 
 const size_t PROCESSOR_COMMANDS_COUNT = sizeof(PROCESSOR_COMMANDS_ARRAY) / sizeof(PROCESSOR_COMMANDS_ARRAY[0]);
 

@@ -1,4 +1,6 @@
-push 1
-pop RAX
-push 32
+push 538976288
+push 538976288
+push 538976288
+push 538976288
+drawb
 hlt
