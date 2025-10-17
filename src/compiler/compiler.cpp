@@ -73,7 +73,6 @@ main(int                argc,
     }
 
     FreeAll(&instructions, input_buffer);
-
     return COMPILER_MAIN_RETURN_SUCCESS;
 }
 

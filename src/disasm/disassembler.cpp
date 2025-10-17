@@ -19,7 +19,7 @@ enum disassembler_main_return_e
 const char* ASSEMBLED_FILE_NAME = "compiled.obj";
 const char* DISASSEMBLED_FILE_NAME = "disassembled.asm";
 
-const uint64_t DISASSEMBLER_VERSION = 1;
+const uint64_t DISASSEMBLER_VERSION = 3;
 
 int
 main(int                argc,

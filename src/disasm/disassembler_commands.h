@@ -39,7 +39,8 @@ const struct disassemble_command_t DISASSEMBLER_COMMANDS_ARRAY[] = {
     {.command_name = "ret",  .return_value = COMMAND_RET,              .binary_handler = NULL           },
     {.command_name = "push", .return_value = COMMAND_PUSH_FROM_MEMORY, .binary_handler = PrintPushPopArg},
     {.command_name = "pop",  .return_value = COMMAND_POP_TO_MEMORY,    .binary_handler = PrintPushPopArg},
-    {.command_name = "drawb", .return_value = COMMAND_DRAW_B,             .binary_handler = NULL           }};
+    {.command_name = "drawb",.return_value = COMMAND_DRAW_B,           .binary_handler = NULL           },
+    {.command_name = "draw", .return_value = COMMAND_DRAW,             .binary_handler = NULL           }};
 const size_t DISASSEMBLER_COMMANDS_COUNT = sizeof(DISASSEMBLER_COMMANDS_ARRAY) / sizeof(DISASSEMBLER_COMMANDS_ARRAY[0]);
 
 #endif //DISASSEMBLER_COMMANDS_H

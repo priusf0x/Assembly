@@ -36,7 +36,6 @@ CheckIfLabel(char* string)
     {
         return true;
     }
-
     return false;
 }
 

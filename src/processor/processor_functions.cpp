@@ -14,14 +14,14 @@
 #include "common_commands.h"
 
 #define NDEBUG
-#define VIDEO_PLAY
-// #define SHOW_RAM
+// #define VIDEO_PLAY
+#define SHOW_RAM
 
 const size_t START_STACK_SIZE = 8;
-const uint64_t PROCESSOR_VERSION = 1;
+const uint64_t PROCESSOR_VERSION = 3;
 const size_t SCREEN_SIZE_X = 98;
 const size_t SCREEN_SIZE_Y = 36;
-const size_t RAM_SIZE = (SCREEN_SIZE_X) * SCREEN_SIZE_Y;
+const size_t RAM_SIZE = 4000;
 
 static processor_functions_return_value_e DoOperation(spu_t* spu,int (*operation)(int, int));
 
@@ -29,7 +29,6 @@ processor_functions_return_value_e
 InitializeSPU(spu_t*      spu,
               const char* assembled_file_name)
 {
-
     if (StackInit(&(spu->spu_stack), START_STACK_SIZE, "SPU stack") != 0)
     {
         return PROCESSOR_FUNCTION_RETURN_VALUE_FAILED_TO_INIT_STACK;
@@ -132,6 +131,24 @@ ExecuteInstructions(spu_t* spu)
 
 processor_functions_return_value_e
 DrawScreen(spu_t* spu)
+{
+    PROCESSOR_VERIFY(spu);
+
+    fprintf(stdout, "\e[1;1H\e[2J"); //clear screen
+    fwrite(spu->RAM, sizeof(int), SCREEN_SIZE_X * SCREEN_SIZE_Y, stdout); //+1 for \n symbol
+    // ProcessorDump(spu);
+    #ifdef VIDEO_PLAY
+        usleep( 20000 );
+    #endif
+    PROCESSOR_VERIFY(spu);
+
+    spu->instruction_count++;
+
+    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
+}
+
+processor_functions_return_value_e
+DrawScreenQuadro(spu_t* spu)
 {
     PROCESSOR_VERIFY(spu);
 

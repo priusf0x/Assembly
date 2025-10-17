@@ -104,34 +104,34 @@ TranslateCode(char*                    input_buffer,
 
     while (*(input_command) != '\0')
     {
-        while (CheckIfLabel(input_command))
+        while (CheckIfLabel(input_command = SkipSpaces(input_command)))
         {
-            char* label_name = input_command;
-            *(SkipNotSpaces(label_name) - 1) = '\0';
+            *(SkipNotSpaces(input_command) - 1) = '\0';
 
-            if (InitLabel(label_name, instructions) != LABEL_INSTRUCTION_RETURN_SUCCESS)
+            if (InitLabel(input_command, instructions) != LABEL_INSTRUCTION_RETURN_SUCCESS)
             {
                 printf("EMPTY LABEL OR REUSED TWICE.\n");
                 return COMPILER_RETURN_LABEL_ERROR;
             }
 
-            input_command = SkipSpaces(SkipNotSpaces(input_command)) + 1;
+            input_command = SkipSpaces(SkipNotSpaces(input_command) + 1); //for skipping \0
         }
 
         input_command = SkipSpaces(input_command);
 
         compiler_return_e output = ReadCommand(&input_command, instructions);
-        input_command = SkipSpaces(SkipNotSpaces(input_command)) + 1;
+
+        input_command++;
         command_index++;
 
         if (output == COMPILER_RETURN_INCORRECT_COMMAND)
         {
-            printf("INCORRECT COMMAND %zu.\n", command_index);
+            printf("INCORRECT COMMAND IN LINE %zu.\n", command_index);
             return COMPILER_RETURN_INCORRECT_COMMAND;
         }
         if (output == COMPILER_RETURN_INVALID_SYNTAX)
         {
-            printf("INCORRECT SYNTAX IN COMMAND %zu.\n", command_index);
+            printf("INCORRECT SYNTAX IN LINE %zu.\n", command_index);
             return COMPILER_RETURN_INVALID_SYNTAX;
         }
     }
@@ -145,6 +145,7 @@ compiler_return_e
 ReadCommand(char**                   input_command,
             compiler_instructions_t* instructions)
 {
+    // printf("%.10s\n", *input_command);
     commands_e read_command = COMMAND_HLT;
 
     size_t command_size = (size_t) (SkipNotSpaces(*input_command) - *input_command);
@@ -163,6 +164,11 @@ ReadCommand(char**                   input_command,
         }
         if (strncmp(*input_command, COMPILER_COMMANDS_ARRAY[index].command_name, command_size) == 0)
         {
+            if (strlen(COMPILER_COMMANDS_ARRAY[index].command_name) != command_size)
+            {
+                continue;
+            }
+
             read_command = (COMPILER_COMMANDS_ARRAY[index]).return_value;
             if (PutInstruction(read_command, instructions) != 0)
             {
@@ -181,13 +187,22 @@ ReadCommand(char**                   input_command,
 
     if (COMPILER_COMMANDS_ARRAY[read_command].handler != NULL)
     {
-        *input_command = SkipNotSpaces(*input_command);
+        *input_command += command_size;
         *input_command = SkipSpaces(*input_command);
 
         compiler_return_e output = (COMPILER_COMMANDS_ARRAY[read_command].handler)(input_command, instructions);
         if (output != COMPILER_RETURN_VALID_SYNTAX)
         {
             return output;
+        }
+    }
+    else
+    {
+        *input_command += command_size;
+        *input_command = SkipSpaces(*input_command);
+        if (**input_command != '\n')
+        {
+            return COMPILER_RETURN_INVALID_SYNTAX;
         }
     }
 
@@ -234,7 +249,7 @@ ReadPushArgument(char**                   input_command,
                         return COMPILER_RETURN_INCORRECT_COMMAND;
                     }
 
-                    *input_command = SkipSpaces(*input_command + 1);
+                    (*input_command)++;
                     (instructions->instructions_array)[instructions->instructions_count - 1] = COMMAND_PUSH_FROM_MEMORY;
                 }
                 else
@@ -246,7 +261,6 @@ ReadPushArgument(char**                   input_command,
 
                     (instructions->instructions_array)[instructions->instructions_count - 1] = COMMAND_PUSH_FROM_REG;
                 }
-
                 find_flag = true;
 
                 break;
@@ -266,11 +280,12 @@ ReadPushArgument(char**                   input_command,
             return COMPILER_RETURN_INVALID_SYNTAX;
         }
 
-
         *input_command = end_str;
     }
 
-    if (!isspace(**input_command))
+    *input_command = SkipSpaces(*input_command);
+
+    if (**input_command != '\n')
     {
         return COMPILER_RETURN_INVALID_SYNTAX;
     }
@@ -312,7 +327,7 @@ ReadPopArgument(char**                    input_command,
                     return COMPILER_RETURN_INCORRECT_COMMAND;
                 }
 
-                *input_command = SkipSpaces(*input_command + 1);
+                (*input_command)++;
                 (instructions->instructions_array)[instructions->instructions_count - 1] = COMMAND_POP_TO_MEMORY;
             }
             else
@@ -336,6 +351,8 @@ ReadPopArgument(char**                    input_command,
         return COMPILER_RETURN_INVALID_SYNTAX;
     }
 
+    *input_command = SkipSpaces(*input_command);
+
     if (**input_command != '\n')
     {
         return COMPILER_RETURN_INVALID_SYNTAX;
@@ -348,6 +365,7 @@ compiler_return_e
 ReadJumpArgument(char**                    input_command,
                  compiler_instructions_t*  instructions)
 {
+    // printf("-->%.10s", *input_command);
     ASSERT(input_command != NULL);
     ASSERT(instructions != NULL);
 
@@ -358,12 +376,15 @@ ReadJumpArgument(char**                    input_command,
 
     if (!CheckIfLabel(*input_command))
     {
-        if (IsStrNum(*input_command))
+        if (isdigit(**input_command))
         {
-            if (PutInstruction(atoi(*input_command), instructions) == 1)
+            char* end_str = NULL;
+
+            if ((PutInstruction((int) strtol(*input_command, &end_str, 0), instructions) != 0) || (end_str - *input_command == 0))
             {
-                return COMPILER_RETURN_INCORRECT_COMMAND;
+                return COMPILER_RETURN_INVALID_SYNTAX;
             }
+            *input_command = end_str;
         }
         else
         {
@@ -372,21 +393,27 @@ ReadJumpArgument(char**                    input_command,
     }
     else
     {
-        char* label_name = *input_command;
-
-        if (*(SkipNotSpaces(label_name) - 1) != ':')
+        if (*(SkipNotSpaces(*input_command) - 1) != ':')
         {
             return COMPILER_RETURN_INVALID_SYNTAX;
         }
 
-        *(SkipNotSpaces(label_name) - 1) = '\0';
+        *(SkipNotSpaces(*input_command) - 1) = '\0';
 
-        if (UseLabel(label_name, instructions) != 0)
+        if (UseLabel(*input_command, instructions) != 0)
         {
             return COMPILER_RETURN_INVALID_SYNTAX;
         }
 
         instructions->instructions_count++;
+
+        *input_command = SkipNotSpaces(*input_command) + 1;
+    }
+
+    *input_command = SkipSpaces(*input_command);
+    if (**input_command != '\n')
+    {
+        return COMPILER_RETURN_INVALID_SYNTAX;
     }
 
     return COMPILER_RETURN_VALID_SYNTAX;
@@ -415,13 +442,14 @@ ReadCallArgument(char**                    input_command,
         return COMPILER_RETURN_INVALID_SYNTAX;
     }
 
-    char* label_name = *input_command;
-    *(SkipNotSpaces(label_name)) = '\0';
+    *(SkipNotSpaces(*input_command)) = '\0';
 
-    if (UseLabel(label_name, instructions) != 0)
+    if (UseLabel(*input_command, instructions) != 0)
     {
         return COMPILER_RETURN_INVALID_SYNTAX;
     }
+
+    *input_command = SkipNotSpaces(*input_command);
 
     instructions->instructions_count++;
 

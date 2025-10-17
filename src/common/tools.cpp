@@ -105,7 +105,7 @@ PutInstruction(int                      value,           //PLUS-MINUS ONE FOR ZE
     ASSERT(instructions != NULL);
     ASSERT(instructions->instructions_array != NULL);
 
-    if (instructions->instructions_count == instructions->instructions_size - 2)
+    if (instructions->instructions_count >= instructions->instructions_size - 3)
     {
         instructions->instructions_array = (int*) recalloc(instructions->instructions_array, sizeof(int) * instructions->instructions_size, sizeof(int) * instructions->instructions_size * 2);
         instructions->instructions_size *= 2;
