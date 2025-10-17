@@ -12,7 +12,8 @@
 
 ###
 
-![Image](https://github.com/user-attachments/assets/21e225bd-9918-479e-8e81-c299f79f61be)
+![til](processor_cutted.gif)
+
 
 ###
 
