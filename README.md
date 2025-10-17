@@ -12,6 +12,10 @@
 
 ###
 
+![Image](https://github.com/user-attachments/assets/21e225bd-9918-479e-8e81-c299f79f61be)
+
+###
+
 |Command name| Description |
 | --- | --- |
 |jmp <instrucrion_number/<label_name:>| Default jump|
