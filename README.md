@@ -14,21 +14,6 @@
 
 ![til](processor_cutted.gif)
 
-
-###
-
-|Command name| Description |
-| --- | --- |
-|jmp <instrucrion_number/<label_name:>| Default jump|
-|ja <instrucrion_number/<label_name:>| Jump If Above|
-|jae <instrucrion_number/<label_name:>| Jump If Above or Equal|
-|jb <instrucrion_number/<label_name:>| Jump If Below|
-|jbe <instrucrion_number/<label_name:>| Jump If Below or Equal|
-|je <instrucrion_number/<label_name:>| Jump If Equal|
-|jne <instrucrion_number/<label_name:>| Jump If Not Equal|
-|call <label_name:>| Jump with pushing adress into stack|
-|ret <label_name:>| returns to adress which is 
-
 <p align="left">This is virtual processor with his own assembler included for running programms</p>
 
 ###
