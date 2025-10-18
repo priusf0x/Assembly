@@ -28,7 +28,7 @@ git clone https://github.com/priusf0x/Assembly
 For building the project open installation directory and write in cmd:
 
 ```bash
-make build 
+make build
 ```
 
 Now you have 3 different options
@@ -51,7 +51,7 @@ Now you have 3 different options
 
 ###
 
-<h3 align="left">Memory controlling</h3>
+<h3 align="left">Stack usage</h3>
 
 ###
 
@@ -69,7 +69,7 @@ Now you have 3 different options
 
 ###
 
-Ariphmeic operations with stack 
+Ariphmeic operations with stack
 
 | add | sub | mul | div | sqrt |
 |---|---|---|---|---|
