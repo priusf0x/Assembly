@@ -58,7 +58,7 @@ InitializeSPU(spu_t*      spu,
         fclose(assembled_file);
         return PROCESSOR_FUNCTION_RETURN_VALUE_MEMORY_ERROR;
     }
-    fread(spu->instructions, sizeof(int), (size_t)max_instruction_count, assembled_file);
+    fread(spu->instructions, sizeof(int), (size_t) max_instruction_count, assembled_file);
 
     if (fclose(assembled_file) != 0)
     {

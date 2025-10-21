@@ -33,7 +33,7 @@ ReadFile(char**      input_buffer,
         return READ_FILE_ERROR_TYPE_READ_ERROR;
     }
 
-    *input_buffer = (char*) calloc(char_number + 2, sizeof(char));//1 for \0 another one fo adding \n
+    *input_buffer = (char*) calloc(char_number + 2, sizeof(uint8_t));//1 for \0 another one fo adding \n
     if (*input_buffer == NULL)
     {
         fclose(file_input);
@@ -81,7 +81,7 @@ WriteInFile(compiler_instructions_t* instructions,
     }
 
     fwrite(&COMPILER_VERSION , sizeof(uint64_t), 1, compiled_file);
-    fwrite(instructions->instructions_array , sizeof(int), instructions->instructions_count + 1, compiled_file);
+    fwrite(instructions->instructions_array , sizeof(uint8_t), instructions->instructions_bytes_written, compiled_file);
     fprintf(compiled_file, "\n\nHere was pr1usf0x.\n");
 
     if (fclose(compiled_file) != 0)
@@ -136,7 +136,7 @@ TranslateCode(char*                    input_buffer,
         }
     }
 
-    (instructions->instructions_array)[0] = (int) instructions->instructions_count;
+    ((uint64_t*) (instructions->instructions_array))[0] = (uint64_t) instructions->instructions_bytes_written;
 
     return COMPILER_RETURN_SUCCESS;
 }
@@ -146,7 +146,8 @@ ReadCommand(char**                   input_command,
             compiler_instructions_t* instructions)
 {
     // printf("%.10s\n", *input_command);
-    commands_e read_command = COMMAND_HLT;
+    uint8_t read_command = (COMPILER_COMMANDS_ARRAY[0]).binary_value;
+    size_t index_in_table = 0;
 
     size_t command_size = (size_t) (SkipNotSpaces(*input_command) - *input_command);
 
@@ -169,7 +170,9 @@ ReadCommand(char**                   input_command,
                 continue;
             }
 
-            read_command = (COMPILER_COMMANDS_ARRAY[index]).return_value;
+            read_command = (COMPILER_COMMANDS_ARRAY[index]).binary_value;
+            index_in_table = index;
+
             if (PutInstruction(read_command, instructions) != 0)
             {
                 return COMPILER_RETURN_INCORRECT_COMMAND;
@@ -185,12 +188,12 @@ ReadCommand(char**                   input_command,
         return COMPILER_RETURN_INCORRECT_COMMAND;
     }
 
-    if (COMPILER_COMMANDS_ARRAY[read_command].handler != NULL)
+    if (COMPILER_COMMANDS_ARRAY[index_in_table].handler != NULL)
     {
         *input_command += command_size;
         *input_command = SkipSpaces(*input_command);
 
-        compiler_return_e output = (COMPILER_COMMANDS_ARRAY[read_command].handler)(input_command, instructions);
+        compiler_return_e output = (COMPILER_COMMANDS_ARRAY[index_in_table].handler)(input_command, instructions);
         if (output != COMPILER_RETURN_VALID_SYNTAX)
         {
             return output;
@@ -244,23 +247,19 @@ ReadPushArgument(char**                   input_command,
                         return COMPILER_RETURN_INVALID_SYNTAX;
                     }
 
-                    if (PutInstruction(register_number, instructions) != 0)
-                    {
-                        return COMPILER_RETURN_INCORRECT_COMMAND;
-                    }
-
+                    (instructions->instructions_array)[instructions->instructions_bytes_written - 1] = (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | USES_MEMORY;
                     (*input_command)++;
-                    (instructions->instructions_array)[instructions->instructions_count - 1] = COMMAND_PUSH_FROM_MEMORY;
+                }
+
+                if (register_number < 8)  //for last 3 bits
+                {
+                    (instructions->instructions_array)[instructions->instructions_bytes_written - 1] = (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | (uint8_t) register_number;
                 }
                 else
                 {
-                    if (PutInstruction(register_number, instructions) != 0)
-                    {
-                        return COMPILER_RETURN_INCORRECT_COMMAND;
-                    }
-
-                    (instructions->instructions_array)[instructions->instructions_count - 1] = COMMAND_PUSH_FROM_REG;
+                    return COMPILER_RETURN_INVALID_SYNTAX;
                 }
+
                 find_flag = true;
 
                 break;
@@ -275,7 +274,9 @@ ReadPushArgument(char**                   input_command,
     {
         char* end_str = NULL;
 
-        if ((PutInstruction((int) strtol(*input_command, &end_str, 0), instructions) != 0) || (end_str - *input_command == 0))
+        (instructions->instructions_array)[instructions->instructions_bytes_written - 1] = (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | USES_EXTRA_SPACE;
+
+        if ((PutInteger((int) strtol(*input_command, &end_str, 0), instructions) != 0) || (end_str - *input_command == 0))
         {
             return COMPILER_RETURN_INVALID_SYNTAX;
         }
@@ -321,23 +322,17 @@ ReadPopArgument(char**                    input_command,
                 {
                     return COMPILER_RETURN_INVALID_SYNTAX;
                 }
-
-                if (PutInstruction(register_number, instructions) != 0)
-                {
-                    return COMPILER_RETURN_INCORRECT_COMMAND;
-                }
-
+                (instructions->instructions_array)[instructions->instructions_bytes_written - 1] = (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | USES_MEMORY;
                 (*input_command)++;
-                (instructions->instructions_array)[instructions->instructions_count - 1] = COMMAND_POP_TO_MEMORY;
+            }
+
+            if (register_number < 8)  //for last 3 bits
+            {
+                (instructions->instructions_array)[instructions->instructions_bytes_written - 1] = (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | (uint8_t) register_number;
             }
             else
             {
-                if (PutInstruction(register_number, instructions) != 0)
-                {
-                    return COMPILER_RETURN_INCORRECT_COMMAND;
-                }
-
-                (instructions->instructions_array)[instructions->instructions_count - 1] = COMMAND_POP;
+                return COMPILER_RETURN_INVALID_SYNTAX;
             }
 
             find_flag = true;
@@ -380,7 +375,7 @@ ReadJumpArgument(char**                    input_command,
         {
             char* end_str = NULL;
 
-            if ((PutInstruction((int) strtol(*input_command, &end_str, 0), instructions) != 0) || (end_str - *input_command == 0))
+            if ((PutInteger((int) strtol(*input_command, &end_str, 0), instructions) != 0) || (end_str - *input_command == 0))
             {
                 return COMPILER_RETURN_INVALID_SYNTAX;
             }
@@ -405,7 +400,7 @@ ReadJumpArgument(char**                    input_command,
             return COMPILER_RETURN_INVALID_SYNTAX;
         }
 
-        instructions->instructions_count++;
+        instructions->instructions_bytes_written += sizeof(int);
 
         *input_command = SkipNotSpaces(*input_command) + 1;
     }
@@ -451,7 +446,7 @@ ReadCallArgument(char**                    input_command,
 
     *input_command = SkipNotSpaces(*input_command);
 
-    instructions->instructions_count++;
+    instructions->instructions_bytes_written += sizeof(int);
 
     return COMPILER_RETURN_VALID_SYNTAX;
 }
