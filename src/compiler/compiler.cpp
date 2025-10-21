@@ -17,6 +17,7 @@
 //  -Readme(REQUIRED) (2 priority)
 //  -add processor_verifier (2 priority)
 
+
 enum compiler_main_return_e
 {
     COMPILER_MAIN_RETURN_SUCCESS,
@@ -34,8 +35,8 @@ main(int                argc,
      const char* const* argv)
 {
     char* input_buffer = NULL;
-    compiler_instructions_t instructions = {.instructions_count = 0, .instructions_size = 3, .instructions_array = NULL};
-    instructions.instructions_array = (int*) calloc(instructions.instructions_size, sizeof(int));
+    compiler_instructions_t instructions = {.instructions_bytes_written = sizeof(uint64_t), .instructions_max_bytes_amount = 20, .instructions_array = NULL};
+    instructions.instructions_array = (uint8_t*) calloc(instructions.instructions_max_bytes_amount, sizeof(uint));
 
     if (ReadFlags(argc, argv, &INPUT_FILE_NAME, &COMPILED_NAME) != (int) COMPILER_MAIN_RETURN_SUCCESS)
     {
@@ -65,11 +66,17 @@ main(int                argc,
         return COMPILER_MAIN_RETURN_FIXUP_ERROR;
     }
 
+
     if (WriteInFile(&instructions, COMPILED_NAME) != (int) COMPILER_MAIN_RETURN_SUCCESS)
     {
         FreeAll(&instructions, input_buffer);
         printf(RED "FILE WRITE ERROR.\n" STANDARD);
         return COMPILER_MAIN_RETURN_FILE_CLOSE_ERROR;
+    }
+
+    for (int i = 0; i < instructions.instructions_bytes_written; i++)
+    {
+        printf("%d ", (instructions.instructions_array)[i]);
     }
 
     FreeAll(&instructions, input_buffer);

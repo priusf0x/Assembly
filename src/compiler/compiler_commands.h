@@ -4,8 +4,6 @@
 #include <stdlib.h>
 
 #include "common_commands.h"
-
-
 struct label_tabular_t;
 
 enum label_instruction_return_e
@@ -19,9 +17,9 @@ enum label_instruction_return_e
 
 struct compiler_instructions_t
 {
-    size_t           instructions_count;
-    size_t           instructions_size;
-    int*             instructions_array;
+    size_t           instructions_bytes_written;
+    size_t           instructions_max_bytes_amount;
+    uint8_t*         instructions_array;
     label_tabular_t* instructions_label_tabular;
 };
 
@@ -53,35 +51,32 @@ void                       DestroyLabelTabular(label_tabular_t* label_tabular);
 struct compiler_command_t
 {
     const char* command_name;
-    const enum commands_e return_value;
+    uint8_t binary_value;
     enum compiler_return_e (*handler)(char** input_command, struct compiler_instructions_t* instructions);
 };
 
 const struct compiler_command_t COMPILER_COMMANDS_ARRAY[] = {
-    {.command_name = "hlt",   .return_value = COMMAND_HLT,              .handler = NULL            }, //USER_COMMANDS  0
-    {.command_name = "push",  .return_value = COMMAND_PUSH,             .handler = ReadPushArgument}, //USER_COMMANDS  1
-    {.command_name = "out",   .return_value = COMMAND_OUT,              .handler = NULL            }, //USER_COMMANDS  2
-    {.command_name = "add",   .return_value = COMMAND_ADD,              .handler = NULL            }, //USER_COMMANDS  3
-    {.command_name = "sub",   .return_value = COMMAND_SUB,              .handler = NULL            }, //USER_COMMANDS  4
-    {.command_name = "mul",   .return_value = COMMAND_MUL,              .handler = NULL            }, //USER_COMMANDS  5
-    {.command_name = "div",   .return_value = COMMAND_DIV,              .handler = NULL            }, //USER_COMMANDS  6
-    {.command_name = NULL,    .return_value = COMMAND_PUSH_FROM_REG,    .handler = NULL            }, //USER_COMMANDS  7
-    {.command_name = "pop",   .return_value = COMMAND_POP,              .handler = ReadPopArgument }, //USER_COMMANDS  8
-    {.command_name = "sqrt",  .return_value = COMMAND_SQRT,             .handler = NULL            }, //USER_COMMANDS  9
-    {.command_name = "in",    .return_value = COMMAND_IN,               .handler = NULL            }, //USER_COMMANDS  10
-    {.command_name = "jmp",   .return_value = COMMAND_JMP,              .handler = ReadJumpArgument}, //USER_COMMANDS  11
-    {.command_name = "ja",    .return_value = COMMAND_JA,               .handler = ReadJumpArgument}, //USER_COMMANDS  12
-    {.command_name = "jae",   .return_value = COMMAND_JAE,              .handler = ReadJumpArgument}, //USER_COMMANDS  13
-    {.command_name = "jb",    .return_value = COMMAND_JB,               .handler = ReadJumpArgument}, //USER_COMMANDS  14
-    {.command_name = "jbe",   .return_value = COMMAND_JBE,              .handler = ReadJumpArgument}, //USER_COMMANDS  15
-    {.command_name = "je",    .return_value = COMMAND_JE,               .handler = ReadJumpArgument}, //USER_COMMANDS  16
-    {.command_name = "jne",   .return_value = COMMAND_JNE,              .handler = ReadJumpArgument}, //USER_COMMANDS  17
-    {.command_name = "call",  .return_value = COMMAND_CALL,             .handler = ReadCallArgument}, //USER_COMMANDS  18
-    {.command_name = "ret",   .return_value = COMMAND_RET,              .handler = NULL            }, //USER_COMMANDS  19
-    {.command_name = NULL,    .return_value = COMMAND_PUSH_FROM_MEMORY, .handler = ReadCallArgument}, //USER_COMMANDS  20
-    {.command_name = NULL,    .return_value = COMMAND_POP_TO_MEMORY,    .handler = NULL            }, //USER_COMMANDS  21
-    {.command_name = "drawb", .return_value = COMMAND_DRAW_B,           .handler = NULL            }, //USER_COMMANDS  22
-    {.command_name = "draw",  .return_value = COMMAND_DRAW,             .handler = NULL            }};//USER_COMMANDS  23
+    {.command_name = "hlt",   .binary_value = 0b00000000, .handler = NULL            }, //USER_COMMANDS  0
+    {.command_name = "push",  .binary_value = 0b00010000, .handler = ReadPushArgument}, //USER_COMMANDS  1
+    {.command_name = "out",   .binary_value = 0b00100000, .handler = NULL            }, //USER_COMMANDS  2
+    {.command_name = "add",   .binary_value = 0b00110000, .handler = NULL            }, //USER_COMMANDS  3
+    {.command_name = "sub",   .binary_value = 0b00110001, .handler = NULL            }, //USER_COMMANDS  4
+    {.command_name = "mul",   .binary_value = 0b00110010, .handler = NULL            }, //USER_COMMANDS  5
+    {.command_name = "div",   .binary_value = 0b00110011, .handler = NULL            }, //USER_COMMANDS  6
+    {.command_name = "pop",   .binary_value = 0b01000000, .handler = ReadPopArgument }, //USER_COMMANDS  7
+    {.command_name = "sqrt",  .binary_value = 0b00110100, .handler = NULL            }, //USER_COMMANDS  8
+    {.command_name = "in",    .binary_value = 0b00101000, .handler = NULL            }, //USER_COMMANDS  9
+    {.command_name = "jmp",   .binary_value = 0b01010000, .handler = ReadJumpArgument}, //USER_COMMANDS  10
+    {.command_name = "ja",    .binary_value = 0b01010010, .handler = ReadJumpArgument}, //USER_COMMANDS  11
+    {.command_name = "jae",   .binary_value = 0b01010011, .handler = ReadJumpArgument}, //USER_COMMANDS  12
+    {.command_name = "jb",    .binary_value = 0b01010100, .handler = ReadJumpArgument}, //USER_COMMANDS  13
+    {.command_name = "jbe",   .binary_value = 0b01010101, .handler = ReadJumpArgument}, //USER_COMMANDS  14
+    {.command_name = "je",    .binary_value = 0b01010001, .handler = ReadJumpArgument}, //USER_COMMANDS  15
+    {.command_name = "jne",   .binary_value = 0b01011110, .handler = ReadJumpArgument}, //USER_COMMANDS  16
+    {.command_name = "call",  .binary_value = 0b01100000, .handler = ReadCallArgument}, //USER_COMMANDS  17
+    {.command_name = "ret",   .binary_value = 0b01100001, .handler = NULL            }, //USER_COMMANDS  18
+    {.command_name = "drawb", .binary_value = 0b01110001, .handler = NULL            }, //USER_COMMANDS  19
+    {.command_name = "draw",  .binary_value = 0b01110000, .handler = NULL            }};//USER_COMMANDS  20
 const int COMMANDS_COUNT = sizeof(COMPILER_COMMANDS_ARRAY) / sizeof(COMPILER_COMMANDS_ARRAY[0]);
 
 void   FreeAll(compiler_instructions_t* instructions, char* input_buffer);

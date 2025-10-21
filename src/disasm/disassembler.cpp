@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <unistd.h>
 
 #include "disassembler_commands.h"
 #include "common_commands.h"
@@ -19,7 +20,7 @@ enum disassembler_main_return_e
 const char* ASSEMBLED_FILE_NAME = "compiled.obj";
 const char* DISASSEMBLED_FILE_NAME = "disassembled.asm";
 
-const uint64_t DISASSEMBLER_VERSION = 3;
+const uint64_t DISASSEMBLER_VERSION = 4;
 
 int
 main(int                argc,
@@ -50,10 +51,11 @@ main(int                argc,
         return DISASSEMBLER_MAIN_RETURN_VERSION_MISMATCH;
     }
 
-    fread(&instructions_count , sizeof(int), 1, assembled_file);
+    fread(&instructions_count , sizeof(uint64_t), 1, assembled_file);
+    instructions_count -= sizeof(uint64_t);
 
-    int* instructions = (int*) calloc(instructions_count, sizeof(int));
-    fread(instructions, sizeof(int), instructions_count, assembled_file);
+    uint8_t* instructions = (uint8_t*) calloc(instructions_count, sizeof(uint8_t));
+    fread(instructions, sizeof(uint8_t), instructions_count, assembled_file);
 
     if (fclose(assembled_file) != (int) DISASSEMBLER_MAIN_RETURN_SUCCESS)
     {
@@ -65,25 +67,20 @@ main(int                argc,
     FILE* disassembled_file = fopen(DISASSEMBLED_FILE_NAME, "w+");
     if (disassembled_file == NULL)
     {
+        free(instructions);
         printf(RED "DISASSEMBLED FILE WRITE ERROR.\n" STANDARD);
 
         return DISASSEMBLER_MAIN_RETURN_DISASSEMBLED_FILE_OPEN_ERROR;
     }
 
-    for(size_t command_index = 0; command_index < instructions_count; command_index++)
+    for(size_t command_index = 0; command_index < instructions_count;)
     {
-        fprintf(disassembled_file, "%s", DISASSEMBLER_COMMANDS_ARRAY[instructions[command_index]].command_name);
-
-        if (DISASSEMBLER_COMMANDS_ARRAY[instructions[command_index]].binary_handler != NULL)
-        {
-            (DISASSEMBLER_COMMANDS_ARRAY[instructions[command_index]].binary_handler)(instructions, &command_index, disassembled_file);
-        }
-
-        fprintf(disassembled_file, "\n");
+        (DISASSEMBLER_COMMANDS_ARRAY[(instructions[command_index] & COMMAND_MASK) >> 4].binary_handler)(instructions, &command_index, disassembled_file);
     }
 
     if (fclose(disassembled_file) != (int) DISASSEMBLER_MAIN_RETURN_SUCCESS)
     {
+        free(instructions);
         printf(RED "DISASSEMBLED FILE WRITE ERROR.\n" STANDARD);
 
         return DISASSEMBLER_MAIN_RETURN_DISASSEMBLED_FILE_OPEN_ERROR;

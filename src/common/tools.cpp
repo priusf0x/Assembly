@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "Assert.h"
@@ -99,16 +100,17 @@ IsStrNum(char* string)
 }
 
 int
-PutInstruction(int                      value,           //PLUS-MINUS ONE FOR ZERO_ELEMENT THAT MEANS COUNT
+PutInstruction(uint8_t                         value,
                compiler_instructions_t* instructions)
 {
+    // printf("%d ", value);
     ASSERT(instructions != NULL);
     ASSERT(instructions->instructions_array != NULL);
 
-    if (instructions->instructions_count >= instructions->instructions_size - 3)
+    if (instructions->instructions_bytes_written >= instructions->instructions_max_bytes_amount - 10)
     {
-        instructions->instructions_array = (int*) recalloc(instructions->instructions_array, sizeof(int) * instructions->instructions_size, sizeof(int) * instructions->instructions_size * 2);
-        instructions->instructions_size *= 2;
+        instructions->instructions_array = (uint8_t*) recalloc(instructions->instructions_array, instructions->instructions_max_bytes_amount, instructions->instructions_max_bytes_amount * 2);
+        instructions->instructions_max_bytes_amount *= 2;
     }
 
     if (instructions->instructions_array == NULL)
@@ -116,23 +118,37 @@ PutInstruction(int                      value,           //PLUS-MINUS ONE FOR ZE
         return 1;
     }
     // fprintf(stderr, "%zu %zu\n", instructions->instructions_count, instructions->instructions_size);
-    (instructions->instructions_array)[instructions->instructions_count + 1] = value;
-    instructions->instructions_count++;
+    (instructions->instructions_array)[instructions->instructions_bytes_written] = value;
+    instructions->instructions_bytes_written += sizeof(uint8_t);
 
     return 0;
 }
 
-size_t
-ReturnIfNNull(size_t* pointer)
+int
+PutInteger(int                      value,
+           compiler_instructions_t* instructions)
 {
-    if (pointer != NULL)
+    // printf("%d ", value);
+
+    ASSERT(instructions != NULL);
+    ASSERT(instructions->instructions_array != NULL);
+
+    if (instructions->instructions_bytes_written >= instructions->instructions_max_bytes_amount - 10)
     {
-        return *pointer;
+        instructions->instructions_array = (uint8_t*) recalloc(instructions->instructions_array, instructions->instructions_max_bytes_amount, instructions->instructions_max_bytes_amount * 2);
+        instructions->instructions_max_bytes_amount *= 2;
     }
-    else
+
+    if (instructions->instructions_array == NULL)
     {
-        return 0;
+        return 1;
     }
+
+    *((int*)(instructions->instructions_array + instructions->instructions_bytes_written)) = (int) value;
+    instructions->instructions_bytes_written += sizeof(int);
+
+    return 0;
 }
+
 
 

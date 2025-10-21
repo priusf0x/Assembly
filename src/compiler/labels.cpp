@@ -80,7 +80,7 @@ InitLabel(char* label_name,
         {
             if (!(label_tabular->labels)[index].is_initialized)
             {
-                (label_tabular->labels)[index].to = instructions->instructions_count;
+                (label_tabular->labels)[index].to = instructions->instructions_bytes_written;
                 (label_tabular->labels)[index].is_initialized = true;
             }
             else
@@ -94,7 +94,7 @@ InitLabel(char* label_name,
 
     if (!search_flag)
     {
-        (label_tabular->labels)[label_tabular->count] = {.name = label_name, .from = 0, .to = instructions->instructions_count, .is_initialized = true, .is_used = false};
+        (label_tabular->labels)[label_tabular->count] = {.name = label_name, .from = 0, .to = instructions->instructions_bytes_written, .is_initialized = true, .is_used = false};
         label_tabular->count++;
     }
 
@@ -128,7 +128,7 @@ UseLabel(char* label_name,
         if (strcmp(label_name, (label_tabular->labels)[index].name) == 0)
         {
             (label_tabular->labels)[label_tabular->count] = (label_tabular->labels)[index];
-            (label_tabular->labels)[label_tabular->count].from = instructions->instructions_count;
+            (label_tabular->labels)[label_tabular->count].from = instructions->instructions_bytes_written;
             (label_tabular->labels)[label_tabular->count].is_used = true;
 
             label_tabular->count++;
@@ -137,7 +137,7 @@ UseLabel(char* label_name,
         }
     }
 
-    (label_tabular->labels)[label_tabular->count] = {.name = label_name, .from = instructions->instructions_count, .to = 0, .is_initialized = false, .is_used = true};
+    (label_tabular->labels)[label_tabular->count] = {.name = label_name, .from = instructions->instructions_bytes_written, .to = 0, .is_initialized = false, .is_used = true};
     label_tabular->count++;
 
     return LABEL_INSTRUCTION_RETURN_SUCCESS;
@@ -162,8 +162,8 @@ DestroyLabelTabular(label_tabular_t* label_tabular)
 {
     if (label_tabular != NULL)
     {
-    free(label_tabular->labels);
-    free(label_tabular);
+        free(label_tabular->labels);
+        free(label_tabular);
     }
 };
 
@@ -181,7 +181,7 @@ FixUp(compiler_instructions_t* instructions)
 
         if ((label_tabular->labels)[index].is_used)
         {
-            (instructions->instructions_array)[(label_tabular->labels)[index].from + 1] = (int) (label_tabular->labels)[index].to;
+            * (int*) (instructions->instructions_array + label_tabular->labels[index].from) = (int) (label_tabular->labels)[index].to;
             // printf("%d" ,(instructions->instructions_array)[(label_tabular->labels)[index].from]);
         }
     }
