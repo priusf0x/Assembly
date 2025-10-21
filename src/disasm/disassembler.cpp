@@ -7,6 +7,7 @@
 #include "common_commands.h"
 #include "color.h"
 #include "simple_parser.h"
+#include "tools.h"
 
 enum disassembler_main_return_e
 {
@@ -52,7 +53,6 @@ main(int                argc,
     }
 
     fread(&instructions_count , sizeof(uint64_t), 1, assembled_file);
-    instructions_count -= sizeof(uint64_t);
 
     uint8_t* instructions = (uint8_t*) calloc(instructions_count, sizeof(uint8_t));
     fread(instructions, sizeof(uint8_t), instructions_count, assembled_file);
@@ -75,7 +75,7 @@ main(int                argc,
 
     for(size_t command_index = 0; command_index < instructions_count;)
     {
-        (DISASSEMBLER_COMMANDS_ARRAY[(instructions[command_index] & COMMAND_MASK) >> 4].binary_handler)(instructions, &command_index, disassembled_file);
+        (DISASSEMBLER_COMMANDS_ARRAY[TranslateCommandNumber(instructions, &command_index)].binary_handler)(instructions, &command_index, disassembled_file);
     }
 
     if (fclose(disassembled_file) != (int) DISASSEMBLER_MAIN_RETURN_SUCCESS)

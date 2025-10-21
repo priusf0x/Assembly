@@ -8,6 +8,15 @@
         "initializer_list": "cpp",
         "ranges": "cpp",
         "span": "cpp",
-        "stacktrace": "cpp"
+        "stacktrace": "cpp",
+        "charconv": "cpp",
+        "chrono": "cpp",
+        "optional": "cpp",
+        "ratio": "cpp",
+        "system_error": "cpp",
+        "functional": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp"
     }
 }

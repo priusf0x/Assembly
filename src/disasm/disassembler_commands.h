@@ -26,9 +26,9 @@ const struct disassemble_command_t DISASSEMBLER_COMMANDS_ARRAY[] =
 {
     {.binary_value = COMMAND_HLT,       .binary_handler = PrintHLT      },
     {.binary_value = COMMAND_PUSH,      .binary_handler = PrintPush     },
+    {.binary_value = COMMAND_POP,       .binary_handler = PrintPop      },
     {.binary_value = COMMAND_OUT,       .binary_handler = PrintOut      },
     {.binary_value = COMMAND_OPERATION, .binary_handler = PrintOperation},
-    {.binary_value = COMMAND_POP,       .binary_handler = PrintPop      },
     {.binary_value = COMMAND_JMP,       .binary_handler = PrintJump     },
     {.binary_value = COMMAND_CALL,      .binary_handler = PrintCall     },
     {.binary_value = COMMAND_DRAW,      .binary_handler = PrintDraw     }

@@ -11,6 +11,9 @@
 #include "tools.h"
 #include "common_commands.h"
 
+static int  PutInstruction(size_t index_in_table, compiler_instructions_t* instructions);
+static int  PutInteger(int value, compiler_instructions_t* instructions);
+
 ReadErrorTypes
 ReadFile(char**      input_buffer,
          const char* input_name)
@@ -136,7 +139,7 @@ TranslateCode(char*                    input_buffer,
         }
     }
 
-    ((uint64_t*) (instructions->instructions_array))[0] = (uint64_t) instructions->instructions_bytes_written;
+    ((uint64_t*) (instructions->instructions_array))[0] = (uint64_t) instructions->instructions_bytes_written - sizeof(uint64_t);
 
     return COMPILER_RETURN_SUCCESS;
 }
@@ -146,7 +149,6 @@ ReadCommand(char**                   input_command,
             compiler_instructions_t* instructions)
 {
     // printf("%.10s\n", *input_command);
-    uint8_t read_command = (COMPILER_COMMANDS_ARRAY[0]).binary_value;
     size_t index_in_table = 0;
 
     size_t command_size = (size_t) (SkipNotSpaces(*input_command) - *input_command);
@@ -170,10 +172,9 @@ ReadCommand(char**                   input_command,
                 continue;
             }
 
-            read_command = (COMPILER_COMMANDS_ARRAY[index]).binary_value;
             index_in_table = index;
 
-            if (PutInstruction(read_command, instructions) != 0)
+            if (PutInstruction(index_in_table, instructions) != 0)
             {
                 return COMPILER_RETURN_INCORRECT_COMMAND;
             }
@@ -247,18 +248,11 @@ ReadPushArgument(char**                   input_command,
                         return COMPILER_RETURN_INVALID_SYNTAX;
                     }
 
-                    (instructions->instructions_array)[instructions->instructions_bytes_written - 1] = (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | USES_MEMORY;
+                    (instructions->instructions_array)[instructions->instructions_bytes_written - 1] = (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | USES_RAM;
                     (*input_command)++;
                 }
 
-                if (register_number < 8)  //for last 3 bits
-                {
-                    (instructions->instructions_array)[instructions->instructions_bytes_written - 1] = (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | (uint8_t) register_number;
-                }
-                else
-                {
-                    return COMPILER_RETURN_INVALID_SYNTAX;
-                }
+                (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)] = (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)] | (uint8_t) register_number;
 
                 find_flag = true;
 
@@ -274,7 +268,7 @@ ReadPushArgument(char**                   input_command,
     {
         char* end_str = NULL;
 
-        (instructions->instructions_array)[instructions->instructions_bytes_written - 1] = (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | USES_EXTRA_SPACE;
+        (instructions->instructions_array)[instructions->instructions_bytes_written - 1] = (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | USES_INT;
 
         if ((PutInteger((int) strtol(*input_command, &end_str, 0), instructions) != 0) || (end_str - *input_command == 0))
         {
@@ -322,18 +316,11 @@ ReadPopArgument(char**                    input_command,
                 {
                     return COMPILER_RETURN_INVALID_SYNTAX;
                 }
-                (instructions->instructions_array)[instructions->instructions_bytes_written - 1] = (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | USES_MEMORY;
+                (instructions->instructions_array)[instructions->instructions_bytes_written - 1] = (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | USES_RAM;
                 (*input_command)++;
             }
 
-            if (register_number < 8)  //for last 3 bits
-            {
-                (instructions->instructions_array)[instructions->instructions_bytes_written - 1] = (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | (uint8_t) register_number;
-            }
-            else
-            {
-                return COMPILER_RETURN_INVALID_SYNTAX;
-            }
+            (instructions->instructions_array)[instructions->instructions_bytes_written - 1] = (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | (uint8_t) register_number;
 
             find_flag = true;
 
@@ -450,3 +437,65 @@ ReadCallArgument(char**                    input_command,
 
     return COMPILER_RETURN_VALID_SYNTAX;
 }
+
+//================WORK_WITH_INSTR_ARRAY============
+
+static int
+PutInstruction(size_t                   index_in_table,
+               compiler_instructions_t* instructions)
+{
+    // printf("%d ", value);
+    ASSERT(instructions != NULL);
+    ASSERT(instructions->instructions_array != NULL);
+
+    if (instructions->instructions_bytes_written >= instructions->instructions_max_bytes_amount - 5)
+    {
+        instructions->instructions_array = (uint8_t*) recalloc(instructions->instructions_array, instructions->instructions_max_bytes_amount, instructions->instructions_max_bytes_amount * 2);
+        instructions->instructions_max_bytes_amount *= 2;
+    }
+
+    if (instructions->instructions_array == NULL)
+    {
+        return 1;
+    }
+    // fprintf(stderr, "%zu %zu\n", instructions->instructions_count, instructions->instructions_size);
+
+    (instructions->instructions_array)[instructions->instructions_bytes_written] = COMPILER_COMMANDS_ARRAY[index_in_table].binary_value_block_1;
+
+    if (!((COMPILER_COMMANDS_ARRAY[index_in_table].binary_value_block_1 & EXTENDED_PACK) ^ EXTENDED_PACK))
+    {
+        instructions->instructions_bytes_written += sizeof(uint8_t);
+        (instructions->instructions_array)[instructions->instructions_bytes_written] = COMPILER_COMMANDS_ARRAY[index_in_table].binary_value_block_2;
+    }
+
+    instructions->instructions_bytes_written += sizeof(uint8_t);
+
+    return 0;
+}
+
+static int
+PutInteger(int                      value,
+           compiler_instructions_t* instructions)
+{
+    // printf("%d ", value);
+
+    ASSERT(instructions != NULL);
+    ASSERT(instructions->instructions_array != NULL);
+
+    if (instructions->instructions_bytes_written >= instructions->instructions_max_bytes_amount - 5)
+    {
+        instructions->instructions_array = (uint8_t*) recalloc(instructions->instructions_array, instructions->instructions_max_bytes_amount, instructions->instructions_max_bytes_amount * 2);
+        instructions->instructions_max_bytes_amount *= 2;
+    }
+
+    if (instructions->instructions_array == NULL)
+    {
+        return 1;
+    }
+
+    *((int*)(instructions->instructions_array + instructions->instructions_bytes_written)) = (int) value;
+    instructions->instructions_bytes_written += sizeof(int);
+
+    return 0;
+}
+

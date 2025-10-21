@@ -48,24 +48,26 @@ InitializeSPU(spu_t*      spu,
         return PROCESSOR_FUNCTION_RETURN_VERSIONS_MISMATCH;
     }
 
-    int max_instruction_count = 0;
-    fread(&(max_instruction_count) , sizeof(int), 1, assembled_file);
+    int max_bytes_amount = 0;
+    fread(&(max_bytes_amount) , sizeof(uint8_t), 1, assembled_file);
 
-    spu->max_instruction_count = (size_t) max_instruction_count;
-    spu->instructions = (int*) calloc((size_t) max_instruction_count, sizeof(int));
+    spu->max_bytes_amount = (size_t) max_bytes_amount;
+
+    spu->instructions = (uint8_t*) calloc((size_t) max_bytes_amount, sizeof(uint8_t));
     if (spu->instructions == NULL)
     {
         fclose(assembled_file);
         return PROCESSOR_FUNCTION_RETURN_VALUE_MEMORY_ERROR;
     }
-    fread(spu->instructions, sizeof(int), (size_t) max_instruction_count, assembled_file);
+
+    fread(spu->instructions, sizeof(uint8_t), (size_t) max_bytes_amount, assembled_file);
 
     if (fclose(assembled_file) != 0)
     {
         return PROCESSOR_FUNCTION_RETURN_VALUE_FAILED_TO_READ_INSTRUCTIONS;
     }
 
-    spu->instruction_count = 0;
+    spu->read_bytes_amount = 0;
 
     spu->registers = (int*) calloc(PROCESSOR_REG_COUNT, sizeof(int));
     if (spu->registers == NULL)
@@ -99,14 +101,15 @@ processor_functions_return_value_e
 ExecuteInstructions(spu_t* spu)
 {
     ASSERT(spu);
-    int read_command = (spu->instructions)[spu->instruction_count];
+
+    uint8_t read_command = (spu->instructions)[spu->read_bytes_amount];
     processor_functions_return_value_e processor_error = PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 
     while (read_command != COMMAND_HLT)
     {
-        if (PROCESSOR_COMMANDS_ARRAY[read_command].command_function != NULL)
+        if (PROCESSOR_COMMANDS_ARRAY[(read_command & COMMAND_MASK) >> 4].command_function != NULL)
         {
-            processor_error = PROCESSOR_COMMANDS_ARRAY[read_command].command_function (spu);
+            processor_error = PROCESSOR_COMMANDS_ARRAY[(read_command & COMMAND_MASK) >> 4].command_function (spu);
             if (processor_error != PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS)
             {
                 printf(RED "ERROR NUMBER:...............................%d.\n"
@@ -117,7 +120,7 @@ ExecuteInstructions(spu_t* spu)
             }
         }
 
-        read_command = (spu->instructions)[spu->instruction_count];
+        read_command = (spu->instructions)[spu->read_bytes_amount];
 
         #ifndef NDEBUG
         ProcessorDump(spu);
@@ -189,97 +192,82 @@ StackCommandIn(spu_t* spu)
 }
 
 processor_functions_return_value_e
-StackCommandPushFromReg(spu_t* spu)
-{
-    PROCESSOR_VERIFY(spu);
-
-    spu->instruction_count++;
-    if (StackPush(spu->spu_stack, (spu->registers)[(spu->instructions)[spu->instruction_count]]) != 0)
-    {
-        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-    }
-
-    PROCESSOR_VERIFY(spu);
-
-    spu->instruction_count++;
-
-    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
-}
-
-processor_functions_return_value_e
-StackCommandPushFromMemory(spu_t* spu)
-{
-    PROCESSOR_VERIFY(spu);
-
-    spu->instruction_count++;
-    if (StackPush(spu->spu_stack, (spu->RAM)[(spu->registers)[(spu->instructions)[spu->instruction_count]]]) != 0)
-    {
-        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-    }
-
-    PROCESSOR_VERIFY(spu);
-
-    spu->instruction_count++;
-
-    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
-}
-
-processor_functions_return_value_e
-StackCommandPopToReg(spu_t* spu)
-{
-    PROCESSOR_VERIFY(spu);
-
-    spu->instruction_count++;
-    if (StackPop(spu->spu_stack, &(spu->registers)[(spu->instructions)[spu->instruction_count]]) != 0)
-    {
-        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-    }
-
-    PROCESSOR_VERIFY(spu);
-
-    spu->instruction_count++;
-
-    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
-}
-
-processor_functions_return_value_e
-StackCommandPopToMemory(spu_t* spu)
-{
-    PROCESSOR_VERIFY(spu);
-
-    spu->instruction_count++;
-    if (StackPop(spu->spu_stack, &((spu->RAM)[(spu->registers)[(spu->instructions)[spu->instruction_count]]])) != 0)
-    {
-        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-    }
-
-    PROCESSOR_VERIFY(spu);
-
-    spu->instruction_count++;
-
-    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
-}
-
-processor_functions_return_value_e
 StackCommandPush(spu_t* spu)
 {
     PROCESSOR_VERIFY(spu);
 
-    spu->instruction_count++;
-    if (StackPush(spu->spu_stack, (spu->instructions)[spu->instruction_count]) != 0)
+    if ((instructions[*command_index] & USES_RAM) && (instructions[*command_index] & USES_EXTRA_SPACE))
     {
-        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+        return PROCESSOR_FUNCTION_RETURN_INCORRECT_COMMAND;
+    }
+    else if ((instructions[*command_index] & USES_EXTRA_SPACE) && !(instructions[*command_index] & REGISTER_MASK))
+    {
+        spu->instruction_count += sizeof(uint8_t);
+        if (StackPush(spu->spu_stack, (spu->instructions)[spu->instruction_count]) != 0)
+        {
+            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+        }
+        spu->instruction_count += sizeof(int);
+    }
+    else if (instructions[*command_index] & USES_RAM)
+    {
+        uint8_t spu_reg = (spu->instructions)[spu->instruction_count] | REGISTER_MASK;
+        if (StackPush(spu->spu_stack, (spu->RAM)[(spu->registers)[spu_reg]]) != 0)
+        {
+            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+        }
+        spu->instruction_count += sizeof(uint8_t);
+    }
+    else
+    {
+        uint8_t spu_reg = (spu->instructions)[spu->instruction_count] | REGISTER_MASK;
+        if (StackPush(spu->spu_stack, (spu->registers)[spu_reg]) != 0)
+        {
+            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+        }
+        spu->instruction_count += sizeof(uint8_t);
     }
 
     PROCESSOR_VERIFY(spu);
-
-    spu->instruction_count++;
 
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
 
 processor_functions_return_value_e
-StackOut(spu_t* spu)
+StackCommandPop(spu_t* spu)
+{
+    PROCESSOR_VERIFY(spu);
+
+    if ((instructions[*command_index] & USES_RAM) && (instructions[*command_index] & USES_EXTRA_SPACE))
+    {
+        return PROCESSOR_FUNCTION_RETURN_INCORRECT_COMMAND;
+    }
+    else if (instructions[*command_index] & USES_RAM)
+    {
+        uint8_t spu_reg = (spu->instructions)[spu->instruction_count] | REGISTER_MASK;
+        if (StackPop(spu->spu_stack, *(spu->RAM)[(spu->registers)[spu_reg]]) != 0)
+        {
+            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+        }
+        spu->instruction_count += sizeof(uint8_t);
+    }
+    else
+    {
+        uint8_t spu_reg = (spu->instructions)[spu->instruction_count] | REGISTER_MASK;
+        if (StackPop(spu->spu_stack, *(spu->registers)[spu_reg]) != 0)
+        {
+            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+        }
+        spu->instruction_count += sizeof(uint8_t);
+    }
+
+    PROCESSOR_VERIFY(spu);
+
+    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
+}
+
+processor_functions_return_value_e
+StackInOut(spu_t* spu)
 {
     PROCESSOR_VERIFY(spu);
 
@@ -528,82 +516,82 @@ StackDiv(spu_t* spu)
 
 //================== VERIFICATION =====================
 
-static void
-PrintRAMData(spu_t* spu)
-{
-    printf(YELLOW "__________________________________________________________________________________________________________\n"
-                  "----------------------------------------------------RAM---------------------------------------------------\n" STANDARD);
+// static void
+// PrintRAMData(spu_t* spu)
+// {
+//     printf(YELLOW "__________________________________________________________________________________________________________\n"
+//                   "----------------------------------------------------RAM---------------------------------------------------\n" STANDARD);
+//
+//     for (size_t index = 0; index < RAM_SIZE; index++)
+//     {
+//         if ((index % 8 == 0) && (index != 0))
+//         {
+//             printf(YELLOW "||\n" STANDARD);
+//         }
+//
+//         printf(RED "[%3zu]" WHITE "%6d  " STANDARD, index % 1000,(spu->RAM)[index]);
+//
+//     }
+//
+//     printf(YELLOW "||\n" STANDARD);
+//     printf(YELLOW "----------------------------------------------------------------------------------------------------------\n" STANDARD);
+// }
 
-    for (size_t index = 0; index < RAM_SIZE; index++)
-    {
-        if ((index % 8 == 0) && (index != 0))
-        {
-            printf(YELLOW "||\n" STANDARD);
-        }
 
-        printf(RED "[%3zu]" WHITE "%6d  " STANDARD, index % 1000,(spu->RAM)[index]);
-
-    }
-
-    printf(YELLOW "||\n" STANDARD);
-    printf(YELLOW "----------------------------------------------------------------------------------------------------------\n" STANDARD);
-}
-
-
-processor_functions_return_value_e
-ProcessorDump(spu_t* spu)
-{
-    size_t index = 0;
-
-    printf(YELLOW   "          ██▓███   ██▀███   ▒█████   ▄████▄  ▓█████   ██████   ██████  ▒█████    ██▀███  \n"
-                    "         ▓██░  ██▒▓██ ▒ ██▒▒██▒  ██▒▒██▀ ▀█  ▓█   ▀ ▒██    ▒ ▒██    ▒ ▒██▒  ██▒▓██ ▒ ██▒ \n"
-                    "         ▓██░ ██▓▒▓██ ░▄█ ▒▒██░  ██▒▒▓█    ▄ ▒███   ░ ▓██▄   ░ ▓██▄   ▒██░  ██▒▓██ ░▄█ ▒ \n"
-                    "         ▒██▄█▓▒ ▒▒██▀▀█▄  ▒██   ██░▒▓▓▄ ▄██▒▒▓█  ▄   ▒   ██▒  ▒   ██▒▒██   ██░▒██▀▀█▄   \n"
-                    "         ▒██▒ ░  ░░██▓ ▒██▒░ ████▓▒░▒ ▓███▀ ░░▒████▒▒██████▒▒▒██████▒▒░ ████▓▒░░██▓ ▒██▒ \n"
-                    "         ▒▓▒░ ░  ░░ ▒▓ ░▒▓░░ ▒░▒░▒░ ░ ░▒ ▒  ░░░ ▒░ ░▒ ▒▓▒ ▒ ░▒ ▒▓▒ ▒ ░░ ▒░▒░▒░ ░ ▒▓ ░▒▓░ \n"
-                    "         ░▒ ░       ░▒ ░ ▒░  ░ ▒ ▒░   ░  ▒    ░ ░  ░░ ░▒  ░ ░░ ░▒  ░ ░  ░ ▒ ▒░   ░▒ ░ ▒░ \n"
-                    "         ░░         ░░   ░ ░ ░ ░ ▒  ░           ░   ░  ░  ░  ░  ░  ░  ░ ░ ░ ▒    ░░   ░  \n"
-                    "                     ░         ░ ░  ░ ░         ░  ░      ░        ░      ░ ░     ░      \n"
-                    "                                 ░                                                       \n");
-
-    printf(YELLOW "__________________________________________________________________________________________________\n"
-                  "-------------------------------------------COMMANDS-----------------------------------------------\n" STANDARD);
-    do
-    {
-        if ((spu->instruction_count) == index)
-        {
-            printf(YELLOW "||" GREEN "%6d<---" STANDARD, (spu->instructions)[index]);
-        }
-        else
-        {
-            printf(YELLOW "||" WHITE "%6d    " STANDARD, (spu->instructions)[index]);
-        }
-
-        index++;
-
-        if (index % 8 == 0)
-        {
-            printf(YELLOW "||\n" WHITE);
-        }
-    } while (index != spu->max_instruction_count);
-    printf(YELLOW "||\n" WHITE);
-
-    printf(YELLOW "              ___________________________________________________________________\n"
-                  "              ----------------------------REGISTERS------------------------------\n              " STANDARD);
-
-    for (size_t reg_index = 0; reg_index < PROCESSOR_REG_COUNT; reg_index++)
-    {
-        printf(YELLOW"||" RED "%s = " WHITE "%5d"  STANDARD, PROCESSORS_REG[reg_index], (spu->registers)[reg_index]);
-    }
-
-    printf(YELLOW "||\n");
-
-    StackDump(spu->spu_stack);
-
-    #ifdef SHOW_RAM
-    PrintRAMData(spu);
-    #endif
-
-    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
-}
-
+// processor_functions_return_value_e
+// ProcessorDump(spu_t* spu)
+// {
+//     size_t index = 0;
+//
+//     printf(YELLOW   "          ██▓███   ██▀███   ▒█████   ▄████▄  ▓█████   ██████   ██████  ▒█████    ██▀███  \n"
+//                     "         ▓██░  ██▒▓██ ▒ ██▒▒██▒  ██▒▒██▀ ▀█  ▓█   ▀ ▒██    ▒ ▒██    ▒ ▒██▒  ██▒▓██ ▒ ██▒ \n"
+//                     "         ▓██░ ██▓▒▓██ ░▄█ ▒▒██░  ██▒▒▓█    ▄ ▒███   ░ ▓██▄   ░ ▓██▄   ▒██░  ██▒▓██ ░▄█ ▒ \n"
+//                     "         ▒██▄█▓▒ ▒▒██▀▀█▄  ▒██   ██░▒▓▓▄ ▄██▒▒▓█  ▄   ▒   ██▒  ▒   ██▒▒██   ██░▒██▀▀█▄   \n"
+//                     "         ▒██▒ ░  ░░██▓ ▒██▒░ ████▓▒░▒ ▓███▀ ░░▒████▒▒██████▒▒▒██████▒▒░ ████▓▒░░██▓ ▒██▒ \n"
+//                     "         ▒▓▒░ ░  ░░ ▒▓ ░▒▓░░ ▒░▒░▒░ ░ ░▒ ▒  ░░░ ▒░ ░▒ ▒▓▒ ▒ ░▒ ▒▓▒ ▒ ░░ ▒░▒░▒░ ░ ▒▓ ░▒▓░ \n"
+//                     "         ░▒ ░       ░▒ ░ ▒░  ░ ▒ ▒░   ░  ▒    ░ ░  ░░ ░▒  ░ ░░ ░▒  ░ ░  ░ ▒ ▒░   ░▒ ░ ▒░ \n"
+//                     "         ░░         ░░   ░ ░ ░ ░ ▒  ░           ░   ░  ░  ░  ░  ░  ░  ░ ░ ░ ▒    ░░   ░  \n"
+//                     "                     ░         ░ ░  ░ ░         ░  ░      ░        ░      ░ ░     ░      \n"
+//                     "                                 ░                                                       \n");
+//
+//     printf(YELLOW "__________________________________________________________________________________________________\n"
+//                   "-------------------------------------------COMMANDS-----------------------------------------------\n" STANDARD);
+//     do
+//     {
+//         if ((spu->instruction_count) == index)
+//         {
+//             printf(YELLOW "||" GREEN "%6d<---" STANDARD, (spu->instructions)[index]);
+//         }
+//         else
+//         {
+//             printf(YELLOW "||" WHITE "%6d    " STANDARD, (spu->instructions)[index]);
+//         }
+//
+//         index++;
+//
+//         if (index % 8 == 0)
+//         {
+//             printf(YELLOW "||\n" WHITE);
+//         }
+//     } while (index != spu->max_instruction_count);
+//     printf(YELLOW "||\n" WHITE);
+//
+//     printf(YELLOW "              ___________________________________________________________________\n"
+//                   "              ----------------------------REGISTERS------------------------------\n              " STANDARD);
+//
+//     for (size_t reg_index = 0; reg_index < PROCESSOR_REG_COUNT; reg_index++)
+//     {
+//         printf(YELLOW"||" RED "%s = " WHITE "%5d"  STANDARD, PROCESSORS_REG[reg_index], (spu->registers)[reg_index]);
+//     }
+//
+//     printf(YELLOW "||\n");
+//
+//     StackDump(spu->spu_stack);
+//
+//     #ifdef SHOW_RAM
+//     PrintRAMData(spu);
+//     #endif
+//
+//     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
+// }
+//

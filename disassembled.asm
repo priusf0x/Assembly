@@ -1,6 +1,6 @@
 push 1
 pop RAX
-call 39
+call 42
 push RAX
 push 1
 add

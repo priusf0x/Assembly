@@ -1,23 +1,32 @@
 #ifndef COMMON_COMMANDS_H
 #define COMMON_COMMANDS_H
 
-#define USES_MEMORY      0b00001000
-#define USES_EXTRA_SPACE 0b10000000
-#define COMMAND_MASK     0b01110000
-#define REGISTER_MASK    0b00000111
-#define ARGUMENT_MASK    0b00001111
+#define EXTENDED_PACK 0b11000000
+#define ARGUMENT_MASK 0b00111111
+
+//push/pops flags
+#define USES_RAM 0b00100000
+#define USES_INT 0b00010000
+#define REGISTER_MASK 0b00001111
 
 enum commands_e
 {
-    COMMAND_HLT                 = 0, //0   |000| 0000
-    COMMAND_PUSH                = 1, //0(1)|001| 0000 (MEMORY_BYTE-REG_3_BYTES)
-    COMMAND_OUT                 = 2, //0   |010| 0000
-    COMMAND_OPERATION           = 3, //0   |011| 0000
-    COMMAND_POP                 = 4, //0   |100| 0000 (MEMORY_BYTE-REG_3_BYTES)
-    COMMAND_JMP                 = 5, //0   |101| 0000
-    COMMAND_CALL                = 6, //0   |110| 0000
-    COMMAND_DRAW                = 7, //0   |111| 0000
+    COMMAND_HLT                 = 0, //  |00| 000000
+    COMMAND_PUSH                = 1, //  |01| 00REGI
+    COMMAND_POP                 = 2, //  |10| 00REGI
+    COMMAND_OUT                 = 3, //  |11| 000001 00|000000
+    COMMAND_OPERATION           = 4, //  |11| 000010 00|000000
+    COMMAND_JMP                 = 5, //  |11| 000011 00|000000
+    COMMAND_CALL                = 6, //  |11| 000100 00|000000
+    COMMAND_DRAW                = 7  //  |00| 000101 00|000000
 };
+
+//example of my independent command coding
+//1 priority 01|ARGUME (Count 3)
+//2 priority 11|010001 01|ARGUME (Count 64*3)
+//3 priority 11|011101 11|011100 10|ARGUME (Count ??)
+// ...
+
 
 const char* const PROCESSORS_REG[] =
 {
