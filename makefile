@@ -1,5 +1,5 @@
 SOURCES_COMPILER =  compiler/read_commands.cpp compiler/compiler.cpp common/tools.cpp compiler/labels.cpp common/simple_parser.cpp
-SOURCES_DISASSEMBLER = disasm/disassembler.cpp disasm/disassembler_commands.cpp common/simple_parser.cpp
+SOURCES_DISASSEMBLER = disasm/disassembler.cpp disasm/disassembler_commands.cpp common/simple_parser.cpp common/tools.cpp
 SOURCES_PROCESSOR = stack/stack.cpp processor/processor.cpp processor/processor_functions.cpp common/logger.cpp common/tools.cpp common/simple_parser.cpp
 
 OBJ_DIR = obj

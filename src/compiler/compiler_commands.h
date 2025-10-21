@@ -51,32 +51,33 @@ void                       DestroyLabelTabular(label_tabular_t* label_tabular);
 struct compiler_command_t
 {
     const char* command_name;
-    uint8_t binary_value;
+    uint8_t binary_value_block_1;
+    uint8_t binary_value_block_2;
     enum compiler_return_e (*handler)(char** input_command, struct compiler_instructions_t* instructions);
 };
 
 const struct compiler_command_t COMPILER_COMMANDS_ARRAY[] = {
-    {.command_name = "hlt",   .binary_value = 0b00000000, .handler = NULL            }, //USER_COMMANDS  0
-    {.command_name = "push",  .binary_value = 0b00010000, .handler = ReadPushArgument}, //USER_COMMANDS  1
-    {.command_name = "out",   .binary_value = 0b00100000, .handler = NULL            }, //USER_COMMANDS  2
-    {.command_name = "add",   .binary_value = 0b00110000, .handler = NULL            }, //USER_COMMANDS  3
-    {.command_name = "sub",   .binary_value = 0b00110001, .handler = NULL            }, //USER_COMMANDS  4
-    {.command_name = "mul",   .binary_value = 0b00110010, .handler = NULL            }, //USER_COMMANDS  5
-    {.command_name = "div",   .binary_value = 0b00110011, .handler = NULL            }, //USER_COMMANDS  6
-    {.command_name = "pop",   .binary_value = 0b01000000, .handler = ReadPopArgument }, //USER_COMMANDS  7
-    {.command_name = "sqrt",  .binary_value = 0b00110100, .handler = NULL            }, //USER_COMMANDS  8
-    {.command_name = "in",    .binary_value = 0b00101000, .handler = NULL            }, //USER_COMMANDS  9
-    {.command_name = "jmp",   .binary_value = 0b01010000, .handler = ReadJumpArgument}, //USER_COMMANDS  10
-    {.command_name = "ja",    .binary_value = 0b01010010, .handler = ReadJumpArgument}, //USER_COMMANDS  11
-    {.command_name = "jae",   .binary_value = 0b01010011, .handler = ReadJumpArgument}, //USER_COMMANDS  12
-    {.command_name = "jb",    .binary_value = 0b01010100, .handler = ReadJumpArgument}, //USER_COMMANDS  13
-    {.command_name = "jbe",   .binary_value = 0b01010101, .handler = ReadJumpArgument}, //USER_COMMANDS  14
-    {.command_name = "je",    .binary_value = 0b01010001, .handler = ReadJumpArgument}, //USER_COMMANDS  15
-    {.command_name = "jne",   .binary_value = 0b01011110, .handler = ReadJumpArgument}, //USER_COMMANDS  16
-    {.command_name = "call",  .binary_value = 0b01100000, .handler = ReadCallArgument}, //USER_COMMANDS  17
-    {.command_name = "ret",   .binary_value = 0b01100001, .handler = NULL            }, //USER_COMMANDS  18
-    {.command_name = "drawb", .binary_value = 0b01110001, .handler = NULL            }, //USER_COMMANDS  19
-    {.command_name = "draw",  .binary_value = 0b01110000, .handler = NULL            }};//USER_COMMANDS  20
+    {.command_name = "hlt",   .binary_value_block_1 = 0b00000000, .binary_value_block_2 = 0b00000000, .handler = NULL            }, //USER_COMMANDS  0
+    {.command_name = "push",  .binary_value_block_1 = 0b01000000, .binary_value_block_2 = 0b00000000, .handler = ReadPushArgument}, //USER_COMMANDS  1
+    {.command_name = "out",   .binary_value_block_1 = 0b11000000, .binary_value_block_2 = 0b00000000, .handler = NULL            }, //USER_COMMANDS  2
+    {.command_name = "add",   .binary_value_block_1 = 0b11000001, .binary_value_block_2 = 0b00000000, .handler = NULL            }, //USER_COMMANDS  3
+    {.command_name = "sub",   .binary_value_block_1 = 0b11000001, .binary_value_block_2 = 0b00000001, .handler = NULL            }, //USER_COMMANDS  4
+    {.command_name = "mul",   .binary_value_block_1 = 0b11000001, .binary_value_block_2 = 0b00000010, .handler = NULL            }, //USER_COMMANDS  5
+    {.command_name = "div",   .binary_value_block_1 = 0b11000001, .binary_value_block_2 = 0b00000011, .handler = NULL            }, //USER_COMMANDS  6
+    {.command_name = "pop",   .binary_value_block_1 = 0b10000000, .binary_value_block_2 = 0b00000000, .handler = ReadPopArgument }, //USER_COMMANDS  7
+    {.command_name = "sqrt",  .binary_value_block_1 = 0b11000001, .binary_value_block_2 = 0b00000100, .handler = NULL            }, //USER_COMMANDS  8
+    {.command_name = "in",    .binary_value_block_1 = 0b11000000, .binary_value_block_2 = 0b00000001, .handler = NULL            }, //USER_COMMANDS  9
+    {.command_name = "jmp",   .binary_value_block_1 = 0b11000010, .binary_value_block_2 = 0b00000000, .handler = ReadJumpArgument}, //USER_COMMANDS  10
+    {.command_name = "ja",    .binary_value_block_1 = 0b11000010, .binary_value_block_2 = 0b00000001, .handler = ReadJumpArgument}, //USER_COMMANDS  11
+    {.command_name = "jae",   .binary_value_block_1 = 0b11000010, .binary_value_block_2 = 0b00000010, .handler = ReadJumpArgument}, //USER_COMMANDS  12
+    {.command_name = "jb",    .binary_value_block_1 = 0b11000010, .binary_value_block_2 = 0b00000100, .handler = ReadJumpArgument}, //USER_COMMANDS  13
+    {.command_name = "jbe",   .binary_value_block_1 = 0b11000010, .binary_value_block_2 = 0b00001000, .handler = ReadJumpArgument}, //USER_COMMANDS  14
+    {.command_name = "je",    .binary_value_block_1 = 0b11000010, .binary_value_block_2 = 0b00010000, .handler = ReadJumpArgument}, //USER_COMMANDS  15
+    {.command_name = "jne",   .binary_value_block_1 = 0b11000010, .binary_value_block_2 = 0b00100000, .handler = ReadJumpArgument}, //USER_COMMANDS  16
+    {.command_name = "call",  .binary_value_block_1 = 0b11000011, .binary_value_block_2 = 0b00000000, .handler = ReadCallArgument}, //USER_COMMANDS  17
+    {.command_name = "ret",   .binary_value_block_1 = 0b11000011, .binary_value_block_2 = 0b00000001, .handler = NULL            }, //USER_COMMANDS  18
+    {.command_name = "drawb", .binary_value_block_1 = 0b11000100, .binary_value_block_2 = 0b00000001, .handler = NULL            }, //USER_COMMANDS  19
+    {.command_name = "draw",  .binary_value_block_1 = 0b11000100, .binary_value_block_2 = 0b00000000, .handler = NULL            }};//USER_COMMANDS  20
 const int COMMANDS_COUNT = sizeof(COMPILER_COMMANDS_ARRAY) / sizeof(COMPILER_COMMANDS_ARRAY[0]);
 
 void   FreeAll(compiler_instructions_t* instructions, char* input_buffer);

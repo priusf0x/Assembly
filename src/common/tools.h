@@ -8,12 +8,11 @@
 #include "read_commands.h"
 #include "compiler_commands.h"
 
-size_t CountCharInStr(char character, const char* str);
-char*  SkipSpaces(char* string);
-char*  SkipNotSpaces(char* string);
-void*  recalloc(void*  pointer, size_t current_size, size_t new_size);
-bool   IsStrNum(char* string);
-int    PutInstruction(uint8_t value, compiler_instructions_t* instructions);
-int    PutInteger(int value, compiler_instructions_t* instructions);
+size_t  CountCharInStr(char character, const char* str);
+char*   SkipSpaces(char* string);
+char*   SkipNotSpaces(char* string);
+void*   recalloc(void*  pointer, size_t current_size, size_t new_size);
+bool    IsStrNum(char* string);
+uint8_t TranslateCommandNumber(uint8_t* processor_instructions, size_t*  instruction_number);
 
 #endif //TOOLS_H

@@ -14,6 +14,7 @@ enum processor_functions_return_value_e
     PROCESSOR_FUNCTION_RETURN_VALUE_FAILED_TO_INIT_STACK,
     PROCESSOR_FUNCTION_RETURN_VALUE_MEMORY_ERROR,
     PROCESSOR_FUNCTION_RETURN_STACK_ERROR,
+    PROCESSOR_FUNCTION_RETURN_INCORRECT_COMMAND,
     PROCESSOR_FUNCTION_RETURN_DIVISION_BY_ZERO,
     PROCESSOR_FUNCTION_RETURN_SQRT_ERROR,
     PROCESSOR_FUNCTION_RETURN_SCAN_FAILED,
@@ -23,10 +24,10 @@ enum processor_functions_return_value_e
 struct spu_t
 {
     struct stack_t* spu_stack;
-    int*            instructions;
-    size_t          instruction_count;
+    uint8_t*        instructions;
+    size_t          read_bytes_amount;
     int*            registers;
-    size_t          max_instruction_count;
+    size_t          max_bytes_amount;
     int*            RAM;
 };
 
@@ -52,12 +53,8 @@ processor_functions_return_value_e Call(spu_t* spu);
 processor_functions_return_value_e Return(spu_t* spu);
 
 processor_functions_return_value_e StackCommandPush(spu_t* spu);
-processor_functions_return_value_e StackOut(spu_t* spu);
-processor_functions_return_value_e StackCommandPopToMemory(spu_t* spu);
-processor_functions_return_value_e StackCommandPopToReg(spu_t* spu);
-processor_functions_return_value_e StackCommandPushFromMemory(spu_t* spu);
-processor_functions_return_value_e StackCommandPushFromReg(spu_t* spu);
-processor_functions_return_value_e StackCommandIn(spu_t* spu);
+processor_functions_return_value_e StackInOut(spu_t* spu);
+processor_functions_return_value_e StackCommandPop(spu_t* spu);
 processor_functions_return_value_e DrawScreen(spu_t* spu);
 processor_functions_return_value_e DrawScreenQuadro(spu_t* spu);
 

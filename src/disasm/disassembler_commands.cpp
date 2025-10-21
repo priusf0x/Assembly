@@ -29,24 +29,24 @@ PrintPush(uint8_t* instructions,
     ASSERT(instructions != NULL);
     ASSERT(instructions != NULL);
 
-    if ((instructions[*command_index] & USES_MEMORY) && (instructions[*command_index] & USES_EXTRA_SPACE))
+    if ((instructions[*command_index] & USES_RAM) && (instructions[*command_index] & USES_INT))
     {
         return;
     }
-    else if ((instructions[*command_index] & USES_EXTRA_SPACE) && !(instructions[*command_index] & REGISTER_MASK))
+    else if ((instructions[*command_index] & USES_INT) && !(instructions[*command_index] & REGISTER_MASK))
     {
         *command_index += sizeof(uint8_t);
         fprintf(output, "push %d\n", *(int*) (instructions + *command_index));
         *command_index += sizeof(int);
     }
-    else if (instructions[*command_index] & USES_MEMORY)
+    else if (instructions[*command_index] & USES_RAM)
     {
         fprintf(output, "push [%s]\n", PROCESSORS_REG[((instructions[*command_index] & REGISTER_MASK))]);
         *command_index += sizeof(uint8_t);
     }
     else
     {
-       fprintf(output, "push %s\n", PROCESSORS_REG[((instructions[*command_index] & REGISTER_MASK))]);
+        fprintf(output, "push %s\n", PROCESSORS_REG[((instructions[*command_index] & REGISTER_MASK))]);
         *command_index += sizeof(uint8_t);
     }
 }
@@ -60,7 +60,7 @@ PrintPop(uint8_t*    instructions,
     ASSERT(instructions != NULL);
     ASSERT(instructions != NULL);
 
-    if (instructions[*command_index] & USES_MEMORY)
+    if (instructions[*command_index] & USES_RAM)
     {
         fprintf(output, "pop [%s]\n", PROCESSORS_REG[((instructions[*command_index] & REGISTER_MASK))]);
         *command_index += sizeof(uint8_t);
@@ -141,11 +141,11 @@ PrintJump(uint8_t* instructions,
             fprintf(output, "jmp");
             break;
 
-        case 0b00000010:
+        case 0b00000001:
             fprintf(output, "ja");
             break;
 
-        case 0b00000011:
+        case 0b00000010:
             fprintf(output, "jae");
             break;
 
@@ -153,15 +153,15 @@ PrintJump(uint8_t* instructions,
             fprintf(output, "jb");
             break;
 
-        case 0b00000101:
+        case 0b00001000:
             fprintf(output, "jbe");
             break;
 
-        case 0b00000001:
+        case 0b00010000:
             fprintf(output, "je");
             break;
 
-        case 0b00001110:
+        case 0b00100000:
             fprintf(output, "jne");
             break;
 

@@ -10,6 +10,7 @@
 #include "color.h"
 #include "read_commands.h"
 #include "compiler_commands.h"
+#include "common_commands.h"
 
 void* recalloc(void*  pointer,
                size_t current_size,
@@ -99,55 +100,26 @@ IsStrNum(char* string)
     return true;
 }
 
-int
-PutInstruction(uint8_t                         value,
-               compiler_instructions_t* instructions)
+uint8_t
+TranslateCommandNumber(uint8_t* processor_instructions,
+                       size_t*  instruction_number)
 {
-    // printf("%d ", value);
-    ASSERT(instructions != NULL);
-    ASSERT(instructions->instructions_array != NULL);
+    uint8_t read_command = 0;
+    uint8_t* pointer_to_command = processor_instructions + *instruction_number;
 
-    if (instructions->instructions_bytes_written >= instructions->instructions_max_bytes_amount - 10)
+    if ((*(pointer_to_command) & EXTENDED_PACK) ^ EXTENDED_PACK)
     {
-        instructions->instructions_array = (uint8_t*) recalloc(instructions->instructions_array, instructions->instructions_max_bytes_amount, instructions->instructions_max_bytes_amount * 2);
-        instructions->instructions_max_bytes_amount *= 2;
+        read_command = *(pointer_to_command) >> 6;
+        // fprintf(stderr, "-->%d", read_command);
+    }
+    else
+    {
+        read_command = ((*pointer_to_command) & ARGUMENT_MASK);
+        *instruction_number += sizeof(uint8_t);
+        read_command += (uint8_t) (((*(pointer_to_command + sizeof(uint8_t))) & EXTENDED_PACK) + 0b00000011);
     }
 
-    if (instructions->instructions_array == NULL)
-    {
-        return 1;
-    }
-    // fprintf(stderr, "%zu %zu\n", instructions->instructions_count, instructions->instructions_size);
-    (instructions->instructions_array)[instructions->instructions_bytes_written] = value;
-    instructions->instructions_bytes_written += sizeof(uint8_t);
-
-    return 0;
-}
-
-int
-PutInteger(int                      value,
-           compiler_instructions_t* instructions)
-{
-    // printf("%d ", value);
-
-    ASSERT(instructions != NULL);
-    ASSERT(instructions->instructions_array != NULL);
-
-    if (instructions->instructions_bytes_written >= instructions->instructions_max_bytes_amount - 10)
-    {
-        instructions->instructions_array = (uint8_t*) recalloc(instructions->instructions_array, instructions->instructions_max_bytes_amount, instructions->instructions_max_bytes_amount * 2);
-        instructions->instructions_max_bytes_amount *= 2;
-    }
-
-    if (instructions->instructions_array == NULL)
-    {
-        return 1;
-    }
-
-    *((int*)(instructions->instructions_array + instructions->instructions_bytes_written)) = (int) value;
-    instructions->instructions_bytes_written += sizeof(int);
-
-    return 0;
+    return read_command;
 }
 
 
