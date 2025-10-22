@@ -14,7 +14,7 @@
 #include "common_commands.h"
 
 #define NDEBUG
-// #define VIDEO_PLAY
+#define VIDEO_PLAY
 #define SHOW_RAM
 
 const size_t START_STACK_SIZE = 8;
