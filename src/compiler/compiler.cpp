@@ -35,8 +35,8 @@ main(int                argc,
      const char* const* argv)
 {
     char* input_buffer = NULL;
-    compiler_instructions_t instructions = {.instructions_bytes_written = sizeof(uint64_t), .instructions_max_bytes_amount = 20, .instructions_array = NULL};
-    instructions.instructions_array = (uint8_t*) calloc(instructions.instructions_max_bytes_amount, sizeof(uint));
+    compiler_instructions_t instructions = {.instructions_bytes_written = 0, .instructions_max_bytes_amount = 20, .instructions_array = NULL};
+    instructions.instructions_array = (uint8_t*) calloc(instructions.instructions_max_bytes_amount, sizeof(uint8_t));
 
     if (ReadFlags(argc, argv, &INPUT_FILE_NAME, &COMPILED_NAME) != (int) COMPILER_MAIN_RETURN_SUCCESS)
     {
@@ -74,10 +74,10 @@ main(int                argc,
         return COMPILER_MAIN_RETURN_FILE_CLOSE_ERROR;
     }
 
-    for (size_t i = 0; i < instructions.instructions_bytes_written; i++)
-    {
-        printf("%d ", (instructions.instructions_array)[i]);
-    }
+    // for (size_t i = 0; i < instructions.instructions_bytes_written; i++)
+    // {
+    //     printf("%d ", (instructions.instructions_array)[i]);
+    // }
 
     FreeAll(&instructions, input_buffer);
     return COMPILER_MAIN_RETURN_SUCCESS;

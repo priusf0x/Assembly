@@ -14,8 +14,8 @@
 #include "common_commands.h"
 
 #define NDEBUG
-// #define VIDEO_PLAY
-// #define SHOW_RAM
+#define VIDEO_PLAY
+#define SHOW_RAM
 
 const size_t START_STACK_SIZE = 8;
 const uint64_t PROCESSOR_VERSION = 4;
@@ -118,11 +118,9 @@ ExecuteInstructions(spu_t* spu)
             }
         }
 
+        // ProcessorDump(spu);
         command_index = TranslateCommandNumber(spu->instructions, &(spu->read_bytes_amount));
 
-        #ifndef NDEBUG
-        ProcessorDump(spu);
-        #endif
     }
 
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
@@ -139,7 +137,7 @@ DrawScreen(spu_t* spu)
 
     if (spu->instructions[spu->read_bytes_amount] & ARGUMENT_MASK)
     {
-        fwrite(spu->RAM, sizeof(uint8_t), SCREEN_SIZE_X * SCREEN_SIZE_Y, stdout); //+1 for \n symbol
+        fwrite((uint8_t*) spu->RAM, sizeof(uint8_t), SCREEN_SIZE_X * SCREEN_SIZE_Y, stdout);
     }
     else
     {
@@ -312,6 +310,12 @@ JumpFunction(spu_t* spu)
 
     PROCESSOR_VERIFY(spu);
 
+    if (!(spu->instructions[spu->read_bytes_amount] & ARGUMENT_MASK))
+    {
+        Jump(spu);
+        return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
+    }
+
     int intermediate_value_1 = 0;
     int intermediate_value_2 = 0;
 
@@ -350,6 +354,7 @@ Call(spu_t* spu)
 
         if (StackPop(spu->spu_stack, &intermediate_value) != 0)
         {
+
             return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
         }
 
@@ -392,7 +397,7 @@ StackDoOperation(spu_t* spu)
 
     PROCESSOR_VERIFY(spu);
 
-    processor_functions_return_value_e output = operations[(spu->instructions)[spu->read_bytes_amount]](spu);
+    processor_functions_return_value_e output = operations[(spu->instructions)[spu->read_bytes_amount] & ARGUMENT_MASK](spu);
 
     PROCESSOR_VERIFY(spu);
 
