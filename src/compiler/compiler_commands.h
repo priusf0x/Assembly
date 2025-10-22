@@ -70,10 +70,10 @@ const struct compiler_command_t COMPILER_COMMANDS_ARRAY[] = {
     {.command_name = "jmp",   .binary_value_block_1 = 0b11000010, .binary_value_block_2 = 0b00000000, .handler = ReadJumpArgument}, //USER_COMMANDS  10
     {.command_name = "ja",    .binary_value_block_1 = 0b11000010, .binary_value_block_2 = 0b00000001, .handler = ReadJumpArgument}, //USER_COMMANDS  11
     {.command_name = "jae",   .binary_value_block_1 = 0b11000010, .binary_value_block_2 = 0b00000010, .handler = ReadJumpArgument}, //USER_COMMANDS  12
-    {.command_name = "jb",    .binary_value_block_1 = 0b11000010, .binary_value_block_2 = 0b00000100, .handler = ReadJumpArgument}, //USER_COMMANDS  13
-    {.command_name = "jbe",   .binary_value_block_1 = 0b11000010, .binary_value_block_2 = 0b00001000, .handler = ReadJumpArgument}, //USER_COMMANDS  14
-    {.command_name = "je",    .binary_value_block_1 = 0b11000010, .binary_value_block_2 = 0b00010000, .handler = ReadJumpArgument}, //USER_COMMANDS  15
-    {.command_name = "jne",   .binary_value_block_1 = 0b11000010, .binary_value_block_2 = 0b00100000, .handler = ReadJumpArgument}, //USER_COMMANDS  16
+    {.command_name = "jb",    .binary_value_block_1 = 0b11000010, .binary_value_block_2 = 0b00000011, .handler = ReadJumpArgument}, //USER_COMMANDS  13
+    {.command_name = "jbe",   .binary_value_block_1 = 0b11000010, .binary_value_block_2 = 0b00000100, .handler = ReadJumpArgument}, //USER_COMMANDS  14
+    {.command_name = "je",    .binary_value_block_1 = 0b11000010, .binary_value_block_2 = 0b00000101, .handler = ReadJumpArgument}, //USER_COMMANDS  15
+    {.command_name = "jne",   .binary_value_block_1 = 0b11000010, .binary_value_block_2 = 0b00000110, .handler = ReadJumpArgument}, //USER_COMMANDS  16
     {.command_name = "call",  .binary_value_block_1 = 0b11000011, .binary_value_block_2 = 0b00000000, .handler = ReadCallArgument}, //USER_COMMANDS  17
     {.command_name = "ret",   .binary_value_block_1 = 0b11000011, .binary_value_block_2 = 0b00000001, .handler = NULL            }, //USER_COMMANDS  18
     {.command_name = "drawb", .binary_value_block_1 = 0b11000100, .binary_value_block_2 = 0b00000001, .handler = NULL            }, //USER_COMMANDS  19

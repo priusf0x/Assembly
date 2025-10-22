@@ -52,7 +52,7 @@ main(int                argc,
         return DISASSEMBLER_MAIN_RETURN_VERSION_MISMATCH;
     }
 
-    fread(&instructions_count , sizeof(uint64_t), 1, assembled_file);
+    fread(&instructions_count , sizeof(size_t), 1, assembled_file);
 
     uint8_t* instructions = (uint8_t*) calloc(instructions_count, sizeof(uint8_t));
     fread(instructions, sizeof(uint8_t), instructions_count, assembled_file);

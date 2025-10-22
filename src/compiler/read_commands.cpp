@@ -83,7 +83,7 @@ WriteInFile(compiler_instructions_t* instructions,
         return READ_FILE_ERROR_TYPE_WRITE_ERROR;
     }
 
-    fwrite(&COMPILER_VERSION , sizeof(uint64_t), 1, compiled_file);
+    fwrite(&COMPILER_VERSION , sizeof(size_t), 1, compiled_file);
     fwrite(instructions->instructions_array , sizeof(uint8_t), instructions->instructions_bytes_written, compiled_file);
     fprintf(compiled_file, "\n\nHere was pr1usf0x.\n");
 
@@ -139,7 +139,7 @@ TranslateCode(char*                    input_buffer,
         }
     }
 
-    ((uint64_t*) (instructions->instructions_array))[0] = (uint64_t) instructions->instructions_bytes_written - sizeof(uint64_t);
+    ((size_t*) (instructions->instructions_array))[0] = (size_t) instructions->instructions_bytes_written - sizeof(uint64_t);
 
     return COMPILER_RETURN_SUCCESS;
 }
@@ -444,7 +444,6 @@ static int
 PutInstruction(size_t                   index_in_table,
                compiler_instructions_t* instructions)
 {
-    // printf("%d ", value);
     ASSERT(instructions != NULL);
     ASSERT(instructions->instructions_array != NULL);
 
@@ -458,7 +457,6 @@ PutInstruction(size_t                   index_in_table,
     {
         return 1;
     }
-    // fprintf(stderr, "%zu %zu\n", instructions->instructions_count, instructions->instructions_size);
 
     (instructions->instructions_array)[instructions->instructions_bytes_written] = COMPILER_COMMANDS_ARRAY[index_in_table].binary_value_block_1;
 

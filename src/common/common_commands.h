@@ -34,7 +34,18 @@ const char* const PROCESSORS_REG[] =
     "RAX",
     "RBX",
     "RCX",
-    "RDX"
+    "RDX",
+    "REX",
+    "RFX",
+    "RGX",
+    "E0X",
+    "EAX",
+    "EBX",
+    "ECX",
+    "EDX",
+    "EEX",
+    "EFX",
+    "EGX"
 };
 const int PROCESSOR_REG_COUNT = sizeof(PROCESSORS_REG) /  sizeof(PROCESSORS_REG[0]);
 
