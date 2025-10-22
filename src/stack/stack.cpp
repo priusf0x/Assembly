@@ -104,6 +104,7 @@ StackPop(stack_t*    swag,
          value_type* pop_variable)
 {
     ASSERT(swag != NULL);
+    ASSERT(pop_variable != NULL);
 
     VERIFY_STACK_WITH_RETURN(swag);
 

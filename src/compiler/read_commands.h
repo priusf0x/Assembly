@@ -6,7 +6,7 @@
 
 #include "compiler_commands.h"
 
-const uint64_t COMPILER_VERSION = 4;
+const size_t COMPILER_VERSION = 4;
 
 enum ReadErrorTypes
 {

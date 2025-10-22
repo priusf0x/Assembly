@@ -37,24 +37,13 @@ struct processor_command_t
     processor_functions_return_value_e (*command_function)(spu_t* spu);
 };
 
-processor_functions_return_value_e StackMul(spu_t* spu);
-processor_functions_return_value_e StackAdd(spu_t* spu);
-processor_functions_return_value_e StackSub(spu_t* spu);
-processor_functions_return_value_e StackDiv(spu_t* spu);
-processor_functions_return_value_e StackSqrt(spu_t* spu);
-processor_functions_return_value_e Jump(spu_t* spu);
-processor_functions_return_value_e JumpA(spu_t* spu);
-processor_functions_return_value_e JumpAE(spu_t* spu);
-processor_functions_return_value_e JumpB(spu_t* spu);
-processor_functions_return_value_e JumpBE(spu_t* spu);
-processor_functions_return_value_e JumpE(spu_t* spu);
-processor_functions_return_value_e JumpNE(spu_t* spu);
-processor_functions_return_value_e Call(spu_t* spu);
-processor_functions_return_value_e Return(spu_t* spu);
-
 processor_functions_return_value_e StackCommandPush(spu_t* spu);
-processor_functions_return_value_e StackInOut(spu_t* spu);
 processor_functions_return_value_e StackCommandPop(spu_t* spu);
+processor_functions_return_value_e StackInOut(spu_t* spu);
+processor_functions_return_value_e StackDoOperation(spu_t* spu);
+processor_functions_return_value_e JumpFunction(spu_t* spu);
+processor_functions_return_value_e Return(spu_t* spu);
+processor_functions_return_value_e Call(spu_t* spu);
 processor_functions_return_value_e DrawScreen(spu_t* spu);
 processor_functions_return_value_e DrawScreenQuadro(spu_t* spu);
 
@@ -63,16 +52,17 @@ processor_functions_return_value_e ExecuteInstructions(spu_t* spu);
 processor_functions_return_value_e DestroySPU(spu_t* spu);
 processor_functions_return_value_e ProcessorDump(spu_t* spu);
 
-const struct processor_command_t PROCESSOR_COMMANDS_ARRAY[] = {
-    {.return_value = COMMAND_HLT,             .command_function = NULL                      },
-    {.return_value = COMMAND_PUSH,            .command_function = StackCommandPush          },
-    {.return_value = COMMAND_OUT,             .command_function = StackOut                  },
-    {.return_value = COMMAND_OPERATION,       .command_function = StackAdd                  },
-    {.return_value = COMMAND_POP,             .command_function = StackCommandPopToReg      },
-    {.return_value = COMMAND_JMP,             .command_function = Jump                      },
-    {.return_value = COMMAND_CALL,            .command_function = Call                      },
-    {.return_value = COMMAND_DRAW,            .command_function = DrawScreen                }};
-
+const struct processor_command_t PROCESSOR_COMMANDS_ARRAY[] =
+{
+    {.return_value = COMMAND_HLT,             .command_function = NULL            },
+    {.return_value = COMMAND_PUSH,            .command_function = StackCommandPush},
+    {.return_value = COMMAND_POP,             .command_function = StackCommandPop },
+    {.return_value = COMMAND_OUT,             .command_function = StackInOut      },
+    {.return_value = COMMAND_OPERATION,       .command_function = StackDoOperation},
+    {.return_value = COMMAND_JMP,             .command_function = JumpFunction    },
+    {.return_value = COMMAND_CALL,            .command_function = Call            },
+    {.return_value = COMMAND_DRAW,            .command_function = DrawScreen      }
+};
 
 const size_t PROCESSOR_COMMANDS_COUNT = sizeof(PROCESSOR_COMMANDS_ARRAY) / sizeof(PROCESSOR_COMMANDS_ARRAY[0]);
 

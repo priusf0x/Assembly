@@ -33,7 +33,7 @@ PrintPush(uint8_t* instructions,
     {
         return;
     }
-    else if ((instructions[*command_index] & USES_INT) && !(instructions[*command_index] & REGISTER_MASK))
+    else if (instructions[*command_index] & USES_INT)
     {
         *command_index += sizeof(uint8_t);
         fprintf(output, "push %d\n", *(int*) (instructions + *command_index));

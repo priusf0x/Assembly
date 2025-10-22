@@ -78,6 +78,3 @@ check_if_in_circle:
         pop R0X
     meow:
 ret
-
-
-

@@ -25,6 +25,3 @@ calculate_square:
 ret
 
 hlt
-
-
-

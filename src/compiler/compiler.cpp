@@ -74,7 +74,7 @@ main(int                argc,
         return COMPILER_MAIN_RETURN_FILE_CLOSE_ERROR;
     }
 
-    for (int i = 0; i < instructions.instructions_bytes_written; i++)
+    for (size_t i = 0; i < instructions.instructions_bytes_written; i++)
     {
         printf("%d ", (instructions.instructions_array)[i]);
     }

@@ -181,7 +181,7 @@ FixUp(compiler_instructions_t* instructions)
 
         if ((label_tabular->labels)[index].is_used)
         {
-            * (int*) (instructions->instructions_array + label_tabular->labels[index].from) = (int) (label_tabular->labels)[index].to;
+            *(int*) (instructions->instructions_array + label_tabular->labels[index].from) = (int) ((label_tabular->labels)[index].to - sizeof(size_t)); //for command count
             // printf("%d" ,(instructions->instructions_array)[(label_tabular->labels)[index].from]);
         }
     }
