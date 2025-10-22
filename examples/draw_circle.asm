@@ -1,12 +1,8 @@
-#var_1 = 2900
-#var_2 = 2901
-#var_3 = 2902
-#...
-
 call fill_screen
 draw
 
 hlt
+
 fill_screen:
     next_string:
         push 0

@@ -84,6 +84,7 @@ WriteInFile(compiler_instructions_t* instructions,
     }
 
     fwrite(&COMPILER_VERSION , sizeof(size_t), 1, compiled_file);
+    fwrite(&instructions->instructions_bytes_written , sizeof(size_t), 1, compiled_file);
     fwrite(instructions->instructions_array , sizeof(uint8_t), instructions->instructions_bytes_written, compiled_file);
     fprintf(compiled_file, "\n\nHere was pr1usf0x.\n");
 
@@ -110,6 +111,7 @@ TranslateCode(char*                    input_buffer,
         while (CheckIfLabel(input_command = SkipSpaces(input_command)))
         {
             *(SkipNotSpaces(input_command) - 1) = '\0';
+            // printf("->%d ", instructions->instructions_bytes_written);
 
             if (InitLabel(input_command, instructions) != LABEL_INSTRUCTION_RETURN_SUCCESS)
             {
@@ -119,6 +121,7 @@ TranslateCode(char*                    input_buffer,
 
             input_command = SkipSpaces(SkipNotSpaces(input_command) + 1); //for skipping \0
         }
+              // printf("%d ", instructions->instructions_bytes_written);
 
         input_command = SkipSpaces(input_command);
 
@@ -138,8 +141,6 @@ TranslateCode(char*                    input_buffer,
             return COMPILER_RETURN_INVALID_SYNTAX;
         }
     }
-
-    ((size_t*) (instructions->instructions_array))[0] = (size_t) instructions->instructions_bytes_written - sizeof(uint64_t);
 
     return COMPILER_RETURN_SUCCESS;
 }
