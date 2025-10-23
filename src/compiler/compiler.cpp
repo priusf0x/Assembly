@@ -14,9 +14,8 @@
  */
 
 // Adding features
-//  -Readme(REQUIRED) (2 priority)
 //  -add processor_verifier (2 priority)
-
+// -clear shit from code
 
 enum compiler_main_return_e
 {
@@ -58,10 +57,10 @@ main(int                argc,
         return COMPILER_MAIN_RETURN_COMPILATION_ERROR;
     }
 
-    // LabelTabularDump(&instructions);
-
     if (FixUp(&instructions) != (int) COMPILER_MAIN_RETURN_SUCCESS)
     {
+        LabelTabularDump(&instructions);
+        printf(RED "FIXUP ERROR" STANDARD);
         FreeAll(&instructions, input_buffer);
         return COMPILER_MAIN_RETURN_FIXUP_ERROR;
     }
@@ -73,11 +72,6 @@ main(int                argc,
         printf(RED "FILE WRITE ERROR.\n" STANDARD);
         return COMPILER_MAIN_RETURN_FILE_CLOSE_ERROR;
     }
-
-    // for (size_t i = 0; i < instructions.instructions_bytes_written; i++)
-    // {
-    //     printf("%d ", (instructions.instructions_array)[i]);
-    // }
 
     FreeAll(&instructions, input_buffer);
     return COMPILER_MAIN_RETURN_SUCCESS;
