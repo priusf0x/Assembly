@@ -149,19 +149,19 @@ PrintJump(uint8_t* instructions,
             fprintf(output, "jae");
             break;
 
-        case 0b00000100:
+        case 0b00000011:
             fprintf(output, "jb");
             break;
 
-        case 0b00001000:
+        case 0b00000100:
             fprintf(output, "jbe");
             break;
 
-        case 0b00010000:
+        case 0b00000101:
             fprintf(output, "je");
             break;
 
-        case 0b00100000:
+        case 0b00000110:
             fprintf(output, "jne");
             break;
 

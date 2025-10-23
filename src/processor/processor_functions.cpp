@@ -15,13 +15,15 @@
 
 #define NDEBUG
 #define VIDEO_PLAY
-#define SHOW_RAM
+// #define SHOW_RAM
 
 const size_t START_STACK_SIZE = 8;
 const uint64_t PROCESSOR_VERSION = 4;
 const size_t SCREEN_SIZE_X = 98;
 const size_t SCREEN_SIZE_Y = 36;
 const size_t RAM_SIZE = 4000;
+
+static void PrintRAMData(spu_t* spu);
 
 processor_functions_return_value_e
 InitializeSPU(spu_t*      spu,
@@ -103,13 +105,14 @@ ExecuteInstructions(spu_t* spu)
     size_t command_index = TranslateCommandNumber(spu->instructions, &(spu->read_bytes_amount));
     processor_functions_return_value_e processor_error = PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 
-    while (command_index != COMMAND_HLT)
+    while (command_index)
     {
         if (PROCESSOR_COMMANDS_ARRAY[command_index].command_function != NULL)
         {
             processor_error = PROCESSOR_COMMANDS_ARRAY[command_index].command_function (spu);
             if (processor_error != PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS)
             {
+                ProcessorDump(spu);
                 printf(RED "ERROR NUMBER:...............................%d.\n"
                         RED "P" ORANGE "i" YELLOW "z" GREEN "d" BLUE "e" PURPLE "c " WHITE
                        "was happened...\n" STANDARD, processor_error);
@@ -117,10 +120,9 @@ ExecuteInstructions(spu_t* spu)
                 return processor_error;
             }
         }
-
         // ProcessorDump(spu);
-        command_index = TranslateCommandNumber(spu->instructions, &(spu->read_bytes_amount));
 
+        command_index = TranslateCommandNumber(spu->instructions, &(spu->read_bytes_amount));
     }
 
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
@@ -170,7 +172,7 @@ StackCommandPush(spu_t* spu)
     else if (instructions[*command_index] & USES_INT)
     {
         *command_index += sizeof(uint8_t);
-        if (StackPush(spu->spu_stack, (spu->instructions)[*command_index]) != 0)
+        if (StackPush(spu->spu_stack, *((int*) (spu->instructions + *command_index))) != 0)
         {
             return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
         }
@@ -215,7 +217,7 @@ StackCommandPop(spu_t* spu)
     else if (instructions[*command_index] & USES_RAM)
     {
         uint8_t spu_reg = (spu->instructions)[*command_index] & REGISTER_MASK;
-        if (StackPop(spu->spu_stack, &(spu->RAM)[*(spu->registers + spu_reg)]) != 0)
+        if (StackPop(spu->spu_stack, &((spu->RAM)[spu->registers[spu_reg]])) != 0)
         {
             return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
         }
@@ -224,9 +226,7 @@ StackCommandPop(spu_t* spu)
     else
     {
         uint8_t spu_reg = (spu->instructions)[*command_index] & REGISTER_MASK;
-        // fprintf(stderr, "%d", spu_reg);
-
-        if (StackPop(spu->spu_stack, spu->registers + spu_reg) != 0)
+        if (StackPop(spu->spu_stack, &spu->registers[spu_reg]) != 0)
         {
             return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
         }
@@ -245,7 +245,7 @@ StackInOut(spu_t* spu)
 
     int intermediate_value = 0;
 
-    if (spu->instructions[spu->read_bytes_amount] & ARGUMENT_MASK)\
+    if (spu->instructions[spu->read_bytes_amount] & ARGUMENT_MASK)
     {
         if (scanf("%d", &intermediate_value) != 1)
         {
@@ -354,7 +354,6 @@ Call(spu_t* spu)
 
         if (StackPop(spu->spu_stack, &intermediate_value) != 0)
         {
-
             return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
         }
 
@@ -476,7 +475,7 @@ StackDiv(spu_t* spu)
 
     if (intermediate_value_1 == 0)
     {
-        return PROCESSOR_FUNCTION_RETURN_SQRT_ERROR;
+        return PROCESSOR_FUNCTION_RETURN_DIVISION_BY_ZERO;
     }
 
     if (StackPush(spu->spu_stack, intermediate_value_2 / intermediate_value_1) != 0)

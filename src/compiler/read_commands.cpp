@@ -111,7 +111,6 @@ TranslateCode(char*                    input_buffer,
         while (CheckIfLabel(input_command = SkipSpaces(input_command)))
         {
             *(SkipNotSpaces(input_command) - 1) = '\0';
-            // printf("->%d ", instructions->instructions_bytes_written);
 
             if (InitLabel(input_command, instructions) != LABEL_INSTRUCTION_RETURN_SUCCESS)
             {
@@ -121,7 +120,6 @@ TranslateCode(char*                    input_buffer,
 
             input_command = SkipSpaces(SkipNotSpaces(input_command) + 1); //for skipping \0
         }
-              // printf("%d ", instructions->instructions_bytes_written);
 
         input_command = SkipSpaces(input_command);
 
@@ -492,7 +490,7 @@ PutInteger(int                      value,
         return 1;
     }
 
-    *((int*)(instructions->instructions_array + instructions->instructions_bytes_written)) = (int) value;
+    memcpy(instructions->instructions_array + instructions->instructions_bytes_written, &value, sizeof(int));
     instructions->instructions_bytes_written += sizeof(int);
 
     return 0;
