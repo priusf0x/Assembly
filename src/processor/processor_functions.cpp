@@ -17,6 +17,8 @@
 #define VIDEO_PLAY
 // #define SHOW_RAM
 
+const
+
 const size_t START_STACK_SIZE = 8;
 const uint64_t PROCESSOR_VERSION = 4;
 const size_t SCREEN_SIZE_X = 98;
