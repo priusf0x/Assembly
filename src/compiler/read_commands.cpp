@@ -147,7 +147,6 @@ compiler_return_e
 ReadCommand(char**                   input_command,
             compiler_instructions_t* instructions)
 {
-    // printf("%.10s\n", *input_command);
     size_t index_in_table = 0;
 
     size_t command_size = (size_t) (SkipNotSpaces(*input_command) - *input_command);
@@ -235,7 +234,6 @@ ReadPushArgument(char**                   input_command,
 
         for (int register_number = 0; register_number < PROCESSOR_REG_COUNT; register_number++)
         {
-            // printf("%s", *input_command);
             if (strncmp(PROCESSORS_REG[register_number], *input_command, strlen(PROCESSORS_REG[register_number])) == 0)
             {
                 *input_command = SkipSpaces(*input_command + strlen(PROCESSORS_REG[register_number]));
@@ -346,7 +344,6 @@ compiler_return_e
 ReadJumpArgument(char**                    input_command,
                  compiler_instructions_t*  instructions)
 {
-    // printf("-->%.10s", *input_command);
     ASSERT(input_command != NULL);
     ASSERT(instructions != NULL);
 
@@ -474,8 +471,6 @@ static int
 PutInteger(int                      value,
            compiler_instructions_t* instructions)
 {
-    // printf("%d ", value);
-
     ASSERT(instructions != NULL);
     ASSERT(instructions->instructions_array != NULL);
 
