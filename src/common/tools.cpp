@@ -104,13 +104,15 @@ uint8_t
 TranslateCommandNumber(uint8_t* processor_instructions,
                        size_t*  instruction_number)
 {
+    ASSERT(processor_instructions != NULL);
+    ASSERT(instruction_number != NULL);
+
     uint8_t read_command = 0;
     uint8_t* pointer_to_command = processor_instructions + *instruction_number;
 
     if ((*(pointer_to_command) & EXTENDED_PACK) ^ EXTENDED_PACK)
     {
         read_command = *(pointer_to_command) >> 6;
-        // fprintf(stderr, "-->%d", read_command);
     }
     else
     {
