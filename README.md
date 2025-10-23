@@ -12,7 +12,7 @@
 
 ###
 
-![til](processor_cutted.gif)
+![til](readme_application/processor_cutted.gif)
 
 <p align="left">This is virtual processor with his own assembler included for running programms</p>
 
@@ -69,10 +69,15 @@ Now you have 3 different options
 
 ###
 
-Ariphmeic operations with stack
+![til](readme_application/stack_explanation.png)
 
-| add | sub | mul | div | sqrt |
-|---|---|---|---|---|
+|Command name| Description |
+| --- | --- |
+|add| draw screen using size of pixel like integer size|
+|sub| optimized draw function|
+|mul| write user's input from cmd to stack|
+|div| write user's input from cmd to stack|
+|sqrt| write user's input from cmd to stack|
 
 ###
 
