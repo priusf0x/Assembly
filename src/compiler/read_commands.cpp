@@ -214,6 +214,38 @@ ReadCommand(char**                   input_command,
 
 // ================ HANDLERS ====================
 
+static compiler_return_e
+CheckIfMemoryOffset(char** input_command,
+                    int*   read_value)
+{
+    ASSERT(input_command != NULL);
+    ASSERT(read_value != NULL);
+
+    int offset_value = 0;
+    if (**input_command == '+')
+    {
+        offset_value = 1;
+    }
+    else if (**input_command == '-')
+    {
+        offset_value = -1;
+    }
+    else
+    {
+        return COMPILER_RETURN_VALID_SYNTAX;
+    }
+
+    *input_command = SkipSpaces(*input_command + 1);
+
+    char* end_str = NULL;
+    offset_value *= (int) strtol(*input_command, &end_str, 0);
+    *input_command = SkipSpaces(end_str);
+
+    *read_value = offset_value;
+
+    return COMPILER_RETURN_VALID_SYNTAX;
+}
+
 compiler_return_e
 ReadPushArgument(char**                   input_command,
                  compiler_instructions_t* instructions)
@@ -238,8 +270,11 @@ ReadPushArgument(char**                   input_command,
             {
                 *input_command = SkipSpaces(*input_command + strlen(PROCESSORS_REG[register_number]));
 
+                int offset = 0;
                 if (memory_usage)
                 {
+                    CheckIfMemoryOffset(input_command, &offset);
+
                     if (**input_command != ']')
                     {
                         return COMPILER_RETURN_INVALID_SYNTAX;
@@ -250,6 +285,15 @@ ReadPushArgument(char**                   input_command,
                 }
 
                 (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)] = (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)] | (uint8_t) register_number;
+
+                if (offset != 0)
+                {
+                    (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)] = (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)] | USES_INT;
+                    if ((PutInteger(offset, instructions) != 0))
+                    {
+                        return COMPILER_RETURN_INVALID_SYNTAX;
+                    }
+                }
 
                 find_flag = true;
 
@@ -307,17 +351,30 @@ ReadPopArgument(char**                    input_command,
         {
             *input_command = SkipSpaces(*input_command + strlen(PROCESSORS_REG[register_number]));
 
+            int offset = 0;
             if (memory_usage)
             {
+                CheckIfMemoryOffset(input_command, &offset);
+
                 if (**input_command != ']')
                 {
                     return COMPILER_RETURN_INVALID_SYNTAX;
                 }
+
                 (instructions->instructions_array)[instructions->instructions_bytes_written - 1] = (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | USES_RAM;
                 (*input_command)++;
             }
 
             (instructions->instructions_array)[instructions->instructions_bytes_written - 1] = (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | (uint8_t) register_number;
+
+            if (offset != 0)
+            {
+                (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)] = (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)] | USES_INT;
+                if ((PutInteger(offset, instructions) != 0))
+                {
+                    return COMPILER_RETURN_INVALID_SYNTAX;
+                }
+            }
 
             find_flag = true;
 

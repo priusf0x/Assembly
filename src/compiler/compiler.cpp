@@ -17,15 +17,6 @@
 //  -add processor_verifier (2 priority)
 // -clear shit from code
 
-enum compiler_main_return_e
-{
-    COMPILER_MAIN_RETURN_SUCCESS,
-    COMPILER_MAIN_RETURN_FILE_READ_ERROR,
-    COMPILER_MAIN_RETURN_COMPILATION_ERROR,
-    COMPILER_MAIN_RETURN_FIXUP_ERROR,
-    COMPILER_MAIN_RETURN_FILE_CLOSE_ERROR
-};
-
 const char* INPUT_FILE_NAME = "input_file.asm";
 const char* COMPILED_NAME = "compiled.obj";
 
@@ -34,47 +25,48 @@ main(int                argc,
      const char* const* argv)
 {
     char* input_buffer = NULL;
+    int output = 0;
     compiler_instructions_t instructions = {.instructions_bytes_written = 0, .instructions_max_bytes_amount = 20, .instructions_array = NULL};
     instructions.instructions_array = (uint8_t*) calloc(instructions.instructions_max_bytes_amount, sizeof(uint8_t));
 
-    if (ReadFlags(argc, argv, &INPUT_FILE_NAME, &COMPILED_NAME) != (int) COMPILER_MAIN_RETURN_SUCCESS)
+    if ((output = ReadFlags(argc, argv, &INPUT_FILE_NAME, &COMPILED_NAME)) != 0)
     {
         free(instructions.instructions_array);
         printf(RED "FLAG READ ERROR.\n" STANDARD);
-        return COMPILER_MAIN_RETURN_FILE_READ_ERROR;
+        return output;
     }
 
-    if (ReadFile(&input_buffer, INPUT_FILE_NAME) != (int) COMPILER_MAIN_RETURN_SUCCESS)
+    if ((output = ReadFile(&input_buffer, INPUT_FILE_NAME)) != 0)
     {
         FreeAll(&instructions, input_buffer);
         printf(RED "FILE OPEN ERROR.\n" STANDARD);
-        return COMPILER_MAIN_RETURN_FILE_READ_ERROR;
+        return output;
     }
 
-    if (TranslateCode(input_buffer, &instructions) != (int) COMPILER_MAIN_RETURN_SUCCESS)
+    if ((output = TranslateCode(input_buffer, &instructions) != 0))
     {
         FreeAll(&instructions, input_buffer);
-        return COMPILER_MAIN_RETURN_COMPILATION_ERROR;
+        return output;
     }
 
-    if (FixUp(&instructions) != (int) COMPILER_MAIN_RETURN_SUCCESS)
+    if ((output = FixUp(&instructions)) != 0)
     {
         LabelTabularDump(&instructions);
         printf(RED "FIXUP ERROR" STANDARD);
         FreeAll(&instructions, input_buffer);
-        return COMPILER_MAIN_RETURN_FIXUP_ERROR;
+        return output;
     }
 
 
-    if (WriteInFile(&instructions, COMPILED_NAME) != (int) COMPILER_MAIN_RETURN_SUCCESS)
+    if ((output = WriteInFile(&instructions, COMPILED_NAME)) != 0)
     {
         FreeAll(&instructions, input_buffer);
         printf(RED "FILE WRITE ERROR.\n" STANDARD);
-        return COMPILER_MAIN_RETURN_FILE_CLOSE_ERROR;
+        return output;
     }
 
     FreeAll(&instructions, input_buffer);
-    return COMPILER_MAIN_RETURN_SUCCESS;
+    return 0;
 }
 
 
