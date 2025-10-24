@@ -25,7 +25,7 @@ enum processor_functions_return_value_e
 
 struct spu_t
 {
-    struct stack_t* spu_stack;
+    struct swag_t* spu_stack;
     uint8_t*        instructions;
     size_t          read_bytes_amount;
     int*            registers;

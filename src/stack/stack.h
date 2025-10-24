@@ -30,14 +30,14 @@ enum stack_state_e
     STACK_STATE_ZERO_CAPACITY = 3
 };
 
-struct stack_t;
+struct swag_t;
 
-stack_function_errors_e     StackInit(stack_t** swag, size_t count, const char* swag_name);
-stack_function_errors_e     StackDestroy(stack_t* swag);
-stack_function_errors_e     StackPush(stack_t* swag, value_type value);
-stack_function_errors_e     StackPop(stack_t* swag, value_type* pop_variable);
-log_function_return_value_e StackDumpInLog(stack_t* swag);
-log_function_return_value_e StackDump(stack_t* swag);
+stack_function_errors_e     StackInit(swag_t** swag, size_t count, const char* swag_name);
+stack_function_errors_e     StackDestroy(swag_t* swag);
+stack_function_errors_e     StackPush(swag_t* swag, value_type value);
+stack_function_errors_e     StackPop(swag_t* swag, value_type* pop_variable);
+log_function_return_value_e StackDumpInLog(swag_t* swag);
+log_function_return_value_e StackDump(swag_t* swag);
 
 #ifdef HARD_SWAG
 #define VERIFY_STACK_WITH_RETURN(X)
