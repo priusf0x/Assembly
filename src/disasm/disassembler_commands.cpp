@@ -29,7 +29,13 @@ PrintPush(uint8_t* instructions,
     ASSERT(instructions != NULL);
     ASSERT(instructions != NULL);
 
-    if ((instructions[*command_index] & USES_RAM) && (instructions[*command_index] & USES_INT))
+    if (instructions[*command_index] & USES_INT)
+    {
+        *command_index += sizeof(uint8_t);
+        fprintf(output, "push %d\n", *(int*) (instructions + *command_index));
+        *command_index += sizeof(int);
+    }
+    else if ((instructions[*command_index] & USES_RAM) && (instructions[*command_index] & ADD_TO_REGI))
     {
         *command_index += sizeof(uint8_t);
         fprintf(output, "push [%s + %d]\n",
@@ -38,10 +44,13 @@ PrintPush(uint8_t* instructions,
 
         *command_index += sizeof(int);
     }
-    else if (instructions[*command_index] & USES_INT)
+    else if (instructions[*command_index] & ADD_TO_REGI)
     {
         *command_index += sizeof(uint8_t);
-        fprintf(output, "push %d\n", *(int*) (instructions + *command_index));
+        fprintf(output, "push %s + %d\n",
+                PROCESSORS_REG[instructions[*command_index - sizeof(uint8_t)] & REGISTER_MASK],
+                *(int*) (instructions + *command_index));
+
         *command_index += sizeof(int);
     }
     else if (instructions[*command_index] & USES_RAM)
@@ -65,10 +74,19 @@ PrintPop(uint8_t*    instructions,
     ASSERT(instructions != NULL);
     ASSERT(instructions != NULL);
 
-    if ((instructions[*command_index] & USES_RAM) && (instructions[*command_index] & USES_INT))
+    if ((instructions[*command_index] & USES_RAM) && (instructions[*command_index] & ADD_TO_REGI))
     {
         *command_index += sizeof(uint8_t);
         fprintf(output, "pop [%s + %d]\n",
+                PROCESSORS_REG[instructions[*command_index - sizeof(uint8_t)] & REGISTER_MASK],
+                *(int*) (instructions + *command_index));
+
+        *command_index += sizeof(int);
+    }
+    else if (instructions[*command_index] & ADD_TO_REGI)
+    {
+        *command_index += sizeof(uint8_t);
+        fprintf(output, "pop %s + %d\n",
                 PROCESSORS_REG[instructions[*command_index - sizeof(uint8_t)] & REGISTER_MASK],
                 *(int*) (instructions + *command_index));
 

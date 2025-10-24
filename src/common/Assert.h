@@ -4,7 +4,7 @@
 
 #ifndef NDEBUG
 #define ASSERT(X) \
-if (!(X)) {fprintf(stderr ,"ERROR(" #X ") in %d line in file %s",
+if (!(X)) {fprintf(stderr ,"ERROR(" #X ") in %d line in file %s",\
            __LINE__, __FILE__); abort();}
 #else
 #define ASSERT(X)
