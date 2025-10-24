@@ -12,12 +12,12 @@
 const size_t CANARY_SIZE = 4;
 const uint64_t CANARY_FILL = 0xB16B00B5;
 
-static bool                    CheckCanary(stack_t* swag);
+static bool                    CheckCanary(swag_t* swag);
 static stack_function_errors_e SetCanary(void* pointer, uint64_t value);
-static stack_function_errors_e StackNormalizeSize(stack_t* swag);
-static stack_function_errors_e VerifyStack(stack_t* swag);
+static stack_function_errors_e StackNormalizeSize(swag_t* swag);
+static stack_function_errors_e VerifyStack(swag_t* swag);
 
-struct stack_t
+struct swag_t
 {
     const char* name;
     uint8_t* canary_start;
@@ -31,13 +31,13 @@ struct stack_t
 };
 
 stack_function_errors_e
-StackInit(stack_t**   swag,
+StackInit(swag_t**   swag,
           size_t      expected_capacity,
           const char* swag_name)
 {
     ASSERT(swag_name != NULL);
 
-    (*swag) = (stack_t*) calloc(1, sizeof(stack_t));
+    (*swag) = (swag_t*) calloc(1, sizeof(swag_t));
 
     (*swag)->name = swag_name;
 
@@ -73,7 +73,7 @@ StackInit(stack_t**   swag,
 }
 
 stack_function_errors_e
-StackDestroy(stack_t* swag)
+StackDestroy(swag_t* swag)
 {
     free(swag->canary_start);
     free(swag);
@@ -82,7 +82,7 @@ StackDestroy(stack_t* swag)
 }
 
 stack_function_errors_e
-StackPush(stack_t*   swag,
+StackPush(swag_t*   swag,
           value_type value)
 {
     ASSERT(swag != NULL);
@@ -100,7 +100,7 @@ StackPush(stack_t*   swag,
 }
 
 stack_function_errors_e
-StackPop(stack_t*    swag,
+StackPop(swag_t*    swag,
          value_type* pop_variable)
 {
     ASSERT(swag != NULL);
@@ -124,7 +124,7 @@ StackPop(stack_t*    swag,
 }
 
 static bool
-CheckCanary(stack_t* swag)
+CheckCanary(swag_t* swag)
 {
     for (size_t index = 0; index < CANARY_SIZE; index++)
     {
@@ -138,7 +138,7 @@ CheckCanary(stack_t* swag)
 }
 
 static stack_function_errors_e
-VerifyStack(stack_t* swag)
+VerifyStack(swag_t* swag)
 {
     if ((swag->state) == STACK_STATE_UNINITIALIZED)
     {
@@ -163,7 +163,7 @@ VerifyStack(stack_t* swag)
 
 
 static stack_function_errors_e
-StackNormalizeSize(stack_t* swag)
+StackNormalizeSize(swag_t* swag)
 {
     if (swag->size == swag->capacity)
     {
@@ -217,7 +217,7 @@ SetCanary(void*    pointer,
 }
 
 log_function_return_value_e
-StackDumpInLog(stack_t* swag)
+StackDumpInLog(swag_t* swag)
 {
     FILE * log_file = GetLogFile();
 
@@ -277,7 +277,7 @@ StackDumpInLog(stack_t* swag)
 }
 
 log_function_return_value_e
-StackDump(stack_t* swag)
+StackDump(swag_t* swag)
 {
     printf(YELLOW "______________________________________________________________________________________________\n"
                   "------------------------------------------STACK_DATA------------------------------------------\n" STANDARD);
