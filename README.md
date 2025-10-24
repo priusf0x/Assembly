@@ -58,9 +58,9 @@ Now you have 3 different options
 |Command name| Description |
 | --- | --- |
 |push <integer>| Pushes integer into stack|
-|push <register_name>| Pushes integer from register|
+|push <register_name> (add. +/- <int_value>)| Pushes integer from register|
 |push [register_name (add. +/- <int_value>)]| Pushes integer from memory cell with number which is written in register|
-|pop <register_name>| Pops integer to register|
+|pop <register_name> (add. +/- <int_value>)| Pops integer to register|
 |pop [register_name (add. +/- <int_value>)]| Pops integer to memory cell with number which is written in register|
 
 ###
