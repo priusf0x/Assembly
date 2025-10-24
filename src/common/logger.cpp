@@ -49,7 +49,8 @@ LogMessage(const char * log_message,
     {
         time_t t1 = time(NULL);
         tm t = *localtime(&t1);
-        fprintf(log_file, "\n <%.2d:%.2d:%.2d> ", t.tm_hour, t.tm_min, t.tm_sec);
+        fprintf(log_file, "\n <%.2d:%.2d:%.2d> ",
+                t.tm_hour, t.tm_min, t.tm_sec);
         fprintf(log_file, "%s", log_message);
     }
 

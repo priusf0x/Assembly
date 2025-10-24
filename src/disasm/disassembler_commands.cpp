@@ -32,7 +32,10 @@ PrintPush(uint8_t* instructions,
     if ((instructions[*command_index] & USES_RAM) && (instructions[*command_index] & USES_INT))
     {
         *command_index += sizeof(uint8_t);
-        fprintf(output, "push [%s + %d]\n", PROCESSORS_REG[instructions[*command_index - sizeof(uint8_t)] & REGISTER_MASK], *(int*) (instructions + *command_index));
+        fprintf(output, "push [%s + %d]\n",
+                PROCESSORS_REG[instructions[*command_index - sizeof(uint8_t)] & REGISTER_MASK],
+                *(int*) (instructions + *command_index));
+
         *command_index += sizeof(int);
     }
     else if (instructions[*command_index] & USES_INT)
@@ -65,7 +68,10 @@ PrintPop(uint8_t*    instructions,
     if ((instructions[*command_index] & USES_RAM) && (instructions[*command_index] & USES_INT))
     {
         *command_index += sizeof(uint8_t);
-        fprintf(output, "pop [%s + %d]\n", PROCESSORS_REG[instructions[*command_index - sizeof(uint8_t)] & REGISTER_MASK], *(int*) (instructions + *command_index));
+        fprintf(output, "pop [%s + %d]\n",
+                PROCESSORS_REG[instructions[*command_index - sizeof(uint8_t)] & REGISTER_MASK],
+                *(int*) (instructions + *command_index));
+
         *command_index += sizeof(int);
     }
     else if (instructions[*command_index] & USES_RAM)

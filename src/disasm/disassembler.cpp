@@ -108,7 +108,8 @@ WriteDisassembledFile(size_t   instructions_count,
 
     for(size_t command_index = 0; command_index < instructions_count;)
     {
-        (DISASSEMBLER_COMMANDS_ARRAY[TranslateCommandNumber(instructions, &command_index)].binary_handler)(instructions, &command_index, disassembled_file);
+        (DISASSEMBLER_COMMANDS_ARRAY[TranslateCommandNumber(instructions, &command_index)].binary_handler)
+        (instructions, &command_index, disassembled_file);
     }
 
     if (fclose(disassembled_file) != (int) DISASSEMBLER_RETURN_SUCCESS)

@@ -365,7 +365,8 @@ JumpFunction(spu_t* spu)
         return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
     }
 
-    if (comparators[spu->instructions[spu->read_bytes_amount] & ARGUMENT_MASK](intermediate_value_2, intermediate_value_1))
+    if (comparators[spu->instructions[spu->read_bytes_amount]
+        & ARGUMENT_MASK](intermediate_value_2, intermediate_value_1))
     {
         Jump(spu);
     }
@@ -432,7 +433,8 @@ StackDoOperation(spu_t* spu)
 
     PROCESSOR_VERIFY(spu);
 
-    processor_functions_return_value_e output = operations[(spu->instructions)[spu->read_bytes_amount] & ARGUMENT_MASK](spu);
+    processor_functions_return_value_e output =
+    operations[(spu->instructions)[spu->read_bytes_amount] & ARGUMENT_MASK](spu);
 
     PROCESSOR_VERIFY(spu);
 
@@ -447,7 +449,8 @@ StackAdd(spu_t* spu)
     int intermediate_value_1 = 0;
     int intermediate_value_2 = 0;
 
-    if ((StackPop(spu->spu_stack, &intermediate_value_1) != 0) || StackPop(spu->spu_stack, &intermediate_value_2) != 0)
+    if ((StackPop(spu->spu_stack, &intermediate_value_1) != 0) ||
+        StackPop(spu->spu_stack, &intermediate_value_2) != 0)
     {
         return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
     }
@@ -466,7 +469,8 @@ StackSub(spu_t* spu)
     int intermediate_value_1 = 0;
     int intermediate_value_2 = 0;
 
-    if ((StackPop(spu->spu_stack, &intermediate_value_1) != 0) || StackPop(spu->spu_stack, &intermediate_value_2) != 0)
+    if ((StackPop(spu->spu_stack, &intermediate_value_1) != 0) ||
+        StackPop(spu->spu_stack, &intermediate_value_2) != 0)
     {
         return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
     }
@@ -485,7 +489,8 @@ StackMul(spu_t* spu)
     int intermediate_value_1 = 0;
     int intermediate_value_2 = 0;
 
-    if ((StackPop(spu->spu_stack, &intermediate_value_1) != 0) || StackPop(spu->spu_stack, &intermediate_value_2) != 0)
+    if ((StackPop(spu->spu_stack, &intermediate_value_1) != 0) ||
+        StackPop(spu->spu_stack, &intermediate_value_2) != 0)
     {
         return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
     }
@@ -504,7 +509,8 @@ StackDiv(spu_t* spu)
     int intermediate_value_1 = 0;
     int intermediate_value_2 = 0;
 
-    if ((StackPop(spu->spu_stack, &intermediate_value_1) != 0) || StackPop(spu->spu_stack, &intermediate_value_2) != 0)
+    if ((StackPop(spu->spu_stack, &intermediate_value_1) != 0) ||
+        StackPop(spu->spu_stack, &intermediate_value_2) != 0)
     {
         return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
     }

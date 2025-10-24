@@ -26,8 +26,13 @@ main(int                argc,
 {
     char* input_buffer = NULL;
     int output = 0;
-    compiler_instructions_t instructions = {.instructions_bytes_written = 0, .instructions_max_bytes_amount = 20, .instructions_array = NULL};
-    instructions.instructions_array = (uint8_t*) calloc(instructions.instructions_max_bytes_amount, sizeof(uint8_t));
+    compiler_instructions_t instructions = {};
+
+    if ((output = InitInstuctionStruct(&instructions)) != 0)
+    {
+        printf(RED "INIT ERROR.\n" STANDARD);
+        return output;
+    }
 
     if ((output = ReadFlags(argc, argv, &INPUT_FILE_NAME, &COMPILED_NAME)) != 0)
     {

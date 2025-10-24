@@ -26,6 +26,7 @@ struct compiler_instructions_t
 enum  compiler_return_e
 {
     COMPILER_RETURN_SUCCESS,
+    COMPILER_RETURN_MEMORY_ERROR,
     COMPILER_RETURN_VALID_SYNTAX,
     COMPILER_RETURN_INCORRECT_COMMAND,
     COMPILER_RETURN_INVALID_SYNTAX,
@@ -33,20 +34,28 @@ enum  compiler_return_e
     COMPILER_RETURN_LABEL_ERROR
 };
 
+//=============== MAIN_COMMANDS ==================
+
+compiler_return_e InitInstuctionStruct(compiler_instructions_t* instructions);
+compiler_return_e TranslateCode(char* input_command, compiler_instructions_t* instructions);
+label_instruction_return_e FixUp(compiler_instructions_t* instructions);
+
+//=============== COMMAND_HANDLERS ==================
+
+compiler_return_e ReadCommand(char** input_command, compiler_instructions_t* instructions);
 compiler_return_e ReadPushArgument(char** input_command, compiler_instructions_t* instructions);
 compiler_return_e ReadPopArgument(char** input_command, compiler_instructions_t* instructions);
 compiler_return_e ReadJumpArgument(char** input_command, compiler_instructions_t* instructions);
-compiler_return_e TranslateCode(char* input_command, compiler_instructions_t* instructions);
-compiler_return_e ReadCommand(char** input_command, compiler_instructions_t* instructions);
 compiler_return_e ReadCallArgument(char** input_command, compiler_instructions_t* instructions);
 
-bool                       CheckIfLabel(char* string);
+//=============== LABEL_TABULAR_USAGE ==================
+
 label_tabular_t*           InitialiseLabelTabular();
 label_instruction_return_e InitLabel(char* label_name, compiler_instructions_t* instructions);
 label_instruction_return_e UseLabel(char* label_name, compiler_instructions_t* instructions);
-label_instruction_return_e FixUp(compiler_instructions_t* instructions);
 void                       LabelTabularDump(compiler_instructions_t* instructions);
 void                       DestroyLabelTabular(label_tabular_t* label_tabular);
+bool                       CheckIfLabel(char* string);
 
 struct compiler_command_t
 {
@@ -56,15 +65,17 @@ struct compiler_command_t
     enum compiler_return_e (*handler)(char** input_command, struct compiler_instructions_t* instructions);
 };
 
+const uint8_t EMPTY = 0b00000011;
+
 const struct compiler_command_t COMPILER_COMMANDS_ARRAY[] = {
-    {.command_name = "hlt",   .binary_value_block_1 = 0b00000000, .binary_value_block_2 = 0b00000000, .handler = NULL            }, //USER_COMMANDS  0
-    {.command_name = "push",  .binary_value_block_1 = 0b01000000, .binary_value_block_2 = 0b00000000, .handler = ReadPushArgument}, //USER_COMMANDS  1
+    {.command_name = "hlt",   .binary_value_block_1 = 0b00000000, .binary_value_block_2 = EMPTY,      .handler = NULL            }, //USER_COMMANDS  0
+    {.command_name = "push",  .binary_value_block_1 = 0b01000000, .binary_value_block_2 = EMPTY,      .handler = ReadPushArgument}, //USER_COMMANDS  1
     {.command_name = "out",   .binary_value_block_1 = 0b11000000, .binary_value_block_2 = 0b00000000, .handler = NULL            }, //USER_COMMANDS  2
     {.command_name = "add",   .binary_value_block_1 = 0b11000001, .binary_value_block_2 = 0b00000000, .handler = NULL            }, //USER_COMMANDS  3
     {.command_name = "sub",   .binary_value_block_1 = 0b11000001, .binary_value_block_2 = 0b00000001, .handler = NULL            }, //USER_COMMANDS  4
     {.command_name = "mul",   .binary_value_block_1 = 0b11000001, .binary_value_block_2 = 0b00000010, .handler = NULL            }, //USER_COMMANDS  5
     {.command_name = "div",   .binary_value_block_1 = 0b11000001, .binary_value_block_2 = 0b00000011, .handler = NULL            }, //USER_COMMANDS  6
-    {.command_name = "pop",   .binary_value_block_1 = 0b10000000, .binary_value_block_2 = 0b00000000, .handler = ReadPopArgument }, //USER_COMMANDS  7
+    {.command_name = "pop",   .binary_value_block_1 = 0b10000000, .binary_value_block_2 = EMPTY,      .handler = ReadPopArgument }, //USER_COMMANDS  7
     {.command_name = "sqrt",  .binary_value_block_1 = 0b11000001, .binary_value_block_2 = 0b00000100, .handler = NULL            }, //USER_COMMANDS  8
     {.command_name = "in",    .binary_value_block_1 = 0b11000000, .binary_value_block_2 = 0b00000001, .handler = NULL            }, //USER_COMMANDS  9
     {.command_name = "jmp",   .binary_value_block_1 = 0b11000010, .binary_value_block_2 = 0b00000000, .handler = ReadJumpArgument}, //USER_COMMANDS  10

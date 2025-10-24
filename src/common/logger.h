@@ -29,6 +29,8 @@ FILE*                       OpenLogFile();
 log_function_return_value_e LogMessage(const char * log_message, enum detalization_levels_e detalization_level);
 void                        SwitchDetailLevelTo(enum detalization_levels_e detalization_level);
 
-#define LOGSHIT(det_level, ...) snprintf(LOG_BUFFER, LOG_BUFFER_SIZE, __VA_ARGS__); LogMessage(LOG_BUFFER, det_level);
+#define LOGSHIT(det_level, ...)\
+    snprintf(LOG_BUFFER, LOG_BUFFER_SIZE, __VA_ARGS__);\
+    LogMessage(LOG_BUFFER, det_level);
 
 #endif //LOGGER_H
