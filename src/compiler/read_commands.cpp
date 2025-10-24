@@ -292,9 +292,10 @@ ReadPushArgument(char**                   input_command,
                 *input_command = SkipSpaces(*input_command + strlen(PROCESSORS_REG[register_number]));
 
                 int offset = 0;
+                CheckIfMemoryOffset(input_command, &offset);
+
                 if (memory_usage)
                 {
-                    CheckIfMemoryOffset(input_command, &offset);
 
                     if (**input_command != ']')
                     {
@@ -315,7 +316,7 @@ ReadPushArgument(char**                   input_command,
                 {
                     (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)] =
                     (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)]
-                    | USES_INT;
+                    | ADD_TO_REGI;
 
                     if ((PutInteger(offset, instructions) != 0))
                     {
@@ -382,9 +383,10 @@ ReadPopArgument(char**                    input_command,
             *input_command = SkipSpaces(*input_command + strlen(PROCESSORS_REG[register_number]));
 
             int offset = 0;
+            CheckIfMemoryOffset(input_command, &offset);
+
             if (memory_usage)
             {
-                CheckIfMemoryOffset(input_command, &offset);
 
                 if (**input_command != ']')
                 {
@@ -404,7 +406,7 @@ ReadPopArgument(char**                    input_command,
             {
                 (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)] =
                 (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)]
-                | USES_INT;
+                | ADD_TO_REGI;
 
                 if ((PutInteger(offset, instructions) != 0))
                 {

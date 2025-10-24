@@ -13,7 +13,7 @@
 #include "tools.h"
 #include "common_commands.h"
 
-#define NDEBUG
+// #define NDEBUG
 // #define VIDEO_PLAY
 #define SHOW_RAM
 
@@ -21,7 +21,7 @@ const size_t START_STACK_SIZE = 8;
 const uint64_t PROCESSOR_VERSION = 4;
 const size_t SCREEN_SIZE_X = 98;
 const size_t SCREEN_SIZE_Y = 36;
-const size_t RAM_SIZE = 4000;
+const size_t RAM_SIZE = 400;
 
 static void PrintRAMData(spu_t* spu);
 
@@ -173,19 +173,37 @@ StackCommandPush(spu_t* spu)
     size_t*  command_index = &(spu->read_bytes_amount);
     uint8_t* instructions = spu->instructions;
 
-    if ((instructions[*command_index] & USES_RAM) && (instructions[*command_index] & USES_INT))
+    if ((instructions[*command_index] & USES_RAM) && (instructions[*command_index] & ADD_TO_REGI))
     {
         uint8_t spu_reg = (spu->instructions)[*command_index] & REGISTER_MASK;
 
         *command_index += sizeof(uint8_t);
-        int offset = *(int*) (spu->instructions + *command_index);
+        int add_value = *(int*) (spu->instructions + *command_index);
 
-        if(((spu->registers)[spu_reg] < offset) || ((spu->registers)[spu_reg] + offset > (int) RAM_SIZE))
+        if(((spu->registers)[spu_reg] < add_value) || ((spu->registers)[spu_reg] + add_value > (int) RAM_SIZE))
         {
             return PROCESSOR_FUNCTION_RETURN_PROCESSOR_MEMORY_SANITIZER;
         }
 
-        if (StackPush(spu->spu_stack, (spu->RAM)[(spu->registers)[spu_reg] + offset]) != 0)
+        if (StackPush(spu->spu_stack, (spu->RAM)[(spu->registers)[spu_reg] + add_value]) != 0)
+        {
+            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+        }
+        *command_index += sizeof(int);
+    }
+    else if (instructions[*command_index] & ADD_TO_REGI)
+    {
+        uint8_t spu_reg = (spu->instructions)[*command_index] & REGISTER_MASK;
+
+        *command_index += sizeof(uint8_t);
+        int add_value = *(int*) (spu->instructions + *command_index);
+
+        if(((spu->registers)[spu_reg] < add_value) || ((spu->registers)[spu_reg] + add_value > (int) RAM_SIZE))
+        {
+            return PROCESSOR_FUNCTION_RETURN_PROCESSOR_MEMORY_SANITIZER;
+        }
+
+        if (StackPush(spu->spu_stack, (spu->registers)[spu_reg] + add_value) != 0)
         {
             return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
         }
@@ -232,22 +250,43 @@ StackCommandPop(spu_t* spu)
     size_t*  command_index = &(spu->read_bytes_amount);
     uint8_t* instructions = spu->instructions;
 
-    if ((instructions[*command_index] & USES_RAM) && (instructions[*command_index] & USES_INT))
+    if ((instructions[*command_index] & USES_RAM) && (instructions[*command_index] & ADD_TO_REGI))
     {
         uint8_t spu_reg = (spu->instructions)[*command_index] & REGISTER_MASK;
 
         *command_index += sizeof(uint8_t);
-        int offset = *(int*) (spu->instructions + *command_index);
+        int add_value = *(int*) (spu->instructions + *command_index);
 
-        if(((spu->registers)[spu_reg] < offset) || ((spu->registers)[spu_reg] + offset > (int) RAM_SIZE))
+        if((spu->registers[spu_reg] < add_value) || (spu->registers[spu_reg] + add_value > (int) RAM_SIZE))
         {
             return PROCESSOR_FUNCTION_RETURN_PROCESSOR_MEMORY_SANITIZER;
         }
 
-        if (StackPop(spu->spu_stack, &((spu->RAM)[(spu->registers)[spu_reg] + offset])) != 0)
+        if (StackPop(spu->spu_stack, &((spu->RAM)[(spu->registers)[spu_reg] + add_value])) != 0)
         {
             return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
         }
+
+        *command_index += sizeof(int);
+    }
+    else if (instructions[*command_index] & ADD_TO_REGI)
+    {
+        uint8_t spu_reg = (spu->instructions)[*command_index] & REGISTER_MASK;
+
+        *command_index += sizeof(uint8_t);
+        int add_value = *(int*) (spu->instructions + *command_index);
+
+        if((spu->registers[spu_reg] < add_value) || (spu->registers[spu_reg] + add_value > (int) RAM_SIZE))
+        {
+            return PROCESSOR_FUNCTION_RETURN_PROCESSOR_MEMORY_SANITIZER;
+        }
+
+        if (StackPop(spu->spu_stack, &((spu->registers)[spu_reg])) != 0)
+        {
+            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
+        }
+        (spu->registers)[spu_reg] += add_value;
+
         *command_index += sizeof(int);
     }
     else if (instructions[*command_index] & USES_RAM)

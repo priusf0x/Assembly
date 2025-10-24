@@ -46,7 +46,9 @@ StackInit(swag_t**   swag,
         return STACK_FUNCTION_INCORRECT_VALUE_ERROR;
     }
 
-    (*swag)->real_capacity_in_bytes = sizeof(value_type) * expected_capacity + sizeof(long long) * (2 * CANARY_SIZE + 1);
+    (*swag)->real_capacity_in_bytes = sizeof(value_type) * expected_capacity
+                                      + sizeof(long long) * (2 * CANARY_SIZE + 1);
+
     (*swag)->canary_start = (uint8_t*) calloc((*swag)->real_capacity_in_bytes, sizeof(uint64_t));
     if ((*swag)->canary_start == NULL)
     {
@@ -190,7 +192,7 @@ StackNormalizeSize(swag_t* swag)
     {
         SetCanary(swag->canary_end, 0);
 
-        (swag->canary_start) = (uint8_t*) realloc(swag->canary_start,
+        swag->canary_start = (uint8_t*) realloc(swag->canary_start,
                                                   swag->real_capacity_in_bytes
                                                   - sizeof(value_type) * ((swag->capacity) / 2));
 
@@ -300,7 +302,7 @@ StackDump(swag_t* swag)
             printf(YELLOW"||" STANDARD);
         }
 
-        printf(RED "[%3.0zu]" WHITE "%4d  " STANDARD, (size_t) &((swag->canary_start)[index]) % 1000,(swag->canary_start)[index]);
+        printf(RED "[%3.0zu]" WHITE "%4d  " STANDARD, (size_t) (swag->canary_start + index)  % 1000,(swag->canary_start)[index]);
     }
 
     printf(YELLOW "||\n" STANDARD);

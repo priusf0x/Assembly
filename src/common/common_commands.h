@@ -1,13 +1,17 @@
 #ifndef COMMON_COMMANDS_H
 #define COMMON_COMMANDS_H
 
-#define EXTENDED_PACK 0b11000000
-#define ARGUMENT_MASK 0b00111111
+#include <stdio.h>
+#include <stdint.h>
+
+const uint8_t EXTENDED_PACK = 0b11000000;
+const uint8_t ARGUMENT_MASK = 0b00111111;
 
 //push/pops flags
-#define USES_RAM 0b00100000
-#define USES_INT 0b00010000
-#define REGISTER_MASK 0b00001111
+const uint8_t USES_RAM = 0b00100000;
+const uint8_t USES_INT = 0b00010000;
+const uint8_t ADD_TO_REGI = 0b00001000;
+const uint8_t REGISTER_MASK = 0b00000111;
 
 enum commands_e
 {
@@ -27,7 +31,6 @@ enum commands_e
 //3 priority 11|011101 11|011100 10|ARGUME (Count ??)
 // ...
 
-
 const char* const PROCESSORS_REG[] =
 {
     "R0X",
@@ -37,15 +40,7 @@ const char* const PROCESSORS_REG[] =
     "RDX",
     "REX",
     "RFX",
-    "RGX",
-    "E0X",
-    "EAX",
-    "EBX",
-    "ECX",
-    "EDX",
-    "EEX",
-    "EFX",
-    "EGX"
+    "RGX"
 };
 const int PROCESSOR_REG_COUNT = sizeof(PROCESSORS_REG) /  sizeof(PROCESSORS_REG[0]);
 
