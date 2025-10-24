@@ -12,8 +12,8 @@ const float  INCREASE_COEFFICIENT = 2;
 struct label_t
 {
     char*  name;
-    size_t from;
-    size_t to;
+    int from;
+    int to;
     bool   is_initialized;
     bool   is_used;
 };
@@ -42,7 +42,8 @@ CheckIfLabel(char* string)
 label_tabular_t*
 InitialiseLabelTabular()
 {
-    label_tabular_t* return_tabular = (label_tabular_t*) calloc(TABULAR_START_SIZE, sizeof(label_tabular_t));
+    label_tabular_t* return_tabular = (label_tabular_t*) calloc(TABULAR_START_SIZE,
+                                                                sizeof(label_tabular_t));
 
     return_tabular->labels = (label_t*) calloc(TABULAR_START_SIZE, sizeof(label_t));
     return_tabular->size = TABULAR_START_SIZE;
@@ -62,7 +63,10 @@ InitLabel(char* label_name,
 
     if (label_tabular->count == label_tabular->size)
     {
-        (label_tabular->labels) = (label_t*) recalloc(label_tabular->labels, sizeof(label_t) * label_tabular->size, sizeof(label_t) * (size_t) (INCREASE_COEFFICIENT * (float) label_tabular->size));
+        (label_tabular->labels) = (label_t*) recalloc(label_tabular->labels,
+                                                      sizeof(label_t) * label_tabular->size,
+                                                      sizeof(label_t) * (size_t) (INCREASE_COEFFICIENT
+                                                      * (float) label_tabular->size));
         label_tabular->size = (size_t) (INCREASE_COEFFICIENT * (float) label_tabular->size);
 
         if (label_tabular->labels == NULL)
@@ -80,7 +84,7 @@ InitLabel(char* label_name,
         {
             if (!(label_tabular->labels)[index].is_initialized)
             {
-                (label_tabular->labels)[index].to = instructions->instructions_bytes_written;
+                (label_tabular->labels)[index].to = (int) instructions->instructions_bytes_written;
                 (label_tabular->labels)[index].is_initialized = true;
             }
             else
@@ -94,7 +98,11 @@ InitLabel(char* label_name,
 
     if (!search_flag)
     {
-        (label_tabular->labels)[label_tabular->count] = {.name = label_name, .from = 0, .to = instructions->instructions_bytes_written, .is_initialized = true, .is_used = false};
+        (label_tabular->labels)[label_tabular->count] = {.name = label_name,
+                                                         .from = 0,
+                                                         .to = (int) instructions->instructions_bytes_written,
+                                                         .is_initialized = true,
+                                                         .is_used = false};
         label_tabular->count++;
     }
 
@@ -112,7 +120,11 @@ UseLabel(char* label_name,
 
     if (label_tabular->count == label_tabular->size)
     {
-        (label_tabular->labels) = (label_t*) recalloc(label_tabular->labels, sizeof(label_t) * label_tabular->size, sizeof(label_t) * (size_t) (INCREASE_COEFFICIENT * (float) label_tabular->size));
+        (label_tabular->labels) = (label_t*) recalloc(label_tabular->labels,
+                                                      sizeof(label_t) * label_tabular->size,
+                                                      sizeof(label_t) * (size_t) (INCREASE_COEFFICIENT *
+                                                      (float) label_tabular->size));
+
         label_tabular->size = (size_t) (INCREASE_COEFFICIENT * (float) label_tabular->size);
 
         if (label_tabular->labels == NULL)
@@ -128,7 +140,7 @@ UseLabel(char* label_name,
         if (strcmp(label_name, (label_tabular->labels)[index].name) == 0)
         {
             (label_tabular->labels)[label_tabular->count] = (label_tabular->labels)[index];
-            (label_tabular->labels)[label_tabular->count].from = instructions->instructions_bytes_written;
+            (label_tabular->labels)[label_tabular->count].from = (int) instructions->instructions_bytes_written;
             (label_tabular->labels)[label_tabular->count].is_used = true;
 
             label_tabular->count++;
@@ -137,7 +149,11 @@ UseLabel(char* label_name,
         }
     }
 
-    (label_tabular->labels)[label_tabular->count] = {.name = label_name, .from = instructions->instructions_bytes_written, .to = 0, .is_initialized = false, .is_used = true};
+    (label_tabular->labels)[label_tabular->count] = {.name = label_name,
+                                                     .from = (int) instructions->instructions_bytes_written,
+                                                     .to = 0,
+                                                     .is_initialized = false,
+                                                     .is_used = true};
     label_tabular->count++;
 
     return LABEL_INSTRUCTION_RETURN_SUCCESS;
@@ -148,12 +164,16 @@ LabelTabularDump(compiler_instructions_t* instructions)
 {
     label_tabular_t* label_tabular = instructions->instructions_label_tabular;
 
-    printf(YELLOW "||" RED "               Names" YELLOW "||" RED "     From" YELLOW "||" RED "       To" YELLOW "||" RED "   IsInit" YELLOW "||" RED "   IsUsed" YELLOW "||\n" STANDARD);
+    printf(YELLOW "||" RED "               Names" YELLOW "||" RED "     From" YELLOW "||" RED
+           "       To" YELLOW "||" RED "   IsInit" YELLOW "||" RED "   IsUsed"
+           YELLOW "||\n" STANDARD);
 
     for (size_t index = 0; index < label_tabular->count; index++)
     {
         label_t current_label = (label_tabular->labels)[index];
-        printf(YELLOW "||" WHITE "%20s" YELLOW "||" WHITE "%9zu" YELLOW "||" WHITE "%9zu" YELLOW "||" WHITE "%9d" YELLOW "||" WHITE "%9d" YELLOW "||\n" STANDARD, current_label.name, current_label.from, current_label.to, current_label.is_initialized, current_label.is_used);
+        printf(YELLOW "||" WHITE "%20s" YELLOW "||" WHITE "%9d" YELLOW "||" WHITE "%9d" YELLOW "||"
+               WHITE "%9d" YELLOW "||" WHITE "%9d" YELLOW "||\n" STANDARD, current_label.name,
+               current_label.from, current_label.to, current_label.is_initialized, current_label.is_used);
     }
 }
 
@@ -181,7 +201,8 @@ FixUp(compiler_instructions_t* instructions)
 
         if ((label_tabular->labels)[index].is_used)
         {
-            memcpy(instructions->instructions_array + label_tabular->labels[index].from, &((label_tabular->labels)[index].to), sizeof(int));
+            memcpy(instructions->instructions_array + label_tabular->labels[index].from,
+                   &((label_tabular->labels)[index].to), sizeof(int));
         }
     }
 

@@ -128,7 +128,8 @@ CheckCanary(swag_t* swag)
 {
     for (size_t index = 0; index < CANARY_SIZE; index++)
     {
-        if ((((uint64_t*) swag->canary_start)[index] != CANARY_FILL) || (((uint64_t*) swag->canary_end)[index] != CANARY_FILL))
+        if ((((uint64_t*) swag->canary_start)[index] != CANARY_FILL) ||
+        (((uint64_t*) swag->canary_end)[index] != CANARY_FILL))
         {
             return false;
         }
@@ -168,7 +169,10 @@ StackNormalizeSize(swag_t* swag)
     if (swag->size == swag->capacity)
     {
         SetCanary(swag->canary_end, 0);
-        (swag->canary_start) = (uint8_t*) recalloc(swag->canary_start, swag->real_capacity_in_bytes, swag->real_capacity_in_bytes + sizeof(value_type) * swag->capacity);
+        (swag->canary_start) = (uint8_t*) recalloc(swag->canary_start,
+                                                   swag->real_capacity_in_bytes,
+                                                   swag->real_capacity_in_bytes
+                                                   + sizeof(value_type) * swag->capacity);
 
         swag->real_capacity_in_bytes += sizeof(value_type) * swag->capacity;
 
@@ -186,7 +190,9 @@ StackNormalizeSize(swag_t* swag)
     {
         SetCanary(swag->canary_end, 0);
 
-        (swag->canary_start) = (uint8_t*) realloc(swag->canary_start, swag->real_capacity_in_bytes - sizeof(value_type) * ((swag->capacity) / 2));
+        (swag->canary_start) = (uint8_t*) realloc(swag->canary_start,
+                                                  swag->real_capacity_in_bytes
+                                                  - sizeof(value_type) * ((swag->capacity) / 2));
 
         swag->real_capacity_in_bytes -= sizeof(value_type) * swag->capacity / 2;
 

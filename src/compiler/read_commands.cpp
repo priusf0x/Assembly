@@ -11,6 +11,8 @@
 #include "tools.h"
 #include "common_commands.h"
 
+const size_t START_MAX_CODE_SIZE = 20;
+
 static int  PutInstruction(size_t index_in_table, compiler_instructions_t* instructions);
 static int  PutInteger(int value, compiler_instructions_t* instructions);
 
@@ -85,7 +87,8 @@ WriteInFile(compiler_instructions_t* instructions,
 
     fwrite(&COMPILER_VERSION , sizeof(size_t), 1, compiled_file);
     fwrite(&instructions->instructions_bytes_written , sizeof(size_t), 1, compiled_file);
-    fwrite(instructions->instructions_array , sizeof(uint8_t), instructions->instructions_bytes_written, compiled_file);
+    fwrite(instructions->instructions_array , sizeof(uint8_t),
+           instructions->instructions_bytes_written, compiled_file);
     fprintf(compiled_file, "\n\nHere was pr1usf0x.\n");
 
     if (fclose(compiled_file) != 0)
@@ -97,6 +100,24 @@ WriteInFile(compiler_instructions_t* instructions,
 }
 
 //=================== READ COMMANDS FUNCTIONS ========================
+
+compiler_return_e
+InitInstuctionStruct(compiler_instructions_t* instructions)
+{
+    *instructions = {.instructions_bytes_written = 0,
+                     .instructions_max_bytes_amount = START_MAX_CODE_SIZE,
+                     .instructions_array = NULL};
+
+    instructions->instructions_array = (uint8_t*) calloc(instructions->instructions_max_bytes_amount,
+                                                         sizeof(uint8_t));
+
+    if (instructions->instructions_array == NULL)
+    {
+        return COMPILER_RETURN_MEMORY_ERROR;
+    }
+
+    return COMPILER_RETURN_SUCCESS;
+}
 
 compiler_return_e
 TranslateCode(char*                    input_buffer,
@@ -280,15 +301,22 @@ ReadPushArgument(char**                   input_command,
                         return COMPILER_RETURN_INVALID_SYNTAX;
                     }
 
-                    (instructions->instructions_array)[instructions->instructions_bytes_written - 1] = (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | USES_RAM;
+                    (instructions->instructions_array)[instructions->instructions_bytes_written - 1] =
+                    (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | USES_RAM;
+
                     (*input_command)++;
                 }
 
-                (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)] = (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)] | (uint8_t) register_number;
+                (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)] =
+                (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)]
+                | (uint8_t) register_number;
 
                 if (offset != 0)
                 {
-                    (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)] = (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)] | USES_INT;
+                    (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)] =
+                    (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)]
+                    | USES_INT;
+
                     if ((PutInteger(offset, instructions) != 0))
                     {
                         return COMPILER_RETURN_INVALID_SYNTAX;
@@ -309,7 +337,9 @@ ReadPushArgument(char**                   input_command,
     {
         char* end_str = NULL;
 
-        (instructions->instructions_array)[instructions->instructions_bytes_written - 1] = (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | USES_INT;
+        (instructions->instructions_array)[instructions->instructions_bytes_written - 1] =
+        (instructions->instructions_array)[instructions->instructions_bytes_written - 1]
+        | USES_INT;
 
         if ((PutInteger((int) strtol(*input_command, &end_str, 0), instructions) != 0) || (end_str - *input_command == 0))
         {
@@ -361,15 +391,21 @@ ReadPopArgument(char**                    input_command,
                     return COMPILER_RETURN_INVALID_SYNTAX;
                 }
 
-                (instructions->instructions_array)[instructions->instructions_bytes_written - 1] = (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | USES_RAM;
+                (instructions->instructions_array)[instructions->instructions_bytes_written - 1] =
+                (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | USES_RAM;
                 (*input_command)++;
             }
 
-            (instructions->instructions_array)[instructions->instructions_bytes_written - 1] = (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | (uint8_t) register_number;
+            (instructions->instructions_array)[instructions->instructions_bytes_written - 1] =
+            (instructions->instructions_array)[instructions->instructions_bytes_written - 1]
+            | (uint8_t) register_number;
 
             if (offset != 0)
             {
-                (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)] = (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)] | USES_INT;
+                (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)] =
+                (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)]
+                | USES_INT;
+
                 if ((PutInteger(offset, instructions) != 0))
                 {
                     return COMPILER_RETURN_INVALID_SYNTAX;
@@ -415,7 +451,8 @@ ReadJumpArgument(char**                    input_command,
         {
             char* end_str = NULL;
 
-            if ((PutInteger((int) strtol(*input_command, &end_str, 0), instructions) != 0) || (end_str - *input_command == 0))
+            if ((PutInteger((int) strtol(*input_command, &end_str, 0), instructions) != 0)
+                || (end_str - *input_command == 0))
             {
                 return COMPILER_RETURN_INVALID_SYNTAX;
             }
@@ -502,7 +539,9 @@ PutInstruction(size_t                   index_in_table,
 
     if (instructions->instructions_bytes_written >= instructions->instructions_max_bytes_amount - 5)
     {
-        instructions->instructions_array = (uint8_t*) recalloc(instructions->instructions_array, instructions->instructions_max_bytes_amount, instructions->instructions_max_bytes_amount * 2);
+        instructions->instructions_array = (uint8_t*) recalloc(instructions->instructions_array,
+                                                               instructions->instructions_max_bytes_amount,
+                                                               instructions->instructions_max_bytes_amount * 2);
         instructions->instructions_max_bytes_amount *= 2;
     }
 
@@ -511,12 +550,15 @@ PutInstruction(size_t                   index_in_table,
         return 1;
     }
 
-    (instructions->instructions_array)[instructions->instructions_bytes_written] = COMPILER_COMMANDS_ARRAY[index_in_table].binary_value_block_1;
+    (instructions->instructions_array)[instructions->instructions_bytes_written] =
+    COMPILER_COMMANDS_ARRAY[index_in_table].binary_value_block_1;
 
     if (!((COMPILER_COMMANDS_ARRAY[index_in_table].binary_value_block_1 & EXTENDED_PACK) ^ EXTENDED_PACK))
     {
         instructions->instructions_bytes_written += sizeof(uint8_t);
-        (instructions->instructions_array)[instructions->instructions_bytes_written] = COMPILER_COMMANDS_ARRAY[index_in_table].binary_value_block_2;
+
+        (instructions->instructions_array)[instructions->instructions_bytes_written] =
+        COMPILER_COMMANDS_ARRAY[index_in_table].binary_value_block_2;
     }
 
     instructions->instructions_bytes_written += sizeof(uint8_t);
@@ -533,7 +575,9 @@ PutInteger(int                      value,
 
     if (instructions->instructions_bytes_written >= instructions->instructions_max_bytes_amount - 5)
     {
-        instructions->instructions_array = (uint8_t*) recalloc(instructions->instructions_array, instructions->instructions_max_bytes_amount, instructions->instructions_max_bytes_amount * 2);
+        instructions->instructions_array = (uint8_t*) recalloc(instructions->instructions_array,
+                                                               instructions->instructions_max_bytes_amount,
+                                                               instructions->instructions_max_bytes_amount * 2);
         instructions->instructions_max_bytes_amount *= 2;
     }
 
