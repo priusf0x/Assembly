@@ -14,14 +14,14 @@
 #include "common_commands.h"
 
 // #define NDEBUG
-// #define VIDEO_PLAY
+#define VIDEO_PLAY
 #define SHOW_RAM
 
 const size_t START_STACK_SIZE = 8;
 const uint64_t PROCESSOR_VERSION = 4;
 const size_t SCREEN_SIZE_X = 98;
 const size_t SCREEN_SIZE_Y = 36;
-const size_t RAM_SIZE = 400;
+const size_t RAM_SIZE = 100;
 
 static void PrintRAMData(spu_t* spu);
 
@@ -180,7 +180,7 @@ StackCommandPush(spu_t* spu)
         *command_index += sizeof(uint8_t);
         int add_value = *(int*) (spu->instructions + *command_index);
 
-        if(((spu->registers)[spu_reg] < add_value) || ((spu->registers)[spu_reg] + add_value > (int) RAM_SIZE))
+        if(((spu->registers)[spu_reg] < -add_value) || ((spu->registers)[spu_reg] + add_value > (int) RAM_SIZE))
         {
             return PROCESSOR_FUNCTION_RETURN_PROCESSOR_MEMORY_SANITIZER;
         }
@@ -198,7 +198,7 @@ StackCommandPush(spu_t* spu)
         *command_index += sizeof(uint8_t);
         int add_value = *(int*) (spu->instructions + *command_index);
 
-        if(((spu->registers)[spu_reg] < add_value) || ((spu->registers)[spu_reg] + add_value > (int) RAM_SIZE))
+        if(((spu->registers)[spu_reg] < -add_value) || ((spu->registers)[spu_reg] + add_value > (int) RAM_SIZE))
         {
             return PROCESSOR_FUNCTION_RETURN_PROCESSOR_MEMORY_SANITIZER;
         }
@@ -257,7 +257,7 @@ StackCommandPop(spu_t* spu)
         *command_index += sizeof(uint8_t);
         int add_value = *(int*) (spu->instructions + *command_index);
 
-        if((spu->registers[spu_reg] < add_value) || (spu->registers[spu_reg] + add_value > (int) RAM_SIZE))
+        if((spu->registers[spu_reg] < -add_value) || (spu->registers[spu_reg] + add_value > (int) RAM_SIZE))
         {
             return PROCESSOR_FUNCTION_RETURN_PROCESSOR_MEMORY_SANITIZER;
         }
@@ -276,7 +276,7 @@ StackCommandPop(spu_t* spu)
         *command_index += sizeof(uint8_t);
         int add_value = *(int*) (spu->instructions + *command_index);
 
-        if((spu->registers[spu_reg] < add_value) || (spu->registers[spu_reg] + add_value > (int) RAM_SIZE))
+        if((spu->registers[spu_reg] < -add_value) || (spu->registers[spu_reg] + add_value > (int) RAM_SIZE))
         {
             return PROCESSOR_FUNCTION_RETURN_PROCESSOR_MEMORY_SANITIZER;
         }

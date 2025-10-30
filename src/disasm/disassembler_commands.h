@@ -31,7 +31,11 @@ const struct disassemble_command_t DISASSEMBLER_COMMANDS_ARRAY[] =
     {.binary_value = COMMAND_OPERATION, .binary_handler = PrintOperation},
     {.binary_value = COMMAND_JMP,       .binary_handler = PrintJump     },
     {.binary_value = COMMAND_CALL,      .binary_handler = PrintCall     },
-    {.binary_value = COMMAND_DRAW,      .binary_handler = PrintDraw     }
+    {.binary_value = COMMAND_EMPTY_1,   .binary_handler = NULL          },
+    {.binary_value = COMMAND_EMPTY_2,   .binary_handler = NULL          },
+    {.binary_value = COMMAND_EMPTY_3,   .binary_handler = NULL          },
+    {.binary_value = COMMAND_DRAW,      .binary_handler = PrintDraw     },
+
 };
 
 const size_t DISASSEMBLER_COMMANDS_COUNT = sizeof(DISASSEMBLER_COMMANDS_ARRAY) / sizeof(DISASSEMBLER_COMMANDS_ARRAY[0]);

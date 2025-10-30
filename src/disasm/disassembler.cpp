@@ -106,9 +106,12 @@ WriteDisassembledFile(size_t   instructions_count,
         return DISASSEMBLER_RETURN_DISASSEMBLED_FILE_OPEN_ERROR;
     }
 
+    int command_number = 0;
+
     for(size_t command_index = 0; command_index < instructions_count;)
     {
-        (DISASSEMBLER_COMMANDS_ARRAY[TranslateCommandNumber(instructions, &command_index)].binary_handler)
+        command_number = TranslateCommandNumber(instructions, &command_index);
+        (DISASSEMBLER_COMMANDS_ARRAY[command_number].binary_handler)
         (instructions, &command_index, disassembled_file);
     }
 

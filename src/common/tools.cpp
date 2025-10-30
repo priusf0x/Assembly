@@ -106,19 +106,25 @@ TranslateCommandNumber(uint8_t* processor_instructions,
 {
     ASSERT(processor_instructions != NULL);
     ASSERT(instruction_number != NULL);
-
     uint8_t read_command = 0;
     uint8_t* pointer_to_command = processor_instructions + *instruction_number;
 
-    if ((*(pointer_to_command) & EXTENDED_PACK) ^ EXTENDED_PACK)
+    if ((*(pointer_to_command) & ARGUMENT_SWITCH_MASK) ^ ARGUMENT_SWITCH_MASK)
     {
         read_command = *(pointer_to_command) >> 6;
     }
+    else if ((*(pointer_to_command) & (EXTENDED_COMMAND_PACK)) ^ EXTENDED_COMMAND_PACK)
+    {
+        read_command = ((*(pointer_to_command) & (EXTENDED_COMMAND_PACK)) >> 3)
+                        + 0b00000011;
+    }
     else
     {
-        read_command = ((*pointer_to_command) & ARGUMENT_MASK);
+        read_command = (*pointer_to_command) & ARGUMENT_MASK;
+        pointer_to_command += sizeof(uint8_t);
         *instruction_number += sizeof(uint8_t);
-        read_command += (uint8_t) (((*(pointer_to_command + sizeof(uint8_t))) & EXTENDED_PACK) + 0b00000011);
+        read_command += (uint8_t) ((*(pointer_to_command) & ARGUMENT_SWITCH_MASK)) >> 3;
+        read_command += 0b00001010;
     }
 
     return read_command;

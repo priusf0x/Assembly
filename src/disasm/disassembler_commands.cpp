@@ -41,7 +41,6 @@ PrintPush(uint8_t* instructions,
         fprintf(output, "push [%s + %d]\n",
                 PROCESSORS_REG[instructions[*command_index - sizeof(uint8_t)] & REGISTER_MASK],
                 *(int*) (instructions + *command_index));
-
         *command_index += sizeof(int);
     }
     else if (instructions[*command_index] & ADD_TO_REGI)
@@ -50,7 +49,6 @@ PrintPush(uint8_t* instructions,
         fprintf(output, "push %s + %d\n",
                 PROCESSORS_REG[instructions[*command_index - sizeof(uint8_t)] & REGISTER_MASK],
                 *(int*) (instructions + *command_index));
-
         *command_index += sizeof(int);
     }
     else if (instructions[*command_index] & USES_RAM)
@@ -66,9 +64,9 @@ PrintPush(uint8_t* instructions,
 }
 
 void
-PrintPop(uint8_t*    instructions,
-         size_t* command_index,
-         FILE*   output)
+PrintPop(uint8_t* instructions,
+         size_t*  command_index,
+         FILE*    output)
 {
     ASSERT(instructions != NULL);
     ASSERT(instructions != NULL);
@@ -80,7 +78,6 @@ PrintPop(uint8_t*    instructions,
         fprintf(output, "pop [%s + %d]\n",
                 PROCESSORS_REG[instructions[*command_index - sizeof(uint8_t)] & REGISTER_MASK],
                 *(int*) (instructions + *command_index));
-
         *command_index += sizeof(int);
     }
     else if (instructions[*command_index] & ADD_TO_REGI)
@@ -89,7 +86,6 @@ PrintPop(uint8_t*    instructions,
         fprintf(output, "pop %s + %d\n",
                 PROCESSORS_REG[instructions[*command_index - sizeof(uint8_t)] & REGISTER_MASK],
                 *(int*) (instructions + *command_index));
-
         *command_index += sizeof(int);
     }
     else if (instructions[*command_index] & USES_RAM)
@@ -105,9 +101,9 @@ PrintPop(uint8_t*    instructions,
 }
 
 void
-PrintOut(uint8_t*    instructions,
-         size_t* command_index,
-         FILE*   output)
+PrintOut(uint8_t* instructions,
+         size_t*  command_index,
+         FILE*    output)
 {
     ASSERT(instructions != NULL);
     ASSERT(instructions != NULL);
@@ -126,9 +122,9 @@ PrintOut(uint8_t*    instructions,
 }
 
 void
-PrintOperation(uint8_t*    instructions,
-               size_t* command_index,
-               FILE*   output)
+PrintOperation(uint8_t* instructions,
+               size_t*  command_index,
+               FILE*    output)
 {
     ASSERT(instructions != NULL);
     ASSERT(instructions != NULL);
@@ -206,9 +202,9 @@ PrintJump(uint8_t* instructions,
 }
 
 void
-PrintCall(uint8_t*    instructions,
-          size_t* command_index,
-          FILE*   output)
+PrintCall(uint8_t* instructions,
+          size_t*  command_index,
+          FILE*    output)
 {
     ASSERT(instructions != NULL);
     ASSERT(instructions != NULL);

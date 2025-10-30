@@ -555,7 +555,8 @@ PutInstruction(size_t                   index_in_table,
     (instructions->instructions_array)[instructions->instructions_bytes_written] =
     COMPILER_COMMANDS_ARRAY[index_in_table].binary_value_block_1;
 
-    if (!((COMPILER_COMMANDS_ARRAY[index_in_table].binary_value_block_1 & EXTENDED_PACK) ^ EXTENDED_PACK))
+    if (!((COMPILER_COMMANDS_ARRAY[index_in_table].binary_value_block_1 & NEXT_BYTE_MASK)
+         ^ NEXT_BYTE_MASK))
     {
         instructions->instructions_bytes_written += sizeof(uint8_t);
 
