@@ -13,7 +13,7 @@
 #include "tools.h"
 #include "common_commands.h"
 
-// #define NDEBUG
+#define NDEBUG
 #define VIDEO_PLAY
 #define SHOW_RAM
 
@@ -21,7 +21,26 @@ const size_t START_STACK_SIZE = 8;
 const uint64_t PROCESSOR_VERSION = 4;
 const size_t SCREEN_SIZE_X = 98;
 const size_t SCREEN_SIZE_Y = 36;
-const size_t RAM_SIZE = 100;
+const size_t RAM_SIZE = 10000;
+
+#define PUSH_RET(X) if (StackPush(spu->spu_stack, (X)) != 0) \
+                {\
+                    return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;\
+                }
+
+#define CHECK_ADD_VALUE_RET(X) if(((spu->registers)[spu_reg] < -(X)) || ((spu->registers)[spu_reg] + (X) > (int) RAM_SIZE))\
+                            {\
+                                return PROCESSOR_FUNCTION_RETURN_PROCESSOR_MEMORY_SANITIZER;\
+                            }\
+
+#define POP_RET(X)  if (StackPop(spu->spu_stack, (X)) != 0)\
+                    {\
+                        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;\
+                    }\
+
+#define NEXT_INSTRUCTION() spu->read_bytes_amount += sizeof(uint8_t)
+#define SKIP_INT() spu->read_bytes_amount += sizeof(int)
+
 
 static void PrintRAMData(spu_t* spu);
 
@@ -155,12 +174,12 @@ DrawScreen(spu_t* spu)
     }
 
     #ifdef VIDEO_PLAY
-        usleep( 20000 );
+        usleep(20000);
     #endif
 
     PROCESSOR_VERIFY(spu);
 
-    spu->read_bytes_amount += sizeof(uint8_t);
+    NEXT_INSTRUCTION();
 
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
@@ -170,71 +189,53 @@ StackCommandPush(spu_t* spu)
 {
     PROCESSOR_VERIFY(spu);
 
-    size_t*  command_index = &(spu->read_bytes_amount);
     uint8_t* instructions = spu->instructions;
 
-    if ((instructions[*command_index] & USES_RAM) && (instructions[*command_index] & ADD_TO_REGI))
+    if ((instructions[spu->read_bytes_amount] & USES_RAM)
+        && (instructions[spu->read_bytes_amount] & ADD_TO_REGI))
     {
-        uint8_t spu_reg = (spu->instructions)[*command_index] & REGISTER_MASK;
+        uint8_t spu_reg = (spu->instructions)[spu->read_bytes_amount]
+                          & REGISTER_MASK;
 
-        *command_index += sizeof(uint8_t);
-        int add_value = *(int*) (spu->instructions + *command_index);
+        NEXT_INSTRUCTION();
+        int add_value = *(int*) (spu->instructions + spu->read_bytes_amount);
 
-        if(((spu->registers)[spu_reg] < -add_value) || ((spu->registers)[spu_reg] + add_value > (int) RAM_SIZE))
-        {
-            return PROCESSOR_FUNCTION_RETURN_PROCESSOR_MEMORY_SANITIZER;
-        }
+        CHECK_ADD_VALUE_RET(add_value);
 
-        if (StackPush(spu->spu_stack, (spu->RAM)[(spu->registers)[spu_reg] + add_value]) != 0)
-        {
-            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-        }
-        *command_index += sizeof(int);
+        PUSH_RET((spu->RAM)[(spu->registers)[spu_reg] + add_value]);
+
+        SKIP_INT();
     }
-    else if (instructions[*command_index] & ADD_TO_REGI)
+    else if (instructions[spu->read_bytes_amount] & ADD_TO_REGI)
     {
-        uint8_t spu_reg = (spu->instructions)[*command_index] & REGISTER_MASK;
+        uint8_t spu_reg = (spu->instructions)[spu->read_bytes_amount] & REGISTER_MASK;
 
-        *command_index += sizeof(uint8_t);
-        int add_value = *(int*) (spu->instructions + *command_index);
+        NEXT_INSTRUCTION();
+        int add_value = *(int*) (spu->instructions + spu->read_bytes_amount);
 
-        if(((spu->registers)[spu_reg] < -add_value) || ((spu->registers)[spu_reg] + add_value > (int) RAM_SIZE))
-        {
-            return PROCESSOR_FUNCTION_RETURN_PROCESSOR_MEMORY_SANITIZER;
-        }
+        CHECK_ADD_VALUE_RET(add_value);
 
-        if (StackPush(spu->spu_stack, (spu->registers)[spu_reg] + add_value) != 0)
-        {
-            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-        }
-        *command_index += sizeof(int);
+        PUSH_RET((spu->registers)[spu_reg] + add_value);
+
+        SKIP_INT();
     }
-    else if (instructions[*command_index] & USES_INT)
+    else if (instructions[spu->read_bytes_amount] & USES_INT)
     {
-        *command_index += sizeof(uint8_t);
-        if (StackPush(spu->spu_stack, *((int*) (spu->instructions + *command_index))) != 0)
-        {
-            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-        }
-        *command_index += sizeof(int);
+        NEXT_INSTRUCTION();
+        PUSH_RET(*((int*) (spu->instructions + spu->read_bytes_amount)));
+        SKIP_INT();
     }
-    else if (instructions[*command_index] & USES_RAM)
+    else if (instructions[spu->read_bytes_amount] & USES_RAM)
     {
-        uint8_t spu_reg = (spu->instructions)[*command_index] & REGISTER_MASK;
-        if (StackPush(spu->spu_stack, (spu->RAM)[(spu->registers)[spu_reg]]) != 0)
-        {
-            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-        }
-        *command_index += sizeof(uint8_t);
+        uint8_t spu_reg = (spu->instructions)[spu->read_bytes_amount] & REGISTER_MASK;
+        PUSH_RET((spu->RAM)[(spu->registers)[spu_reg]]);
+        NEXT_INSTRUCTION();
     }
     else
     {
-        uint8_t spu_reg = (spu->instructions)[*command_index] & REGISTER_MASK;
-        if (StackPush(spu->spu_stack, (spu->registers)[spu_reg]) != 0)
-        {
-            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-        }
-        *command_index += sizeof(uint8_t);
+        uint8_t spu_reg = (spu->instructions)[spu->read_bytes_amount] & REGISTER_MASK;
+        PUSH_RET((spu->registers)[spu_reg]);
+        NEXT_INSTRUCTION();
     }
 
     PROCESSOR_VERIFY(spu);
@@ -247,65 +248,50 @@ StackCommandPop(spu_t* spu)
 {
     PROCESSOR_VERIFY(spu);
 
-    size_t*  command_index = &(spu->read_bytes_amount);
-    uint8_t* instructions = spu->instructions;
-
-    if ((instructions[*command_index] & USES_RAM) && (instructions[*command_index] & ADD_TO_REGI))
+    if ((spu->instructions[spu->read_bytes_amount] & USES_RAM)
+        && (spu->instructions[spu->read_bytes_amount] & ADD_TO_REGI))
     {
-        uint8_t spu_reg = (spu->instructions)[*command_index] & REGISTER_MASK;
+        uint8_t spu_reg = (spu->instructions)[spu->read_bytes_amount] & REGISTER_MASK;
 
-        *command_index += sizeof(uint8_t);
-        int add_value = *(int*) (spu->instructions + *command_index);
+        NEXT_INSTRUCTION();
+        int add_value = *(int*) (spu->instructions + spu->read_bytes_amount);
 
-        if((spu->registers[spu_reg] < -add_value) || (spu->registers[spu_reg] + add_value > (int) RAM_SIZE))
-        {
-            return PROCESSOR_FUNCTION_RETURN_PROCESSOR_MEMORY_SANITIZER;
-        }
+        CHECK_ADD_VALUE_RET(add_value);
 
-        if (StackPop(spu->spu_stack, &((spu->RAM)[(spu->registers)[spu_reg] + add_value])) != 0)
-        {
-            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-        }
+        POP_RET(&((spu->RAM)[(spu->registers)[spu_reg] + add_value]));
 
-        *command_index += sizeof(int);
+        SKIP_INT();
     }
-    else if (instructions[*command_index] & ADD_TO_REGI)
+    else if (spu->instructions[spu->read_bytes_amount] & ADD_TO_REGI)
     {
-        uint8_t spu_reg = (spu->instructions)[*command_index] & REGISTER_MASK;
+        uint8_t spu_reg = (spu->instructions)[spu->read_bytes_amount] & REGISTER_MASK;
 
-        *command_index += sizeof(uint8_t);
-        int add_value = *(int*) (spu->instructions + *command_index);
+        NEXT_INSTRUCTION();
+        int add_value = *(int*) (spu->instructions + spu->read_bytes_amount);
 
-        if((spu->registers[spu_reg] < -add_value) || (spu->registers[spu_reg] + add_value > (int) RAM_SIZE))
-        {
-            return PROCESSOR_FUNCTION_RETURN_PROCESSOR_MEMORY_SANITIZER;
-        }
+        CHECK_ADD_VALUE_RET(add_value);
 
-        if (StackPop(spu->spu_stack, &((spu->registers)[spu_reg])) != 0)
-        {
-            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-        }
+        POP_RET(&((spu->registers)[spu_reg]))
+
         (spu->registers)[spu_reg] += add_value;
 
-        *command_index += sizeof(int);
+        SKIP_INT();
     }
-    else if (instructions[*command_index] & USES_RAM)
+    else if (spu->instructions[spu->read_bytes_amount] & USES_RAM)
     {
-        uint8_t spu_reg = (spu->instructions)[*command_index] & REGISTER_MASK;
-        if (StackPop(spu->spu_stack, &((spu->RAM)[spu->registers[spu_reg]])) != 0)
-        {
-            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-        }
-        *command_index += sizeof(uint8_t);
+        uint8_t spu_reg = (spu->instructions)[spu->read_bytes_amount] & REGISTER_MASK;
+
+        POP_RET(&((spu->RAM)[spu->registers[spu_reg]]));
+
+        NEXT_INSTRUCTION();
     }
     else
     {
-        uint8_t spu_reg = (spu->instructions)[*command_index] & REGISTER_MASK;
-        if (StackPop(spu->spu_stack, &spu->registers[spu_reg]) != 0)
-        {
-            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-        }
-        *command_index += sizeof(uint8_t);
+        uint8_t spu_reg = (spu->instructions)[spu->read_bytes_amount] & REGISTER_MASK;
+
+        POP_RET(&spu->registers[spu_reg]);
+
+        NEXT_INSTRUCTION();
     }
 
     PROCESSOR_VERIFY(spu);
@@ -327,23 +313,18 @@ StackInOut(spu_t* spu)
             return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
         }
 
-        if (StackPush(spu->spu_stack, intermediate_value) != 0)
-        {
-            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-        }
+        PUSH_RET(intermediate_value);
     }
     else
     {
-        if (StackPop(spu->spu_stack, &intermediate_value) != 0)
-        {
-            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-        }
+        POP_RET(&intermediate_value);
+
         printf(GREEN "OUT-VALUE" WHITE " - %d\n" STANDARD, intermediate_value);
     }
 
     PROCESSOR_VERIFY(spu);
 
-    spu->read_bytes_amount += sizeof(uint8_t);
+    NEXT_INSTRUCTION();
 
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
@@ -363,7 +344,7 @@ static int comparator_not_eq (int a, int b) {return (a != b);};
 static processor_functions_return_value_e
 Jump(spu_t* spu)
 {
-    spu->read_bytes_amount += sizeof(uint8_t);
+    NEXT_INSTRUCTION();
     spu->read_bytes_amount = (size_t) *(int*) (spu->instructions + spu->read_bytes_amount);
 
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
@@ -394,15 +375,8 @@ JumpFunction(spu_t* spu)
     int intermediate_value_1 = 0;
     int intermediate_value_2 = 0;
 
-    if (StackPop(spu->spu_stack, &intermediate_value_1) != 0)
-    {
-        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-    }
-
-    if (StackPop(spu->spu_stack, &intermediate_value_2) != 0)
-    {
-        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-    }
+    POP_RET(&intermediate_value_1);
+    POP_RET(&intermediate_value_2);
 
     if (comparators[spu->instructions[spu->read_bytes_amount]
         & ARGUMENT_MASK](intermediate_value_2, intermediate_value_1))
@@ -411,7 +385,8 @@ JumpFunction(spu_t* spu)
     }
     else
     {
-        spu->read_bytes_amount += sizeof(uint8_t) + sizeof(int);
+        NEXT_INSTRUCTION();
+        SKIP_INT();
     }
 
     PROCESSOR_VERIFY(spu);
@@ -428,20 +403,17 @@ Call(spu_t* spu)
     {
         int intermediate_value = 0;
 
-        if (StackPop(spu->spu_stack, &intermediate_value) != 0)
-        {
-            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-        }
+        POP_RET(&intermediate_value);
 
-        spu->read_bytes_amount = (size_t) intermediate_value + sizeof(uint8_t) + sizeof(int);
+        spu->read_bytes_amount = (size_t) intermediate_value;
+        NEXT_INSTRUCTION();
+        SKIP_INT();
     }
     else
     {
-        if (StackPush(spu->spu_stack, (int) spu->read_bytes_amount) != 0)
-        {
-            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-        }
-        spu->read_bytes_amount += sizeof(uint8_t);
+        PUSH_RET((int) spu->read_bytes_amount);
+
+        NEXT_INSTRUCTION();
         spu->read_bytes_amount = (size_t) *((int*) (spu->instructions + spu->read_bytes_amount));
     }
 
@@ -477,7 +449,7 @@ StackDoOperation(spu_t* spu)
 
     PROCESSOR_VERIFY(spu);
 
-    spu->read_bytes_amount += sizeof(uint8_t);
+    NEXT_INSTRUCTION();
 
     return output;
 }
@@ -488,16 +460,10 @@ StackAdd(spu_t* spu)
     int intermediate_value_1 = 0;
     int intermediate_value_2 = 0;
 
-    if ((StackPop(spu->spu_stack, &intermediate_value_1) != 0) ||
-        StackPop(spu->spu_stack, &intermediate_value_2) != 0)
-    {
-        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-    }
+    POP_RET(&intermediate_value_1);
+    POP_RET(&intermediate_value_2);
 
-    if (StackPush(spu->spu_stack, intermediate_value_2 + intermediate_value_1) != 0)
-    {
-        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-    }
+    PUSH_RET(intermediate_value_2 + intermediate_value_1)
 
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
@@ -508,16 +474,10 @@ StackSub(spu_t* spu)
     int intermediate_value_1 = 0;
     int intermediate_value_2 = 0;
 
-    if ((StackPop(spu->spu_stack, &intermediate_value_1) != 0) ||
-        StackPop(spu->spu_stack, &intermediate_value_2) != 0)
-    {
-        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-    }
+    POP_RET(&intermediate_value_1);
+    POP_RET(&intermediate_value_2);
 
-    if (StackPush(spu->spu_stack, intermediate_value_2 - intermediate_value_1) != 0)
-    {
-        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-    }
+    PUSH_RET(intermediate_value_2 - intermediate_value_1);
 
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
@@ -528,16 +488,10 @@ StackMul(spu_t* spu)
     int intermediate_value_1 = 0;
     int intermediate_value_2 = 0;
 
-    if ((StackPop(spu->spu_stack, &intermediate_value_1) != 0) ||
-        StackPop(spu->spu_stack, &intermediate_value_2) != 0)
-    {
-        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-    }
+    POP_RET(&intermediate_value_1);
+    POP_RET(&intermediate_value_2);
 
-    if (StackPush(spu->spu_stack, intermediate_value_2 * intermediate_value_1) != 0)
-    {
-        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-    }
+    PUSH_RET(intermediate_value_2 * intermediate_value_1);
 
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
@@ -548,21 +502,15 @@ StackDiv(spu_t* spu)
     int intermediate_value_1 = 0;
     int intermediate_value_2 = 0;
 
-    if ((StackPop(spu->spu_stack, &intermediate_value_1) != 0) ||
-        StackPop(spu->spu_stack, &intermediate_value_2) != 0)
-    {
-        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-    }
+    POP_RET(&intermediate_value_1);
+    POP_RET(&intermediate_value_2);
 
     if (intermediate_value_1 == 0)
     {
         return PROCESSOR_FUNCTION_RETURN_DIVISION_BY_ZERO;
     }
 
-    if (StackPush(spu->spu_stack, intermediate_value_2 / intermediate_value_1) != 0)
-    {
-        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-    }
+    PUSH_RET(intermediate_value_2 / intermediate_value_1);
 
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
@@ -574,20 +522,14 @@ StackSqrt(spu_t* spu)
 
     int intermediate_value = 0;
 
-    if (StackPop(spu->spu_stack, &intermediate_value) != 0)
-    {
-        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-    }
+    POP_RET(&intermediate_value);
 
     if (intermediate_value < 0)
     {
         return PROCESSOR_FUNCTION_RETURN_SQRT_ERROR;
     }
 
-    if (StackPush(spu->spu_stack, (int) sqrt(intermediate_value)) != 0)
-    {
-        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;
-    }
+    PUSH_RET((int) sqrt(intermediate_value));
 
     PROCESSOR_VERIFY(spu);
 
@@ -661,7 +603,8 @@ ProcessorDump(spu_t* spu)
 
     for (size_t reg_index = 0; reg_index < PROCESSOR_REG_COUNT; reg_index++)
     {
-        printf(YELLOW"||" RED "%s = " WHITE "%5d"  STANDARD, PROCESSORS_REG[reg_index], (spu->registers)[reg_index]);
+        printf(YELLOW"||" RED "%s = " WHITE "%5d"  STANDARD,
+               PROCESSORS_REG[reg_index], (spu->registers)[reg_index]);
         if ((reg_index + 1) % 8 == 0)
         {
             printf(YELLOW "||\n" WHITE);
