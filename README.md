@@ -23,11 +23,7 @@
 
 ```bash
 git clone https://github.com/priusf0x/Assembly
-```
-
-For building the project open installation directory and write in cmd:
-
-```bash
+cd Assembly
 make build
 ```
 
@@ -73,11 +69,11 @@ Now you have 3 different options
 
 |Command name| Description |
 | --- | --- |
-|add| draw screen using size of pixel like integer size|
-|sub| optimized draw function|
-|mul| write user's input from cmd to stack|
-|div| write user's input from cmd to stack|
-|sqrt| write user's input from cmd to stack|
+|add| adds E to F|
+|sub| substracts E from F|
+|mul| multiplies E on E|
+|div| divides F on E|
+|sqrt| finds square root from E|
 
 ###
 
@@ -87,9 +83,9 @@ Now you have 3 different options
 
 |Command name| Description |
 | --- | --- |
-|draw| draw screen using size of pixel like integer size|
-|drawb| optimized draw function|
-|in| write user's input from cmd to stack|
+|draw| draws screen using integer size of 1 pixel
+|drawb| draws screen using 1 byte in integer type for 1 pixel|
+|in| reads user's input from cmd to stack|
 
 ###
 
@@ -100,13 +96,13 @@ Now you have 3 different options
 |Command name| Description |
 | --- | --- |
 |jmp <instrucrion_number/<label_name:>| Default jump|
-|ja <instrucrion_number/<label_name:>| Jump If Above|
-|jae <instrucrion_number/<label_name:>| Jump If Above or Equal|
-|jb <instrucrion_number/<label_name:>| Jump If Below|
-|jbe <instrucrion_number/<label_name:>| Jump If Below or Equal|
-|je <instrucrion_number/<label_name:>| Jump If Equal|
-|jne <instrucrion_number/<label_name:>| Jump If Not Equal|
-|call <label_name:>| Jump with pushing adress into stack|
+|ja <instrucrion_number/<label_name:>| Jump If F is Above than E|
+|jae <instrucrion_number/<label_name:>| Jump If F is Above than or Equal to E|
+|jb <instrucrion_number/<label_name:>| Jump If F is Below than E|
+|jbe <instrucrion_number/<label_name:>| Jump If F is Below than or Equal to E|
+|je <instrucrion_number/<label_name:>| Jump If F is Equal to E|
+|jne <instrucrion_number/<label_name:>| Jump If F is Not Equal F|
+|call <label_name:>| Jump with pushing current adress into stack|
 |ret <label_name:>| returns to adress which is written in stack|
 
 <h4 align="left">Was created with</h4>
