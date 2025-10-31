@@ -1,6 +1,7 @@
 .vscode
-obj
-logs
+obj/
+logs/
 processor.out
 compiler.out
 disassembler.out
+compiled.obj

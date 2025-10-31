@@ -40,6 +40,7 @@ const size_t RAM_SIZE = 10000;
 
 #define NEXT_INSTRUCTION() spu->read_bytes_amount += sizeof(uint8_t)
 #define SKIP_INT() spu->read_bytes_amount += sizeof(int)
+#define GET_INT() *(int*) (spu->instructions + spu->read_bytes_amount)
 
 
 static void PrintRAMData(spu_t* spu);
@@ -198,7 +199,7 @@ StackCommandPush(spu_t* spu)
                           & REGISTER_MASK;
 
         NEXT_INSTRUCTION();
-        int add_value = *(int*) (spu->instructions + spu->read_bytes_amount);
+        int add_value = GET_INT();
 
         CHECK_ADD_VALUE_RET(add_value);
 
@@ -211,18 +212,16 @@ StackCommandPush(spu_t* spu)
         uint8_t spu_reg = (spu->instructions)[spu->read_bytes_amount] & REGISTER_MASK;
 
         NEXT_INSTRUCTION();
-        int add_value = *(int*) (spu->instructions + spu->read_bytes_amount);
-
+        int add_value = GET_INT();
         CHECK_ADD_VALUE_RET(add_value);
-
         PUSH_RET((spu->registers)[spu_reg] + add_value);
-
         SKIP_INT();
     }
     else if (instructions[spu->read_bytes_amount] & USES_INT)
     {
         NEXT_INSTRUCTION();
-        PUSH_RET(*((int*) (spu->instructions + spu->read_bytes_amount)));
+        int intermediate_value = GET_INT();
+        PUSH_RET(intermediate_value);
         SKIP_INT();
     }
     else if (instructions[spu->read_bytes_amount] & USES_RAM)
@@ -254,7 +253,7 @@ StackCommandPop(spu_t* spu)
         uint8_t spu_reg = (spu->instructions)[spu->read_bytes_amount] & REGISTER_MASK;
 
         NEXT_INSTRUCTION();
-        int add_value = *(int*) (spu->instructions + spu->read_bytes_amount);
+        int add_value = GET_INT();
 
         CHECK_ADD_VALUE_RET(add_value);
 
@@ -267,7 +266,7 @@ StackCommandPop(spu_t* spu)
         uint8_t spu_reg = (spu->instructions)[spu->read_bytes_amount] & REGISTER_MASK;
 
         NEXT_INSTRUCTION();
-        int add_value = *(int*) (spu->instructions + spu->read_bytes_amount);
+        int add_value =  GET_INT();
 
         CHECK_ADD_VALUE_RET(add_value);
 
@@ -345,7 +344,7 @@ static processor_functions_return_value_e
 Jump(spu_t* spu)
 {
     NEXT_INSTRUCTION();
-    spu->read_bytes_amount = (size_t) *(int*) (spu->instructions + spu->read_bytes_amount);
+    spu->read_bytes_amount = (size_t) GET_INT();
 
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
@@ -414,7 +413,7 @@ Call(spu_t* spu)
         PUSH_RET((int) spu->read_bytes_amount);
 
         NEXT_INSTRUCTION();
-        spu->read_bytes_amount = (size_t) *((int*) (spu->instructions + spu->read_bytes_amount));
+        spu->read_bytes_amount = (size_t) GET_INT();
     }
 
     PROCESSOR_VERIFY(spu);
@@ -621,4 +620,6 @@ ProcessorDump(spu_t* spu)
 
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
+
+
 
