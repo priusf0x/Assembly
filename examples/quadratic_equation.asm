@@ -7,6 +7,8 @@ pop RAX
 call calculate_discriminant:
 push RDX
 push 0
+meow 4
+
 ja case_1:
     jmp meow_1:
     case_1:
@@ -45,6 +47,7 @@ je case_2:
         div
         out
 meow_2:
+
 
 hlt
 

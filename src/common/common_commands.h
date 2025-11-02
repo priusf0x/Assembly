@@ -29,7 +29,7 @@ enum commands_e
     COMMAND_EMPTY_2   = 8,
     COMMAND_EMPTY_3   = 9,
     COMMAND_DRAW      = 10,
-
+    COMMAND_MEOW      = 11
 };
 
 const char* const PROCESSORS_REG[] =

@@ -421,6 +421,26 @@ Call(spu_t* spu)
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
 
+processor_functions_return_value_e
+Meow(spu_t* spu)
+{
+    PROCESSOR_VERIFY(spu);
+
+    NEXT_INSTRUCTION();
+    int intermediate_value = GET_INT();
+
+    for (int index = 0; index < intermediate_value; index++)
+    {
+        printf("meow\n");
+    }
+
+    SKIP_INT();
+
+    PROCESSOR_VERIFY(spu);
+
+    return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
+}
+
 // ================= ARITHMETIC OPERATIONS =======================
 
 static processor_functions_return_value_e StackAdd(spu_t* spu);
