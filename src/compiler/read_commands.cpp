@@ -208,12 +208,14 @@ ReadCommand(char**                   input_command,
         return COMPILER_RETURN_INCORRECT_COMMAND;
     }
 
-    if (COMPILER_COMMANDS_ARRAY[index_in_table].handler != NULL)
+    if (COMPILER_COMMANDS_ARRAY[index_in_table].handler_info != 0b00000000)
     {
         *input_command += command_size;
         *input_command = SkipSpaces(*input_command);
 
-        compiler_return_e output = (COMPILER_COMMANDS_ARRAY[index_in_table].handler)(input_command, instructions);
+        compiler_return_e output =
+        HandleArgument(input_command, instructions, index_in_table);
+
         if (output != COMPILER_RETURN_VALID_SYNTAX)
         {
             return output;
@@ -234,6 +236,11 @@ ReadCommand(char**                   input_command,
 
 
 // ================ HANDLERS ====================
+
+static compiler_return_e ReadIntArgument(char** input_command, compiler_instructions_t* instructions);
+static compiler_return_e ReadRegisterArgument(char** input_command, compiler_instructions_t* instructions);
+static compiler_return_e ReadMemoryArgument(char** input_command, compiler_instructions_t* instructions);
+static compiler_return_e ReadLabelArgument(char** input_command, compiler_instructions_t* instructions);
 
 static compiler_return_e
 CheckIfMemoryOffset(char** input_command,
@@ -268,86 +275,50 @@ CheckIfMemoryOffset(char** input_command,
 }
 
 compiler_return_e
-ReadPushArgument(char**                   input_command,
-                 compiler_instructions_t* instructions)
+HandleArgument(char**                   input_command,
+               compiler_instructions_t* instructions,
+               size_t                   index_in_table)
 {
+    ASSERT(input_command != NULL);
     ASSERT(*input_command != NULL);
     ASSERT(instructions != NULL);
 
-    if (!isdigit(**input_command))
+    compiler_return_e (*handler_array[]) (char**, compiler_instructions_t*) =
     {
-        bool find_flag = false;
-        bool memory_usage = false;
+        ReadIntArgument,
+        ReadRegisterArgument,
+        ReadMemoryArgument,
+        ReadLabelArgument,
+        NULL,
+        NULL,
+        NULL
+    };
 
-        if (**input_command == '[')
+    for (uint8_t handler_num = 0; handler_num < 7; handler_num++)
+    {
+        if (COMPILER_COMMANDS_ARRAY[index_in_table].handler_info & (1 << handler_num))
         {
-            *input_command = SkipSpaces(*input_command + 1);
-            memory_usage = true;
-        }
-
-        for (int register_number = 0; register_number < PROCESSOR_REG_COUNT; register_number++)
-        {
-            if (strncmp(PROCESSORS_REG[register_number], *input_command, strlen(PROCESSORS_REG[register_number])) == 0)
+            if (handler_array[handler_num] == NULL)
             {
-                *input_command = SkipSpaces(*input_command + strlen(PROCESSORS_REG[register_number]));
+                return COMPILER_RETURN_UNDEFINED_HANDLER;
+            }
 
-                int offset = 0;
-                CheckIfMemoryOffset(input_command, &offset);
+            compiler_return_e output = handler_array[handler_num](input_command, instructions);
 
-                if (memory_usage)
-                {
-
-                    if (**input_command != ']')
-                    {
-                        return COMPILER_RETURN_INVALID_SYNTAX;
-                    }
-
-                    (instructions->instructions_array)[instructions->instructions_bytes_written - 1] =
-                    (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | USES_RAM;
-
-                    (*input_command)++;
-                }
-
-                (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)] =
-                (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)]
-                | (uint8_t) register_number;
-
-                if (offset != 0)
-                {
-                    (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)] =
-                    (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)]
-                    | ADD_TO_REGI;
-
-                    if ((PutInteger(offset, instructions) != 0))
-                    {
-                        return COMPILER_RETURN_INVALID_SYNTAX;
-                    }
-                }
-
-                find_flag = true;
-
-                break;
+            if (output == COMPILER_RETURN_SKIP_HANDLER)
+            {
+                continue;
+            }
+            else
+            {
+                return output;
             }
         }
-        if (!find_flag)
-        {
-            return COMPILER_RETURN_INVALID_SYNTAX;
-        }
     }
-    else
+
+    if (COMPILER_COMMANDS_ARRAY[index_in_table].handler_info & 0b10000000)
     {
-        char* end_str = NULL;
-
-        (instructions->instructions_array)[instructions->instructions_bytes_written - 1] =
-        (instructions->instructions_array)[instructions->instructions_bytes_written - 1]
-        | USES_INT;
-
-        if ((PutInteger((int) strtol(*input_command, &end_str, 0), instructions) != 0) || (end_str - *input_command == 0))
-        {
-            return COMPILER_RETURN_INVALID_SYNTAX;
-        }
-
-        *input_command = end_str;
+        //... if you need any other handler you can write there how to parse it
     }
 
     *input_command = SkipSpaces(*input_command);
@@ -361,52 +332,65 @@ ReadPushArgument(char**                   input_command,
 }
 
 compiler_return_e
-ReadPopArgument(char**                    input_command,
+ReadIntArgument(char**                    input_command,
                 compiler_instructions_t*  instructions)
 {
     ASSERT(input_command != NULL);
+    ASSERT(*input_command != NULL);
     ASSERT(instructions != NULL);
 
-    bool find_flag = false;
-    bool memory_usage = false;
-
-    if (**input_command == '[')
+    if (!isdigit(**input_command))
     {
-        *input_command = SkipSpaces(*input_command + 1);
-        memory_usage = true;
+        return COMPILER_RETURN_SKIP_HANDLER;
     }
 
-    for (int register_number = 0; register_number < PROCESSOR_REG_COUNT; register_number++)
+    char* end_str = NULL;
+
+    (instructions->instructions_array)[instructions->instructions_bytes_written - 1] |= USES_INT;
+
+    if ((PutInteger((int) strtol(*input_command, &end_str, 0), instructions) != 0)
+         || (end_str - *input_command == 0))
     {
-        if (strncmp(PROCESSORS_REG[register_number], *input_command, strlen(PROCESSORS_REG[register_number])) == 0)
+        return COMPILER_RETURN_INVALID_SYNTAX;
+    }
+
+    *input_command = end_str;
+
+    return COMPILER_RETURN_VALID_SYNTAX;
+}
+
+compiler_return_e
+ReadRegisterArgument(char**                   input_command,
+                     compiler_instructions_t* instructions)
+{
+    ASSERT(input_command != NULL);
+    ASSERT(*input_command != NULL);
+    ASSERT(instructions != NULL);
+
+    if (isdigit(**input_command) || **input_command == '[')
+    {
+        return COMPILER_RETURN_SKIP_HANDLER;
+    }
+
+    for (int register_number = 0; register_number
+        < PROCESSOR_REG_COUNT; register_number++)
+    {
+        if (strncmp(PROCESSORS_REG[register_number],
+            *input_command, strlen(PROCESSORS_REG[register_number])) == 0)
         {
-            *input_command = SkipSpaces(*input_command + strlen(PROCESSORS_REG[register_number]));
+            *input_command = SkipSpaces(*input_command
+                                        + strlen(PROCESSORS_REG[register_number]));
 
             int offset = 0;
             CheckIfMemoryOffset(input_command, &offset);
 
-            if (memory_usage)
-            {
-
-                if (**input_command != ']')
-                {
-                    return COMPILER_RETURN_INVALID_SYNTAX;
-                }
-
-                (instructions->instructions_array)[instructions->instructions_bytes_written - 1] =
-                (instructions->instructions_array)[instructions->instructions_bytes_written - 1] | USES_RAM;
-                (*input_command)++;
-            }
-
-            (instructions->instructions_array)[instructions->instructions_bytes_written - 1] =
-            (instructions->instructions_array)[instructions->instructions_bytes_written - 1]
-            | (uint8_t) register_number;
+            (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)]
+            |= (uint8_t) register_number;
 
             if (offset != 0)
             {
-                (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)] =
                 (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)]
-                | ADD_TO_REGI;
+                |= ADD_TO_REGI;
 
                 if ((PutInteger(offset, instructions) != 0))
                 {
@@ -414,81 +398,92 @@ ReadPopArgument(char**                    input_command,
                 }
             }
 
-            find_flag = true;
-
-            break;
+            return COMPILER_RETURN_VALID_SYNTAX;
         }
     }
 
-    if (!find_flag)
-    {
-        return COMPILER_RETURN_INVALID_SYNTAX;
-    }
-
-    *input_command = SkipSpaces(*input_command);
-
-    if (**input_command != '\n')
-    {
-        return COMPILER_RETURN_INVALID_SYNTAX;
-    }
-
-    return COMPILER_RETURN_VALID_SYNTAX;
+    return COMPILER_RETURN_INVALID_SYNTAX;
 }
 
 compiler_return_e
-ReadJumpArgument(char**                    input_command,
-                 compiler_instructions_t*  instructions)
+ReadMemoryArgument(char**                   input_command,
+                   compiler_instructions_t* instructions)
 {
     ASSERT(input_command != NULL);
+    ASSERT(*input_command != NULL);
     ASSERT(instructions != NULL);
 
-    if (**input_command == '\n')
+    if (**input_command != '[')
     {
-        return COMPILER_RETURN_INVALID_SYNTAX;
+        return COMPILER_RETURN_SKIP_HANDLER;
     }
 
-    if (!CheckIfLabel(*input_command))
-    {
-        if (isdigit(**input_command))
-        {
-            char* end_str = NULL;
+    *input_command = SkipSpaces(*input_command + 1);
 
-            if ((PutInteger((int) strtol(*input_command, &end_str, 0), instructions) != 0)
-                || (end_str - *input_command == 0))
+    for (int register_number = 0; register_number < PROCESSOR_REG_COUNT; register_number++)
+    {
+        if (strncmp(PROCESSORS_REG[register_number],
+            *input_command, strlen(PROCESSORS_REG[register_number])) == 0)
+        {
+            *input_command = SkipSpaces(*input_command + strlen(PROCESSORS_REG[register_number]));
+
+            int offset = 0;
+            CheckIfMemoryOffset(input_command, &offset);
+
+            if (**input_command != ']')
             {
                 return COMPILER_RETURN_INVALID_SYNTAX;
             }
-            *input_command = end_str;
-        }
-        else
-        {
-            return COMPILER_RETURN_INVALID_SYNTAX;
+
+            (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)]
+            |= USES_RAM;
+            (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)]
+            |= (uint8_t) register_number;
+
+
+            if (offset != 0)
+            {
+                (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)]
+                |= ADD_TO_REGI;
+
+                if ((PutInteger(offset, instructions) != 0))
+                {
+                    return COMPILER_RETURN_INVALID_SYNTAX;
+                }
+            }
+
+            (*input_command)++;
+
+            return COMPILER_RETURN_VALID_SYNTAX;
         }
     }
-    else
+
+    return COMPILER_RETURN_INVALID_SYNTAX;
+}
+
+compiler_return_e
+ReadLabelArgument(char**                   input_command,
+                  compiler_instructions_t* instructions)
+{
+    ASSERT(input_command != NULL);
+    ASSERT(*input_command != NULL);
+    ASSERT(instructions != NULL);
+
+    if (!CheckIfLabel(*input_command))
     {
-        if (*(SkipNotSpaces(*input_command) - 1) != ':')
-        {
-            return COMPILER_RETURN_INVALID_SYNTAX;
-        }
-
-        *(SkipNotSpaces(*input_command) - 1) = '\0';
-
-        if (UseLabel(*input_command, instructions) != 0)
-        {
-            return COMPILER_RETURN_INVALID_SYNTAX;
-        }
-
-        instructions->instructions_bytes_written += sizeof(int);
-
-        *input_command = SkipNotSpaces(*input_command) + 1;
+        return COMPILER_RETURN_SKIP_HANDLER;
     }
 
-    *input_command = SkipSpaces(*input_command);
-    if (**input_command != '\n')
+    *(SkipNotSpaces(*input_command) - 1) = '\0';
+
+    if (UseLabel(*input_command, instructions) != 0)
     {
         return COMPILER_RETURN_INVALID_SYNTAX;
     }
+
+    instructions->instructions_bytes_written += sizeof(int);
+
+    *input_command = SkipNotSpaces(*input_command) + 1;
 
     return COMPILER_RETURN_VALID_SYNTAX;
 }
@@ -504,31 +499,6 @@ FreeAll(compiler_instructions_t* instructions,
     memset(instructions, 0, sizeof(compiler_instructions_t));
 }
 
-compiler_return_e
-ReadCallArgument(char**                    input_command,
-                 compiler_instructions_t*  instructions)
-{
-    ASSERT(input_command != NULL);
-    ASSERT(instructions != NULL);
-
-    if (**input_command == '\n')
-    {
-        return COMPILER_RETURN_INVALID_SYNTAX;
-    }
-
-    *(SkipNotSpaces(*input_command)) = '\0';
-
-    if (UseLabel(*input_command, instructions) != 0)
-    {
-        return COMPILER_RETURN_INVALID_SYNTAX;
-    }
-
-    *input_command = SkipNotSpaces(*input_command);
-
-    instructions->instructions_bytes_written += sizeof(int);
-
-    return COMPILER_RETURN_VALID_SYNTAX;
-}
 
 //================WORK_WITH_INSTR_ARRAY============
 

@@ -4,7 +4,7 @@ in
 pop RCX
 pop RBX
 pop RAX
-call calculate_discriminant
+call calculate_discriminant:
 push RDX
 push 0
 ja case_1:

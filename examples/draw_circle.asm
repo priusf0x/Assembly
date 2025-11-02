@@ -1,4 +1,4 @@
-call fill_screen
+call fill_screen:
 draw
 
 hlt
@@ -9,8 +9,8 @@ fill_screen:
         pop RAX
 
         print_string:
-            call convert_to_index
-            call check_if_in_circle
+            call convert_to_index:
+            call check_if_in_circle:
             push R0X
             pop [RCX]
 
@@ -24,7 +24,7 @@ fill_screen:
 
         jb print_string:
 
-        call convert_to_index
+        call convert_to_index:
         push 10
         pop [RCX]
 
