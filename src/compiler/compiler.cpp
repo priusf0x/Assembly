@@ -13,10 +13,6 @@
  *Now, only god knows it!
  */
 
-// Adding features
-//  -add processor_verifier (2 priority)
-// -clear shit from code
-
 const char* INPUT_FILE_NAME = "input_file.asm";
 const char* COMPILED_NAME = "compiled.obj";
 

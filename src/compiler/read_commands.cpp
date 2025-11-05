@@ -332,8 +332,8 @@ HandleArgument(char**                   input_command,
 }
 
 compiler_return_e
-ReadIntArgument(char**                    input_command,
-                compiler_instructions_t*  instructions)
+ReadIntArgument(char**                   input_command,
+                compiler_instructions_t* instructions)
 {
     ASSERT(input_command != NULL);
     ASSERT(*input_command != NULL);
