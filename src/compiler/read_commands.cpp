@@ -384,12 +384,14 @@ ReadRegisterArgument(char**                   input_command,
             int offset = 0;
             CheckIfMemoryOffset(input_command, &offset);
 
-            (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)]
+            (instructions->instructions_array)
+            [instructions->instructions_bytes_written - sizeof(uint8_t)]
             |= (uint8_t) register_number;
 
             if (offset != 0)
             {
-                (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)]
+                (instructions->instructions_array)
+                [instructions->instructions_bytes_written - sizeof(uint8_t)]
                 |= ADD_TO_REGI;
 
                 if ((PutInteger(offset, instructions) != 0))
@@ -511,9 +513,11 @@ PutInstruction(size_t                   index_in_table,
 
     if (instructions->instructions_bytes_written >= instructions->instructions_max_bytes_amount - 5)
     {
-        instructions->instructions_array = (uint8_t*) recalloc(instructions->instructions_array,
-                                                               instructions->instructions_max_bytes_amount,
-                                                               instructions->instructions_max_bytes_amount * 2);
+        instructions->instructions_array =
+        (uint8_t*) recalloc(instructions->instructions_array,
+                            instructions->instructions_max_bytes_amount,
+                            instructions->instructions_max_bytes_amount * 2);
+
         instructions->instructions_max_bytes_amount *= 2;
     }
 

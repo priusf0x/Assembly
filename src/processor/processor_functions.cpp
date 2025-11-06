@@ -21,47 +21,20 @@ const size_t START_STACK_SIZE = 8;
 const uint64_t PROCESSOR_VERSION = 4;
 const size_t SCREEN_SIZE_X = 98;
 const size_t SCREEN_SIZE_Y = 36;
-const size_t RAM_SIZE = 10000;
-
-const uint8_t PUSH_WITH_ADDING_TO_REG = 0b01000000 | ADD_TO_REGI;
-const uint8_t POP_WITH_ADDING_TO_REG = 0b10000000 | ADD_TO_REGI;
+const size_t RAM_SIZE = 100;
 
 static int* ArgGetInt(spu_t* spu);
 
 #define NEXT_INSTRUCTION() spu->read_bytes_amount += sizeof(uint8_t)
 #define SKIP_INT() spu->read_bytes_amount += sizeof(int)
 #define GET_INT() (int*) (spu->instructions + spu->read_bytes_amount)
-#define PUSH_RET(X) if (spu->instructions[spu->read_bytes_amount - 1] == PUSH_WITH_ADDING_TO_REG)\
+#define PUSH_RET(X) if (StackPush(spu->spu_stack, (X)) != 0) \
                     {\
-                        if (StackPush(spu->spu_stack, (X) + *GET_INT()) != 0) \
-                        {\
-                            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;\
-                        }\
-                        SKIP_INT();\
-                    }\
-                    else\
-                    {\
-                        if (StackPush(spu->spu_stack, (X)) != 0) \
-                        {\
-                            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;\
-                        }\
+                        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;\
                     }
-
-#define POP_RET(X)  if (spu->instructions[spu->read_bytes_amount - 1] == PUSH_WITH_ADDING_TO_REG)\
+#define POP_RET(X)  if (StackPop(spu->spu_stack, (X)) != 0) \
                     {\
-                        if (StackPop(spu->spu_stack, (X)) != 0) \
-                        {\
-                            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;\
-                        }\
-                        *(X) += *GET_INT();\
-                        SKIP_INT();\
-                    }\
-                    else\
-                    {\
-                        if (StackPop(spu->spu_stack, (X)) != 0) \
-                        {\
-                            return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;\
-                        }\
+                        return PROCESSOR_FUNCTION_RETURN_STACK_ERROR;\
                     }
 #define ARG_GET_INT() ArgGetInt(spu);
 
@@ -93,7 +66,7 @@ ArgGetInt(spu_t* spu)
     else
     {
         uint8_t spu_reg = (spu->instructions)[spu->read_bytes_amount - 1]
-                            & REGISTER_MASK;
+                           & REGISTER_MASK;
         return spu->registers + spu_reg;
     }
 }
@@ -239,26 +212,61 @@ DrawScreen(spu_t* spu)
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
 
+static processor_functions_return_value_e StackAdd(spu_t* spu);
+const uint8_t ADD_PUSH_BYTE_CODE = 0b01000000 | ADD_TO_REGI;
+
 processor_functions_return_value_e
 StackCommandPush(spu_t* spu)
 {
     PROCESSOR_VERIFY(spu);
 
+    bool add_flag = false;
+    if ((spu->instructions[spu->read_bytes_amount - 1] & (~REGISTER_MASK))
+         == ADD_PUSH_BYTE_CODE)
+    {
+        add_flag = true;
+    }
+
     int* ptr = ARG_GET_INT();
     PUSH_RET(*ptr);
+
+    if (add_flag)
+    {
+        PUSH_RET(*GET_INT());
+        StackAdd(spu);
+        SKIP_INT();
+    }
 
     PROCESSOR_VERIFY(spu);
 
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
 
+const uint8_t ADD_POP_BYTE_CODE = 0b10000000 | ADD_TO_REGI;
+
 processor_functions_return_value_e
 StackCommandPop(spu_t* spu)
 {
     PROCESSOR_VERIFY(spu);
 
+    bool add_flag = false;
+    uint8_t reg_number = 0;
+    if ((spu->instructions[spu->read_bytes_amount - 1] & (~REGISTER_MASK))
+         == ADD_POP_BYTE_CODE)
+    {
+        add_flag = true;
+        reg_number = spu->instructions[spu->read_bytes_amount - 1] & REGISTER_MASK;
+    }
+
     int* ptr = ARG_GET_INT();
     POP_RET(ptr);
+
+    if (add_flag)
+    {
+        int add_value = *GET_INT();
+        spu->registers[reg_number] += add_value;
+        SKIP_INT();
+    }
 
     PROCESSOR_VERIFY(spu);
 
@@ -385,7 +393,7 @@ Call(spu_t* spu)
 
 // ================= ARITHMETIC OPERATIONS =======================
 
-static processor_functions_return_value_e StackAdd(spu_t* spu);
+// static processor_functions_return_value_e StackAdd(spu_t* spu);
 static processor_functions_return_value_e StackSub(spu_t* spu);
 static processor_functions_return_value_e StackMul(spu_t* spu);
 static processor_functions_return_value_e StackDiv(spu_t* spu);
