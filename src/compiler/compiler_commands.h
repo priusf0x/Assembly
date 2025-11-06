@@ -105,8 +105,8 @@ const struct compiler_command_t COMPILER_COMMANDS_ARRAY[] = {
     {.command_name =  NULL,   .binary_value_block_1 = 0b11101000, .binary_value_block_2 = EMPTY,      .handler_info = EMPTY           | EMPTY         | EMPTY         | EMPTY        , .handler = NULL}, //USER_COMMANDS  20
     {.command_name =  NULL,   .binary_value_block_1 = 0b11110000, .binary_value_block_2 = EMPTY,      .handler_info = EMPTY           | EMPTY         | EMPTY         | EMPTY        , .handler = NULL}, //USER_COMMANDS  21
     {.command_name = "drawb", .binary_value_block_1 = 0b11111000, .binary_value_block_2 = 0b00000000, .handler_info = EMPTY           | EMPTY         | EMPTY         | EMPTY        , .handler = NULL}, //USER_COMMANDS  22
-    {.command_name = "draw",  .binary_value_block_1 = 0b11111000, .binary_value_block_2 = 0b00000000, .handler_info = EMPTY           | EMPTY         | EMPTY         | EMPTY        , .handler = NULL}, //USER_COMMANDS  23
-    {.command_name = "meow",  .binary_value_block_1 = 0b11111001, .binary_value_block_2 = 0b00000000, .handler_info = EMPTY           | EMPTY         | EMPTY         | ASM_INT_USAGE, .handler = NULL}};
+    {.command_name = "draw",  .binary_value_block_1 = 0b11111000, .binary_value_block_2 = 0b00000000, .handler_info = EMPTY           | EMPTY         | EMPTY         | EMPTY        , .handler = NULL}}; //USER_COMMANDS  23
+    // {.command_name = "meow",  .binary_value_block_1 = 0b11111001, .binary_value_block_2 = 0b00000000, .handler_info = EMPTY           | EMPTY         | EMPTY         | ASM_INT_USAGE, .handler = NULL}};
 const int COMMANDS_COUNT = sizeof(COMPILER_COMMANDS_ARRAY) / sizeof(COMPILER_COMMANDS_ARRAY[0]);
 
 void   FreeAll(compiler_instructions_t* instructions, char* input_buffer);

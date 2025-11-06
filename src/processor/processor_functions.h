@@ -48,7 +48,6 @@ processor_functions_return_value_e Return(spu_t* spu);
 processor_functions_return_value_e Call(spu_t* spu);
 processor_functions_return_value_e DrawScreen(spu_t* spu);
 processor_functions_return_value_e DrawScreenQuadro(spu_t* spu);
-processor_functions_return_value_e Meow(spu_t* spu);
 
 processor_functions_return_value_e InitializeSPU(spu_t* spu, const char* assembled_file_name);
 processor_functions_return_value_e ExecuteInstructions(spu_t* spu);
@@ -68,7 +67,6 @@ const struct processor_command_t PROCESSOR_COMMANDS_ARRAY[] =
     {.return_value = COMMAND_EMPTY_2,   .command_function = JumpFunction    },
     {.return_value = COMMAND_EMPTY_3,   .command_function = Call            },
     {.return_value = COMMAND_DRAW,      .command_function = DrawScreen      },
-    {.return_value = COMMAND_MEOW,      .command_function = Meow            },
 };
 
 const size_t PROCESSOR_COMMANDS_COUNT = sizeof(PROCESSOR_COMMANDS_ARRAY) / sizeof(PROCESSOR_COMMANDS_ARRAY[0]);

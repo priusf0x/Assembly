@@ -30,7 +30,7 @@ ja case_1:
         sqrt
         sub
         add
-        push RCX
+        push RAX
         div
         out
 meow_1:
