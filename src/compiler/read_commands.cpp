@@ -241,6 +241,7 @@ static compiler_return_e ReadIntArgument(char** input_command, compiler_instruct
 static compiler_return_e ReadRegisterArgument(char** input_command, compiler_instructions_t* instructions);
 static compiler_return_e ReadMemoryArgument(char** input_command, compiler_instructions_t* instructions);
 static compiler_return_e ReadLabelArgument(char** input_command, compiler_instructions_t* instructions);
+static compiler_return_e ReadRegister(char** input_buffer, compiler_instructions_t* instructions);
 
 static compiler_return_e
 CheckIfMemoryOffset(char** input_command,
@@ -283,6 +284,7 @@ HandleArgument(char**                   input_command,
     ASSERT(*input_command != NULL);
     ASSERT(instructions != NULL);
 
+    const size_t common_handler_count = 7;
     compiler_return_e (*handler_array[]) (char**, compiler_instructions_t*) =
     {
         ReadIntArgument,
@@ -294,7 +296,7 @@ HandleArgument(char**                   input_command,
         NULL
     };
 
-    for (uint8_t handler_num = 0; handler_num < 7; handler_num++)
+    for (uint8_t handler_num = 0; handler_num < common_handler_count; handler_num++)
     {
         if (COMPILER_COMMANDS_ARRAY[index_in_table].handler_info & (1 << handler_num))
         {
@@ -372,39 +374,14 @@ ReadRegisterArgument(char**                   input_command,
         return COMPILER_RETURN_SKIP_HANDLER;
     }
 
-    for (int register_number = 0; register_number
-        < PROCESSOR_REG_COUNT; register_number++)
+    compiler_return_e output = COMPILER_RETURN_VALID_SYNTAX;
+    if((output = ReadRegister(input_command, instructions))
+       != COMPILER_RETURN_VALID_SYNTAX)
     {
-        if (strncmp(PROCESSORS_REG[register_number],
-            *input_command, strlen(PROCESSORS_REG[register_number])) == 0)
-        {
-            *input_command = SkipSpaces(*input_command
-                                        + strlen(PROCESSORS_REG[register_number]));
-
-            int offset = 0;
-            CheckIfMemoryOffset(input_command, &offset);
-
-            (instructions->instructions_array)
-            [instructions->instructions_bytes_written - sizeof(uint8_t)]
-            |= (uint8_t) register_number;
-
-            if (offset != 0)
-            {
-                (instructions->instructions_array)
-                [instructions->instructions_bytes_written - sizeof(uint8_t)]
-                |= ADD_TO_REGI;
-
-                if ((PutInteger(offset, instructions) != 0))
-                {
-                    return COMPILER_RETURN_INVALID_SYNTAX;
-                }
-            }
-
-            return COMPILER_RETURN_VALID_SYNTAX;
-        }
+        return output;
     }
 
-    return COMPILER_RETURN_INVALID_SYNTAX;
+    return COMPILER_RETURN_VALID_SYNTAX;
 }
 
 compiler_return_e
@@ -422,45 +399,22 @@ ReadMemoryArgument(char**                   input_command,
 
     *input_command = SkipSpaces(*input_command + 1);
 
-    for (int register_number = 0; register_number < PROCESSOR_REG_COUNT; register_number++)
+    compiler_return_e output = COMPILER_RETURN_VALID_SYNTAX;
+    if((output = ReadRegister(input_command, instructions))
+       != COMPILER_RETURN_VALID_SYNTAX)
     {
-        if (strncmp(PROCESSORS_REG[register_number],
-            *input_command, strlen(PROCESSORS_REG[register_number])) == 0)
-        {
-            *input_command = SkipSpaces(*input_command + strlen(PROCESSORS_REG[register_number]));
-
-            int offset = 0;
-            CheckIfMemoryOffset(input_command, &offset);
-
-            if (**input_command != ']')
-            {
-                return COMPILER_RETURN_INVALID_SYNTAX;
-            }
-
-            (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)]
-            |= USES_RAM;
-            (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)]
-            |= (uint8_t) register_number;
-
-
-            if (offset != 0)
-            {
-                (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)]
-                |= ADD_TO_REGI;
-
-                if ((PutInteger(offset, instructions) != 0))
-                {
-                    return COMPILER_RETURN_INVALID_SYNTAX;
-                }
-            }
-
-            (*input_command)++;
-
-            return COMPILER_RETURN_VALID_SYNTAX;
-        }
+        return output;
     }
 
-    return COMPILER_RETURN_INVALID_SYNTAX;
+    if (*(*input_command) != ']')
+    {
+        return COMPILER_RETURN_INVALID_SYNTAX;
+    }
+
+    (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)]
+    |= USES_RAM;
+
+    return COMPILER_RETURN_VALID_SYNTAX;
 }
 
 compiler_return_e
@@ -501,8 +455,45 @@ FreeAll(compiler_instructions_t* instructions,
     memset(instructions, 0, sizeof(compiler_instructions_t));
 }
 
+// ============== STRINGS_HANDLERS_HELPERS =========z
 
-//================WORK_WITH_INSTR_ARRAY============
+static compiler_return_e
+ReadRegister(char**                   input_command,
+             compiler_instructions_t* instructions)
+{
+    for (int register_number = 0; register_number < PROCESSOR_REG_COUNT; register_number++)
+    {
+        if (strncmp(PROCESSORS_REG[register_number],
+            *input_command, strlen(PROCESSORS_REG[register_number])) == 0)
+        {
+            *input_command = SkipSpaces(*input_command + strlen(PROCESSORS_REG[register_number]));
+
+            int offset = 0;
+            CheckIfMemoryOffset(input_command, &offset);
+
+            (instructions->instructions_array)
+            [instructions->instructions_bytes_written - sizeof(uint8_t)]
+            |= (uint8_t) register_number;
+
+            if (offset != 0)
+            {
+                (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)]
+                |= ADD_TO_REGI;
+
+                if ((PutInteger(offset, instructions) != 0))
+                {
+                    return COMPILER_RETURN_INVALID_SYNTAX;
+                }
+            }
+
+            return COMPILER_RETURN_VALID_SYNTAX;
+        }
+    }
+
+    return COMPILER_RETURN_INVALID_SYNTAX;
+}
+
+//================ WORK_WITH_INSTR_ARRAY ============
 
 static int
 PutInstruction(size_t                   index_in_table,
