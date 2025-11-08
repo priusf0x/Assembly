@@ -41,6 +41,9 @@ static int* ArgGetInt(spu_t* spu);
 static int*
 ArgGetInt(spu_t* spu)
 {
+    // FIXME: При добавлении новой команды, должно быть достаточно передать в эту функцию некоторый enum,
+    // FIXME: который будет описывать как воспринимать агрумент (kak PUSH ili kak POP) FIXME:
+
     uint8_t* instructions = spu->instructions;
     if ((instructions[spu->read_bytes_amount - 1] & USES_RAM)
         && (instructions[spu->read_bytes_amount - 1] & ADD_TO_REGI))
@@ -77,6 +80,7 @@ processor_functions_return_value_e
 InitializeSPU(spu_t*      spu,
               const char* assembled_file_name)
 {
+    // FIXME: make error handling correct
     if (StackInit(&(spu->spu_stack), START_STACK_SIZE, "SPU stack") != 0)
     {
         return PROCESSOR_FUNCTION_RETURN_VALUE_FAILED_TO_INIT_STACK;
@@ -85,6 +89,7 @@ InitializeSPU(spu_t*      spu,
     FILE* assembled_file = fopen(assembled_file_name, "rb");
     if (assembled_file == NULL)
     {
+        StackDestroy(spu->spu_stack);
         return PROCESSOR_FUNCTION_RETURN_VALUE_FAILED_TO_READ_INSTRUCTIONS;
     }
 
@@ -92,7 +97,9 @@ InitializeSPU(spu_t*      spu,
     fread(&compiler_version , sizeof(uint64_t), 1, assembled_file);
     if (compiler_version != PROCESSOR_VERSION)
     {
-        printf(RED "VERSION OF COMPILER IS MISMATCHING WITH VERSION OF DISASSEMBLER.\n" STANDARD);
+        StackDestroy(spu->spu_stack);
+        // FIXME: write errors to stderr
+        fprintf(stderr , RED "VERSION OF COMPILER IS MISMATCHING WITH VERSION OF PROCESSOR.\n" STANDARD);
         return PROCESSOR_FUNCTION_RETURN_VERSIONS_MISMATCH;
     }
 
@@ -104,6 +111,7 @@ InitializeSPU(spu_t*      spu,
     spu->instructions = (uint8_t*) calloc(max_bytes_amount, sizeof(uint8_t));
     if (spu->instructions == NULL)
     {
+        StackDestroy(spu->spu_stack);
         fclose(assembled_file);
         return PROCESSOR_FUNCTION_RETURN_VALUE_MEMORY_ERROR;
     }
@@ -112,20 +120,24 @@ InitializeSPU(spu_t*      spu,
 
     if (fclose(assembled_file) != 0)
     {
+        StackDestroy(spu->spu_stack);
         return PROCESSOR_FUNCTION_RETURN_VALUE_FAILED_TO_READ_INSTRUCTIONS;
     }
 
     spu->read_bytes_amount = 0;
 
+    // FIXME: make register array static
     spu->registers = (int*) calloc(PROCESSOR_REG_COUNT, sizeof(int));
     if (spu->registers == NULL)
     {
+        StackDestroy(spu->spu_stack);
         return PROCESSOR_FUNCTION_RETURN_VALUE_MEMORY_ERROR;
     }
 
     spu->RAM = (int*) calloc(RAM_SIZE, sizeof(int));
     if (spu->RAM == NULL)
     {
+        StackDestroy(spu->spu_stack);
         return PROCESSOR_FUNCTION_RETURN_VALUE_MEMORY_ERROR;
     }
 
@@ -148,23 +160,27 @@ DestroySPU(spu_t* spu)
 processor_functions_return_value_e
 ExecuteInstructions(spu_t* spu)
 {
+    //  while (command = GetCommand(&spu)) {
+    //      Execute(command);
+    //  }
+
     ASSERT(spu);
 
-    size_t command_index = TranslateCommandNumber(spu->instructions, &(spu->read_bytes_amount));
+    size_t cmd_opcode = TranslateCommandNumber(spu->instructions, &(spu->read_bytes_amount));
     processor_functions_return_value_e processor_error = PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 
-    while (command_index)
+    while (cmd_opcode /*FIXME: условия на HLT должно быть тут*/)
     {
         spu->read_bytes_amount++;
-        if (PROCESSOR_COMMANDS_ARRAY[command_index].command_function != NULL)
+        if (PROCESSOR_COMMANDS_ARRAY[cmd_opcode].command_function != NULL) // перенести
         {
-            processor_error = PROCESSOR_COMMANDS_ARRAY[command_index].command_function (spu);
+            processor_error = PROCESSOR_COMMANDS_ARRAY[cmd_opcode].command_function (spu);
             if (processor_error != PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS)
             {
                 ProcessorDump(spu);
                 printf(RED "ERROR NUMBER:...............................%d.\n"
                         RED "P" ORANGE "i" YELLOW "z" GREEN "d" BLUE "e" PURPLE "c " WHITE
-                       "was happened...\n" STANDARD, processor_error);
+                       "has happened...\n" STANDARD, processor_error);
 
                 return processor_error;
             }
@@ -179,7 +195,7 @@ ExecuteInstructions(spu_t* spu)
             return PROCESSOR_FUNCTION_RETURN_OUT_OF_MEMORY;
         }
 
-        command_index = TranslateCommandNumber(spu->instructions, &(spu->read_bytes_amount));
+        cmd_opcode = TranslateCommandNumber(spu->instructions, &(spu->read_bytes_amount));
     }
 
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
@@ -208,7 +224,6 @@ DrawScreen(spu_t* spu)
 
     PROCESSOR_VERIFY(spu);
 
-
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
 }
 
@@ -229,6 +244,7 @@ StackCommandPush(spu_t* spu)
 
     int* ptr = ARG_GET_INT();
     PUSH_RET(*ptr);
+    // meow rax + 5
 
     if (add_flag)
     {

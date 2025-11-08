@@ -104,19 +104,21 @@ uint8_t
 TranslateCommandNumber(uint8_t* processor_instructions,
                        size_t*  instruction_number)
 {
+    // FIXME: commandNumber -> commandOpcode
+    //        read_command -> cmd_opcode
     ASSERT(processor_instructions != NULL);
     ASSERT(instruction_number != NULL);
     uint8_t read_command = 0;
     uint8_t* pointer_to_command = processor_instructions + *instruction_number;
 
-    if ((*(pointer_to_command) & ARGUMENT_SWITCH_MASK) ^ ARGUMENT_SWITCH_MASK)
+    if ((*(pointer_to_command) & ARGUMENT_SWITCH_MASK) == ARGUMENT_SWITCH_MASK)
     {
         read_command = *(pointer_to_command) >> 6;
     }
-    else if ((*(pointer_to_command) & (EXTENDED_COMMAND_PACK)) ^ EXTENDED_COMMAND_PACK)
+    else if ((*(pointer_to_command) & (EXTENDED_COMMAND_PACK)) == EXTENDED_COMMAND_PACK)
     {
         read_command = ((*(pointer_to_command) & (EXTENDED_COMMAND_PACK)) >> 3)
-                        + 0b00000011;
+                        + 0b0000'0011;
     }
     else
     {
@@ -124,7 +126,7 @@ TranslateCommandNumber(uint8_t* processor_instructions,
         pointer_to_command += sizeof(uint8_t);
         *instruction_number += sizeof(uint8_t);
         read_command += (uint8_t) ((*(pointer_to_command) & ARGUMENT_SWITCH_MASK)) >> 3;
-        read_command += 0b00001010;
+        read_command += 0b0000'1010;
     }
 
     return read_command;

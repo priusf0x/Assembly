@@ -38,7 +38,7 @@ enum  compiler_return_e
 
 //=============== MAIN_COMMANDS ==================
 
-compiler_return_e InitInstuctionStruct(compiler_instructions_t* instructions);
+compiler_return_e CompilerInstructionInit(compiler_instructions_t* instructions);
 compiler_return_e TranslateCode(char* input_command, compiler_instructions_t* instructions);
 label_instruction_return_e FixUp(compiler_instructions_t* instructions);
 
@@ -81,6 +81,7 @@ const uint8_t ASM_LABEL_USAGE = 0b00001000;
 
 const uint8_t EMPTY = 0b00000000;
 
+// FIXME: add docs for ISA (Instruction Set Architecture)
 const struct compiler_command_t COMPILER_COMMANDS_ARRAY[] = {
     {.command_name = "hlt",   .binary_value_block_1 = 0b00000000, .binary_value_block_2 = EMPTY,      .handler_info = EMPTY           | EMPTY         | EMPTY         | EMPTY        , .handler = NULL}, //USER_COMMANDS  0
     {.command_name = "push",  .binary_value_block_1 = 0b01000000, .binary_value_block_2 = EMPTY,      .handler_info = EMPTY           | ASM_REG_USAGE | ASM_MEM_USAGE | ASM_INT_USAGE, .handler = NULL}, //USER_COMMANDS  1

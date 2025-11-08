@@ -63,9 +63,9 @@ const struct processor_command_t PROCESSOR_COMMANDS_ARRAY[] =
     {.return_value = COMMAND_OPERATION, .command_function = StackDoOperation},
     {.return_value = COMMAND_JMP,       .command_function = JumpFunction    },
     {.return_value = COMMAND_CALL,      .command_function = Call            },
-    {.return_value = COMMAND_EMPTY_1,   .command_function = StackDoOperation},
-    {.return_value = COMMAND_EMPTY_2,   .command_function = JumpFunction    },
-    {.return_value = COMMAND_EMPTY_3,   .command_function = Call            },
+    {.return_value = COMMAND_EMPTY_1,   .command_function = NULL            },
+    {.return_value = COMMAND_EMPTY_2,   .command_function = NULL            },
+    {.return_value = COMMAND_EMPTY_3,   .command_function = NULL            },
     {.return_value = COMMAND_DRAW,      .command_function = DrawScreen      },
 };
 

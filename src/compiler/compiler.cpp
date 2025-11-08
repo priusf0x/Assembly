@@ -13,6 +13,7 @@
  *Now, only god knows it!
  */
 
+// FIXME: CAPS WHY NOT CONST
 const char* INPUT_FILE_NAME = "input_file.asm";
 const char* COMPILED_NAME = "compiled.obj";
 
@@ -24,16 +25,16 @@ main(int                argc,
     int output = 0;
     compiler_instructions_t instructions = {};
 
-    if ((output = InitInstuctionStruct(&instructions)) != 0)
-    {
-        printf(RED "INIT ERROR.\n" STANDARD);
-        return output;
-    }
-
     if ((output = ReadFlags(argc, argv, &INPUT_FILE_NAME, &COMPILED_NAME)) != 0)
     {
         free(instructions.instructions_array);
         printf(RED "FLAG READ ERROR.\n" STANDARD);
+        return output;
+    }
+
+    if ((output = CompilerInstructionInit(&instructions)) != 0)
+    {
+        printf(RED "INIT ERROR.\n" STANDARD);
         return output;
     }
 

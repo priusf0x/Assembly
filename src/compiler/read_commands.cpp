@@ -102,7 +102,7 @@ WriteInFile(compiler_instructions_t* instructions,
 //=================== READ COMMANDS FUNCTIONS ========================
 
 compiler_return_e
-InitInstuctionStruct(compiler_instructions_t* instructions)
+CompilerInstructionInit(compiler_instructions_t* instructions)
 {
     *instructions = {.instructions_bytes_written = 0,
                      .instructions_max_bytes_amount = START_MAX_CODE_SIZE,
@@ -129,6 +129,8 @@ TranslateCode(char*                    input_buffer,
 
     while (*(input_command) != '\0')
     {
+        // TODO: Я бы сделал функцию компиляции строчки
+        // TODO: в функцию проверка на label
         while (CheckIfLabel(input_command = SkipSpaces(input_command)))
         {
             *(SkipNotSpaces(input_command) - 1) = '\0';
@@ -177,6 +179,7 @@ ReadCommand(char**                   input_command,
         return COMPILER_RETURN_EMPTY_COMMAND;
     }
 
+    // FIXME: split to functions bad code smell GOVNO
     bool find_flag = false;
     for (size_t index = 0; index < COMMANDS_COUNT; index++)
     {
@@ -202,7 +205,7 @@ ReadCommand(char**                   input_command,
             break;
         }
     }
-
+    //FIXME: emae
     if (!find_flag)
     {
         return COMPILER_RETURN_INCORRECT_COMMAND;
@@ -472,8 +475,8 @@ ReadRegister(char**                   input_command,
             CheckIfMemoryOffset(input_command, &offset);
 
             (instructions->instructions_array)
-            [instructions->instructions_bytes_written - sizeof(uint8_t)]
-            |= (uint8_t) register_number;
+                [instructions->instructions_bytes_written - sizeof(uint8_t)]
+                |= (uint8_t) register_number;
 
             if (offset != 0)
             {

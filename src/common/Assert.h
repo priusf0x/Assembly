@@ -2,12 +2,13 @@
 #define ASSERT_H
 #include <stdio.h>
 
+// FIXME: try
 #ifndef NDEBUG
 #define ASSERT(X) \
-if (!(X)) {fprintf(stderr ,"ERROR(" #X ") in %d line in file %s",\
-           __LINE__, __FILE__); abort();}
+if (!(X)) do {fprintf(stderr ,"ERROR(" #X ") in %d line in file %s",\
+           __LINE__, __FILE__); abort();} while(0)
 #else
-#define ASSERT(X)
+#define ASSERT(X) (void)0
 #endif
 
 #endif //ASSERT_H

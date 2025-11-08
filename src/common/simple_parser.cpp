@@ -17,15 +17,19 @@ ReadFlags(int                argc,
     {
         return READ_FLAGS_RETURN_SUCCESS;
     }
-
-    if (argc ==  2)
+    else if (argc ==  2)
     {
         (*input_name) = argv[1];
         return READ_FLAGS_RETURN_SUCCESS;
     }
-
-    (*input_name) = argv[1];
-    (*output_name) = argv[2];
-
-    return READ_FLAGS_RETURN_SUCCESS;
+    else if (argc == 3)
+    {
+        (*input_name) = argv[1];
+        (*output_name) = argv[2];
+        return READ_FLAGS_RETURN_ERROR;
+    }
+    else
+    {
+        return READ_FLAGS_RETURN_ERROR;
+    }
 }
