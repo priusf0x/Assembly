@@ -14,7 +14,11 @@
 #include "common_commands.h"
 
 // #define NDEBUG
+<<<<<<< HEAD
 #define VIDEO_PLAY
+=======
+// #define VIDEO_PLAY
+>>>>>>> fixed
 // #define SHOW_RAM
 
 const size_t START_STACK_SIZE = 8;
@@ -246,13 +250,6 @@ StackCommandPush(spu_t* spu)
     PUSH_RET(*ptr);
     // meow rax + 5
 
-    if (add_flag)
-    {
-        PUSH_RET(*GET_INT());
-        StackAdd(spu);
-        SKIP_INT();
-    }
-
     PROCESSOR_VERIFY(spu);
 
     return PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;
@@ -266,23 +263,9 @@ StackCommandPop(spu_t* spu)
     PROCESSOR_VERIFY(spu);
 
     bool add_flag = false;
-    uint8_t reg_number = 0;
-    if ((spu->instructions[spu->read_bytes_amount - 1] & (~REGISTER_MASK))
-         == ADD_POP_BYTE_CODE)
-    {
-        add_flag = true;
-        reg_number = spu->instructions[spu->read_bytes_amount - 1] & REGISTER_MASK;
-    }
 
     int* ptr = ARG_GET_INT();
     POP_RET(ptr);
-
-    if (add_flag)
-    {
-        int add_value = *GET_INT();
-        spu->registers[reg_number] += add_value;
-        SKIP_INT();
-    }
 
     PROCESSOR_VERIFY(spu);
 
