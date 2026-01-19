@@ -402,6 +402,8 @@ ReadMemoryArgument(char**                   input_command,
 
     *input_command = SkipSpaces(*input_command + 1);
 
+    ssize_t current = instructions->instructions_bytes_written;
+
     compiler_return_e output = COMPILER_RETURN_VALID_SYNTAX;
     if((output = ReadRegister(input_command, instructions))
        != COMPILER_RETURN_VALID_SYNTAX)
@@ -409,13 +411,13 @@ ReadMemoryArgument(char**                   input_command,
         return output;
     }
 
+    (instructions->instructions_array)[current - 1]
+                |= USES_RAM ;
+
     if (*(*input_command) != ']')
     {
         return COMPILER_RETURN_INVALID_SYNTAX;
     }
-
-    (instructions->instructions_array)[instructions->instructions_bytes_written - sizeof(uint8_t)]
-    |= USES_RAM;
 
     return COMPILER_RETURN_VALID_SYNTAX;
 }
@@ -469,6 +471,7 @@ ReadRegister(char**                   input_command,
         if (strncmp(PROCESSORS_REG[register_number],
             *input_command, strlen(PROCESSORS_REG[register_number])) == 0)
         {
+
             *input_command = SkipSpaces(*input_command + strlen(PROCESSORS_REG[register_number]));
 
             int offset = 0;
