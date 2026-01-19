@@ -6,22 +6,22 @@
 #include <stdint.h>
 #include <unistd.h>
 
-#include "Assert.h"
+#include "assert.h"
 #include "color.h"
 #include "logger.h"
 #include "stack.h"
 #include "tools.h"
 #include "common_commands.h"
 
-#define NDEBUG
+// #define NDEBUG
 #define VIDEO_PLAY
 // #define SHOW_RAM
 
 const size_t START_STACK_SIZE = 8;
-const uint64_t PROCESSOR_VERSION = 4;
+const uint64_t PROCESSOR_VERSION = 5;
 const size_t SCREEN_SIZE_X = 98;
 const size_t SCREEN_SIZE_Y = 36;
-const size_t RAM_SIZE = 100;
+const size_t RAM_SIZE = 10000;
 
 static int* ArgGetInt(spu_t* spu);
 
@@ -164,7 +164,7 @@ ExecuteInstructions(spu_t* spu)
     //      Execute(command);
     //  }
 
-    ASSERT(spu);
+    assert(spu);
 
     size_t cmd_opcode = TranslateCommandNumber(spu->instructions, &(spu->read_bytes_amount));
     processor_functions_return_value_e processor_error = PROCESSOR_FUNCTION_RETURN_VALUE_SUCCESS;

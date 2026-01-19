@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "Assert.h"
+#include "assert.h"
 #include "common_commands.h"
 
 void
@@ -12,9 +12,9 @@ PrintHLT(uint8_t* instructions,
          size_t*  command_index,
          FILE*    output)
 {
-    ASSERT(instructions != NULL);
-    ASSERT(instructions != NULL);
-    ASSERT(instructions != NULL);
+    assert(instructions != NULL);
+    assert(instructions != NULL);
+    assert(instructions != NULL);
 
     fprintf(output, "hlt\n");
     *command_index += sizeof(uint8_t);
@@ -25,9 +25,9 @@ PrintPush(uint8_t* instructions,
           size_t*  command_index,
           FILE*    output)
 {
-    ASSERT(instructions != NULL);
-    ASSERT(instructions != NULL);
-    ASSERT(instructions != NULL);
+    assert(instructions != NULL);
+    assert(instructions != NULL);
+    assert(instructions != NULL);
 
     if (instructions[*command_index] & USES_INT)
     {
@@ -68,9 +68,9 @@ PrintPop(uint8_t* instructions,
          size_t*  command_index,
          FILE*    output)
 {
-    ASSERT(instructions != NULL);
-    ASSERT(instructions != NULL);
-    ASSERT(instructions != NULL);
+    assert(instructions != NULL);
+    assert(instructions != NULL);
+    assert(instructions != NULL);
 
     if ((instructions[*command_index] & USES_RAM) && (instructions[*command_index] & ADD_TO_REGI))
     {
@@ -105,9 +105,9 @@ PrintOut(uint8_t* instructions,
          size_t*  command_index,
          FILE*    output)
 {
-    ASSERT(instructions != NULL);
-    ASSERT(instructions != NULL);
-    ASSERT(instructions != NULL);
+    assert(instructions != NULL);
+    assert(instructions != NULL);
+    assert(instructions != NULL);
 
     if (instructions[*command_index] & ARGUMENT_MASK)
     {
@@ -126,9 +126,9 @@ PrintOperation(uint8_t* instructions,
                size_t*  command_index,
                FILE*    output)
 {
-    ASSERT(instructions != NULL);
-    ASSERT(instructions != NULL);
-    ASSERT(instructions != NULL);
+    assert(instructions != NULL);
+    assert(instructions != NULL);
+    assert(instructions != NULL);
 
     switch(instructions[*command_index] & ARGUMENT_MASK)
     {
@@ -206,9 +206,9 @@ PrintCall(uint8_t* instructions,
           size_t*  command_index,
           FILE*    output)
 {
-    ASSERT(instructions != NULL);
-    ASSERT(instructions != NULL);
-    ASSERT(instructions != NULL);
+    assert(instructions != NULL);
+    assert(instructions != NULL);
+    assert(instructions != NULL);
 
     if (instructions[*command_index] & ARGUMENT_MASK)
     {
@@ -229,9 +229,9 @@ PrintDraw(uint8_t*    instructions,
           size_t* command_index,
           FILE*   output)
 {
-    ASSERT(instructions != NULL);
-    ASSERT(instructions != NULL);
-    ASSERT(instructions != NULL);
+    assert(instructions != NULL);
+    assert(instructions != NULL);
+    assert(instructions != NULL);
 
     if (instructions[*command_index] & ARGUMENT_MASK)
     {

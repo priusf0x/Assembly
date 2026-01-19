@@ -1,27 +1,27 @@
-#include "read_commands.h"
+#include "op_handler.h"
 
+#include <assert.h>
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <sys/stat.h>
 #include <stdint.h>
 
-#include "Assert.h"
 #include "color.h"
 #include "tools.h"
 #include "common_commands.h"
 
 const size_t START_MAX_CODE_SIZE = 20;
 
-static int  PutInstruction(size_t index_in_table, compiler_instructions_t* instructions);
-static int  PutInteger(int value, compiler_instructions_t* instructions);
+static int PutInstruction(size_t index_in_table, compiler_instructions_t* instructions);
+static int PutInteger(int value, compiler_instructions_t* instructions);
 
 ReadErrorTypes
 ReadFile(char**      input_buffer,
          const char* input_name)
 {
-    ASSERT(input_buffer != NULL);
-    ASSERT(input_name != NULL);
+    assert(input_buffer != NULL);
+    assert(input_name != NULL);
 
     struct stat file_stat = {};
 
@@ -135,7 +135,7 @@ TranslateCode(char*                    input_buffer,
         {
             *(SkipNotSpaces(input_command) - 1) = '\0';
 
-            if (InitLabel(input_command, instructions) != LABEL_INSTRUCTION_RETURN_SUCCESS)
+            if (InitLabel(input_command, instructions) != 0)
             {
                 printf("EMPTY LABEL OR REUSED TWICE.\n");
                 return COMPILER_RETURN_LABEL_ERROR;
@@ -154,12 +154,8 @@ TranslateCode(char*                    input_buffer,
         if (output == COMPILER_RETURN_INCORRECT_COMMAND)
         {
             printf("INCORRECT COMMAND IN LINE %zu.\n", command_index);
+
             return COMPILER_RETURN_INCORRECT_COMMAND;
-        }
-        if (output == COMPILER_RETURN_INVALID_SYNTAX)
-        {
-            printf("INCORRECT SYNTAX IN LINE %zu.\n", command_index);
-            return COMPILER_RETURN_INVALID_SYNTAX;
         }
     }
 
@@ -221,6 +217,7 @@ ReadCommand(char**                   input_command,
 
         if (output != COMPILER_RETURN_VALID_SYNTAX)
         {
+
             return output;
         }
     }
@@ -237,7 +234,6 @@ ReadCommand(char**                   input_command,
     return COMPILER_RETURN_SUCCESS;
 }
 
-
 // ================ HANDLERS ====================
 
 static compiler_return_e ReadIntArgument(char** input_command, compiler_instructions_t* instructions);
@@ -250,8 +246,8 @@ static compiler_return_e
 CheckIfMemoryOffset(char** input_command,
                     int*   read_value)
 {
-    ASSERT(input_command != NULL);
-    ASSERT(read_value != NULL);
+    assert(input_command != NULL);
+    assert(read_value != NULL);
 
     int offset_value = 0;
     if (**input_command == '+')
@@ -279,13 +275,13 @@ CheckIfMemoryOffset(char** input_command,
 }
 
 compiler_return_e
-HandleArgument(char**                   input_command,
+    HandleArgument(char**                   input_command,
                compiler_instructions_t* instructions,
                size_t                   index_in_table)
 {
-    ASSERT(input_command != NULL);
-    ASSERT(*input_command != NULL);
-    ASSERT(instructions != NULL);
+    assert(input_command != NULL);
+    assert(*input_command != NULL);
+    assert(instructions != NULL);
 
     const size_t common_handler_count = 7;
     compiler_return_e (*handler_array[]) (char**, compiler_instructions_t*) =
@@ -340,9 +336,9 @@ compiler_return_e
 ReadIntArgument(char**                   input_command,
                 compiler_instructions_t* instructions)
 {
-    ASSERT(input_command != NULL);
-    ASSERT(*input_command != NULL);
-    ASSERT(instructions != NULL);
+    assert(input_command != NULL);
+    assert(*input_command != NULL);
+    assert(instructions != NULL);
 
     if (!isdigit(**input_command))
     {
@@ -368,9 +364,9 @@ compiler_return_e
 ReadRegisterArgument(char**                   input_command,
                      compiler_instructions_t* instructions)
 {
-    ASSERT(input_command != NULL);
-    ASSERT(*input_command != NULL);
-    ASSERT(instructions != NULL);
+    assert(input_command != NULL);
+    assert(*input_command != NULL);
+    assert(instructions != NULL);
 
     if (isdigit(**input_command) || **input_command == '[')
     {
@@ -391,9 +387,9 @@ compiler_return_e
 ReadMemoryArgument(char**                   input_command,
                    compiler_instructions_t* instructions)
 {
-    ASSERT(input_command != NULL);
-    ASSERT(*input_command != NULL);
-    ASSERT(instructions != NULL);
+    assert(input_command != NULL);
+    assert(*input_command != NULL);
+    assert(instructions != NULL);
 
     if (**input_command != '[')
     {
@@ -424,9 +420,9 @@ compiler_return_e
 ReadLabelArgument(char**                   input_command,
                   compiler_instructions_t* instructions)
 {
-    ASSERT(input_command != NULL);
-    ASSERT(*input_command != NULL);
-    ASSERT(instructions != NULL);
+    assert(input_command != NULL);
+    assert(*input_command != NULL);
+    assert(instructions != NULL);
 
     if (!CheckIfLabel(*input_command))
     {
@@ -458,7 +454,7 @@ FreeAll(compiler_instructions_t* instructions,
     memset(instructions, 0, sizeof(compiler_instructions_t));
 }
 
-// ============== STRINGS_HANDLERS_HELPERS =========z
+// ============== STRINGS_HANDLERS_HELPERS ==========
 
 static compiler_return_e
 ReadRegister(char**                   input_command,
@@ -502,8 +498,8 @@ static int
 PutInstruction(size_t                   index_in_table,
                compiler_instructions_t* instructions)
 {
-    ASSERT(instructions != NULL);
-    ASSERT(instructions->instructions_array != NULL);
+    assert(instructions != NULL);
+    assert(instructions->instructions_array != NULL);
 
     if (instructions->instructions_bytes_written >= instructions->instructions_max_bytes_amount - 5)
     {
@@ -541,8 +537,8 @@ static int
 PutInteger(int                      value,
            compiler_instructions_t* instructions)
 {
-    ASSERT(instructions != NULL);
-    ASSERT(instructions->instructions_array != NULL);
+    assert(instructions != NULL);
+    assert(instructions->instructions_array != NULL);
 
     if (instructions->instructions_bytes_written >= instructions->instructions_max_bytes_amount - 5)
     {

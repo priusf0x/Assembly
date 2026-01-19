@@ -42,6 +42,7 @@ const char* const PROCESSORS_REG[] =
     "RFX",
     "RGX"
 };
-const int PROCESSOR_REG_COUNT = sizeof(PROCESSORS_REG) /  sizeof(PROCESSORS_REG[0]);
+const size_t PROCESSOR_REG_COUNT = sizeof(PROCESSORS_REG)     
+                                    /  sizeof(PROCESSORS_REG[0]);
 
 #endif //COMMON_COMMANDS_H

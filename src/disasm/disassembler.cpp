@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <unistd.h>
 
-#include "Assert.h"
+#include "assert.h"
 #include "disassembler_commands.h"
 #include "common_commands.h"
 #include "color.h"
@@ -64,7 +64,7 @@ static disassembler_return_e
 ReadAssemblyFile(size_t*   instructions_count,
                  uint8_t** instructions)
 {
-    ASSERT(instructions_count);
+    assert(instructions_count);
 
     uint64_t compiler_version = 0;
 
@@ -98,7 +98,7 @@ static disassembler_return_e
 WriteDisassembledFile(size_t   instructions_count,
                       uint8_t* instructions)
 {
-    ASSERT(instructions);
+    assert(instructions);
 
     FILE* disassembled_file = fopen(DISASSEMBLED_FILE_NAME, "w+");
     if (disassembled_file == NULL)

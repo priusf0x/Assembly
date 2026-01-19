@@ -1,12 +1,12 @@
-#ifndef READ_COMMANDS_H
-#define READ_COMMANDS_H
+#ifndef OP_HANDLER_H
+#define OP_HANDLER_H
 
 #include <stdlib.h>
 #include <stdint.h>
 
 #include "compiler_commands.h"
 
-const size_t COMPILER_VERSION = 4;
+const size_t COMPILER_VERSION = 5;
 
 enum ReadErrorTypes
 {
@@ -27,4 +27,5 @@ struct string_t
 
 ReadErrorTypes ReadFile(char** input_buffer, const char* input_name);
 ReadErrorTypes WriteInFile(compiler_instructions_t* instructions, const char* write_name);
-#endif //READ_COMMANDS_H
+
+#endif //OP_HANDLER_H

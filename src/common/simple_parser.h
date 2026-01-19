@@ -7,9 +7,8 @@ enum read_flags_return_e
     READ_FLAGS_RETURN_ERROR
 };
 
-enum read_flags_return_e ReadFlags(int                argc,
-                                   const char* const* argv,
-                                   const char** input_file,
-                                   const char** output_file);
+read_flags_return_e 
+ReadFlags(int argc, const char* const* argv, 
+            const char** input_file, const char** output_file);
 
-#endif
+#endif // SIMPLE_PARSER_H

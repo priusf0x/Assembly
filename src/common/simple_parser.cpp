@@ -1,7 +1,8 @@
 #include "simple_parser.h"
 
+#include <assert.h>
+
 #include "stdlib.h"
-#include "Assert.h"
 
 enum read_flags_return_e
 ReadFlags(int                argc,
@@ -9,27 +10,23 @@ ReadFlags(int                argc,
           const char**       input_name,
           const char**       output_name)
 {
-    ASSERT(argv != NULL);
-    ASSERT(input_name != NULL);
-    ASSERT(output_name != NULL);
+    assert(argv != NULL);
+    assert(input_name != NULL);
+    assert(output_name != NULL);
 
-    if (argc == 1)
+    #pragma GCC diagnostic ignored "-Wimplicit-fallthrough" 
+
+    switch(argc)
     {
-        return READ_FLAGS_RETURN_SUCCESS;
+        case 3:
+            (*output_name) = argv[2];
+        case 2:
+            (*input_name) = argv[1];
+        case 1:
+            return READ_FLAGS_RETURN_SUCCESS;
+
+        default:return READ_FLAGS_RETURN_ERROR;
     }
-    else if (argc ==  2)
-    {
-        (*input_name) = argv[1];
-        return READ_FLAGS_RETURN_SUCCESS;
-    }
-    else if (argc == 3)
-    {
-        (*input_name) = argv[1];
-        (*output_name) = argv[2];
-        return READ_FLAGS_RETURN_ERROR;
-    }
-    else
-    {
-        return READ_FLAGS_RETURN_ERROR;
-    }
+    
+    #pragma GCC diagnostic warning "-Wimplicit-fallthrough" 
 }

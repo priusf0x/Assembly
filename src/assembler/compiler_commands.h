@@ -4,15 +4,16 @@
 #include <stdlib.h>
 
 #include "common_commands.h"
+
 struct label_tabular_t;
 
-enum label_instruction_return_e
+enum label_return_e
 {
-    LABEL_INSTRUCTION_RETURN_SUCCESS,
-    LABEL_INSTRUCTION_RETURN_MEMORY_ERROR,
-    LABEL_INSTRUCTION_RETURN_INITIALIZATION_REPEAT,
-    LABEL_INSTRUCTION_RETURN_EMPTY_NAME,
-    LABEL_INSTRUCTION_RETURN_UNINITIALIZED_LABEL
+    LABEL_RETURN_SUCCESS,
+    LABEL_RETURN_MEMORY_ERROR,
+    LABEL_RETURN_INITIALIZATION_REPEAT,
+    LABEL_RETURN_EMPTY_NAME,
+    LABEL_RETURN_UNINITIALIZED_LABEL
 };
 
 struct compiler_instructions_t
@@ -40,7 +41,7 @@ enum  compiler_return_e
 
 compiler_return_e CompilerInstructionInit(compiler_instructions_t* instructions);
 compiler_return_e TranslateCode(char* input_command, compiler_instructions_t* instructions);
-label_instruction_return_e FixUp(compiler_instructions_t* instructions);
+label_return_e FixUp(compiler_instructions_t* instructions);
 
 //=============== COMMAND_HANDLERS ==================
 
@@ -50,8 +51,8 @@ compiler_return_e HandleArgument(char** input_command, compiler_instructions_t* 
 //=============== LABEL_TABULAR_USAGE ==================
 
 label_tabular_t*           InitialiseLabelTabular();
-label_instruction_return_e InitLabel(char* label_name, compiler_instructions_t* instructions);
-label_instruction_return_e UseLabel(char* label_name, compiler_instructions_t* instructions);
+label_return_e InitLabel(char* label_name, compiler_instructions_t* instructions);
+label_return_e UseLabel(char* label_name, compiler_instructions_t* instructions);
 void                       LabelTabularDump(compiler_instructions_t* instructions);
 void                       DestroyLabelTabular(label_tabular_t* label_tabular);
 bool                       CheckIfLabel(char* string);
@@ -107,7 +108,6 @@ const struct compiler_command_t COMPILER_COMMANDS_ARRAY[] = {
     {.command_name =  NULL,   .binary_value_block_1 = 0b11110000, .binary_value_block_2 = EMPTY,      .handler_info = EMPTY           | EMPTY         | EMPTY         | EMPTY        , .handler = NULL}, //USER_COMMANDS  21
     {.command_name = "drawb", .binary_value_block_1 = 0b11111000, .binary_value_block_2 = 0b00000000, .handler_info = EMPTY           | EMPTY         | EMPTY         | EMPTY        , .handler = NULL}, //USER_COMMANDS  22
     {.command_name = "draw",  .binary_value_block_1 = 0b11111000, .binary_value_block_2 = 0b00000000, .handler_info = EMPTY           | EMPTY         | EMPTY         | EMPTY        , .handler = NULL}}; //USER_COMMANDS  23
-    // {.command_name = "meow",  .binary_value_block_1 = 0b11111001, .binary_value_block_2 = 0b00000000, .handler_info = EMPTY           | EMPTY         | EMPTY         | ASM_INT_USAGE, .handler = NULL}};
 const int COMMANDS_COUNT = sizeof(COMPILER_COMMANDS_ARRAY) / sizeof(COMPILER_COMMANDS_ARRAY[0]);
 
 void   FreeAll(compiler_instructions_t* instructions, char* input_buffer);

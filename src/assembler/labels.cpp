@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "Assert.h"
+#include <assert.h>
+
 #include "color.h"
 #include "tools.h"
 #include "compiler_commands.h"
@@ -11,11 +12,11 @@ const float  INCREASE_COEFFICIENT = 2;
 
 struct label_t
 {
-    char*  name;
-    int from;
-    int to;
-    bool   is_initialized;
-    bool   is_used;
+    char* name;
+    int   from;
+    int   to;
+    bool  is_initialized;
+    bool  is_used;
 };
 
 struct  label_tabular_t
@@ -28,7 +29,7 @@ struct  label_tabular_t
 bool
 CheckIfLabel(char* string)
 {
-    ASSERT(string);
+    assert(string != NULL);
 
     char* intermidiate_string = SkipNotSpaces(string);
 
@@ -52,12 +53,12 @@ InitialiseLabelTabular()
     return return_tabular;
 };
 
-label_instruction_return_e
+label_return_e
 InitLabel(char* label_name,
           compiler_instructions_t* instructions)
 {
-    ASSERT(label_name != NULL);
-    ASSERT(instructions != NULL);
+    assert(label_name != NULL);
+    assert(instructions != NULL);
 
     label_tabular_t* label_tabular = instructions->instructions_label_tabular;
 
@@ -71,7 +72,7 @@ InitLabel(char* label_name,
 
         if (label_tabular->labels == NULL)
         {
-            return LABEL_INSTRUCTION_RETURN_MEMORY_ERROR;
+            return LABEL_RETURN_MEMORY_ERROR;
         }
 
         instructions->instructions_label_tabular = label_tabular;
@@ -89,7 +90,7 @@ InitLabel(char* label_name,
             }
             else
             {
-                return LABEL_INSTRUCTION_RETURN_INITIALIZATION_REPEAT;
+                return LABEL_RETURN_INITIALIZATION_REPEAT;
             }
 
             search_flag = true;
@@ -106,15 +107,15 @@ InitLabel(char* label_name,
         label_tabular->count++;
     }
 
-    return LABEL_INSTRUCTION_RETURN_SUCCESS;
+    return LABEL_RETURN_SUCCESS;
 }
 
-label_instruction_return_e
+label_return_e
 UseLabel(char* label_name,
          compiler_instructions_t* instructions)
 {
-    ASSERT(label_name != NULL);
-    ASSERT(instructions != NULL);
+    assert(label_name != NULL);
+    assert(instructions != NULL);
 
     label_tabular_t* label_tabular = instructions->instructions_label_tabular;
 
@@ -129,7 +130,7 @@ UseLabel(char* label_name,
 
         if (label_tabular->labels == NULL)
         {
-            return LABEL_INSTRUCTION_RETURN_MEMORY_ERROR;
+            return LABEL_RETURN_MEMORY_ERROR;
         }
 
         instructions->instructions_label_tabular = label_tabular;
@@ -145,7 +146,7 @@ UseLabel(char* label_name,
 
             label_tabular->count++;
 
-            return LABEL_INSTRUCTION_RETURN_SUCCESS;
+            return LABEL_RETURN_SUCCESS;
         }
     }
 
@@ -156,7 +157,7 @@ UseLabel(char* label_name,
                                                      .is_used = true};
     label_tabular->count++;
 
-    return LABEL_INSTRUCTION_RETURN_SUCCESS;
+    return LABEL_RETURN_SUCCESS;
 }
 
 void
@@ -187,7 +188,7 @@ DestroyLabelTabular(label_tabular_t* label_tabular)
     }
 };
 
-label_instruction_return_e
+label_return_e
 FixUp(compiler_instructions_t* instructions)
 {
     label_tabular_t* label_tabular= instructions->instructions_label_tabular;
@@ -196,7 +197,7 @@ FixUp(compiler_instructions_t* instructions)
     {
         if (!(label_tabular->labels)[index].is_initialized)
         {
-            return LABEL_INSTRUCTION_RETURN_UNINITIALIZED_LABEL;
+            return LABEL_RETURN_UNINITIALIZED_LABEL;
         }
 
         if ((label_tabular->labels)[index].is_used)
@@ -206,5 +207,5 @@ FixUp(compiler_instructions_t* instructions)
         }
     }
 
-    return LABEL_INSTRUCTION_RETURN_SUCCESS;
+    return LABEL_RETURN_SUCCESS;
 };

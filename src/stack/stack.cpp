@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "Assert.h"
+#include "assert.h"
 #include "logger.h"
 #include "tools.h"
 #include "color.h"
@@ -35,7 +35,7 @@ StackInit(swag_t**   swag,
           size_t      expected_capacity,
           const char* swag_name)
 {
-    ASSERT(swag_name != NULL);
+    assert(swag_name != NULL);
 
     (*swag) = (swag_t*) calloc(1, sizeof(swag_t));
 
@@ -87,7 +87,7 @@ stack_function_errors_e
 StackPush(swag_t*   swag,
           value_type value)
 {
-    ASSERT(swag != NULL);
+    assert(swag != NULL);
 
     VERIFY_STACK_WITH_RETURN(swag);
 
@@ -105,8 +105,8 @@ stack_function_errors_e
 StackPop(swag_t*    swag,
          value_type* pop_variable)
 {
-    ASSERT(swag != NULL);
-    ASSERT(pop_variable != NULL);
+    assert(swag != NULL);
+    assert(pop_variable != NULL);
 
     VERIFY_STACK_WITH_RETURN(swag);
 

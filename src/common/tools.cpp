@@ -1,25 +1,31 @@
 #include "tools.h"
 
+#include <cassert>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 
-#include "Assert.h"
-#include "color.h"
-#include "read_commands.h"
 #include "compiler_commands.h"
 #include "common_commands.h"
+#include "color.h"
+#include "op_handler.h"
 
 void* recalloc(void*  pointer,
                size_t current_size,
                size_t new_size)
 {
-    ASSERT(pointer != NULL);
 
     pointer = realloc(pointer, new_size);
-    memset((char*) pointer + current_size, 0, new_size - current_size);
+
+    if (pointer == NULL)
+    {
+        return NULL;
+    }
+
+    memset((char*) pointer + current_size, 0,
+                     new_size - current_size);
 
     return pointer;
 }
@@ -28,14 +34,15 @@ size_t
 CountCharInStr(char        character,
                const char* str)
 {
-    ASSERT(str != NULL);
+    assert(str != NULL);
 
     const char* pointer_to_char = str;
     size_t count = 0;
 
     while (*pointer_to_char != '\0')
     {
-        pointer_to_char = strchr(pointer_to_char, character);
+        pointer_to_char = strchr(pointer_to_char,
+                                     character);
         if (pointer_to_char == NULL)
         {
             break;
@@ -50,15 +57,17 @@ CountCharInStr(char        character,
 char*
 SkipSpaces(char* string)
 {
-    ASSERT(string != NULL);
+    assert(string != NULL);
 
     char character = *string;
 
-    while ((character == ' ') && (character != '\n') && (character != '\0'))
+    while ((isspace(character)) 
+                && (character != '\0'))
     {
         string++;
         character = *string;
     }
+
     if (character == '#')
     {
         while (character != '\n')
@@ -74,7 +83,7 @@ SkipSpaces(char* string)
 char*
 SkipNotSpaces(char* string)
 {
-    ASSERT(string != NULL);
+    assert(string != NULL);
 
     char character = *string;
 
@@ -87,27 +96,12 @@ SkipNotSpaces(char* string)
     return string;
 }
 
-bool
-IsStrNum(char* string)
-{
-    int count = (int) (SkipNotSpaces(string) - string);
-    for (int index = 0; index < count; index++)
-    {
-        if (!isdigit(string[index]))
-            return false;
-    }
-
-    return true;
-}
-
 uint8_t
-TranslateCommandNumber(uint8_t* processor_instructions,
+TranslateCommandOpcode(uint8_t* processor_instructions,
                        size_t*  instruction_number)
 {
-    // FIXME: commandNumber -> commandOpcode
-    //        read_command -> cmd_opcode
-    ASSERT(processor_instructions != NULL);
-    ASSERT(instruction_number != NULL);
+    // TODO:        read_command -> cmd_opcode
+
     uint8_t read_command = 0;
     uint8_t* pointer_to_command = processor_instructions + *instruction_number;
 
