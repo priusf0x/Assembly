@@ -19,8 +19,8 @@
 
 const size_t START_STACK_SIZE = 8;
 const uint64_t PROCESSOR_VERSION = 4;
-const size_t SCREEN_SIZE_X = 98;
-const size_t SCREEN_SIZE_Y = 36;
+const size_t SCREEN_SIZE_X = 30;
+const size_t SCREEN_SIZE_Y = 30;
 const size_t RAM_SIZE = 10000;
 
 static int* ArgGetInt(spu_t* spu);
